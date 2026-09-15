@@ -11,9 +11,13 @@ export function createHero(): HTMLElement {
           & Have Fun
         </h1>
 
-        <p class="hero__text">
-          Discover hundreds of curated casual mini-games. Play instantly in your browser —
-          puzzle, match 3, farm, and board classics.
+        <p class="hero__text hero__text--desktop">
+           Discover hundreds of curated casual mini-games. Play instantly in your browser —
+           puzzle, match 3, farm, and board classics.
+        </p>
+
+        <p class="hero__text hero__text--mobile">
+            Discover hundreds of curated casual mini-games right in your browser.
         </p>
 
         <button class="hero__button" type="button">
