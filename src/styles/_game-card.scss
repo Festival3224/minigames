@@ -1,0 +1,100 @@
+@use './tokens' as *;
+
+.game-card {
+  position: relative;
+  overflow: hidden;
+
+  flex-shrink: 0;
+
+  border: 2.5px solid $on-primary;
+  border-radius: $corner-extra-large;
+
+  background: $bg-footer;
+}
+
+.game-card--edge {
+  width: 120px;
+  height: 384px;
+}
+
+.game-card--regular {
+  width: 288px;
+  height: 384px;
+}
+
+.game-card--featured {
+  width: 816px;
+  height: 384px;
+}
+
+.game-card__image {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.game-card__overlay {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  padding: $size-2;
+
+  display: flex;
+  flex-direction: column;
+  gap: $size-1;
+
+  background: linear-gradient(
+    to bottom,
+    hsla(0, 0%, 0%, 0) 0%,
+    hsla(0, 0%, 0%, 0.4) 25%,
+    hsla(0, 0%, 0%, 0.85) 100%
+  );
+
+  color: $white;
+}
+
+.game-card__title {
+  margin: 0;
+
+  color: $white;
+  font-size: $body-large;
+  font-weight: $font-bold;
+  line-height: 1;
+}
+
+.game-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.game-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.game-card__rating,
+.game-card__likes {
+  display: flex;
+  align-items: center;
+  gap: $size-05;
+
+  color: $white;
+  font-size: $body-medium;
+  font-weight: $font-bold;
+  line-height: 1;
+}
+
+.game-card__rating-icon {
+  width: 20px;
+  height: 19px;
+}
+
+.game-card__likes-icon {
+  width: 24px;
+  height: 24px;
+}

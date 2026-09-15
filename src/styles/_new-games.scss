@@ -1,0 +1,26 @@
+@use './tokens' as *;
+
+.new-games {
+  padding: $size-5 $size-15;
+
+  display: flex;
+  flex-direction: column;
+  gap: $size-5;
+
+  background: $bg;
+}
+
+.new-games__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.new-games__viewport {
+  overflow: hidden;
+}
+
+.new-games__track {
+  display: flex;
+  gap: $size-1;
+}
