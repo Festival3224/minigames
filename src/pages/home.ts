@@ -1,4 +1,5 @@
 import { createHeader } from '../components/header';
+import { createHero } from '../components/hero';
 
 export function createHomePage(): HTMLElement {
   const page = document.createElement('div');
@@ -7,26 +8,7 @@ export function createHomePage(): HTMLElement {
 
   const main = document.createElement('main');
 
-  main.innerHTML = `
-    <section class="hero">
-      <div class="hero__container">
-        <h1>MiniGames</h1>
-        <p>Play, compete, and have fun.</p>
-      </div>
-    </section>
-
-    <section class="games">
-      <div class="games__container">
-        <h2>Games</h2>
-      </div>
-    </section>
-
-    <section class="leaderboard">
-      <div class="leaderboard__container">
-        <h2>Leaderboard</h2>
-      </div>
-    </section>
-  `;
+  main.append(createHero());
 
   page.append(main);
 

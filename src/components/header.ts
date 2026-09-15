@@ -3,7 +3,7 @@ export function createHeader(): HTMLElement {
 
   header.className = 'header';
 
-  header.innerHTML = `
+  header.innerHTML = /* html */ `
     <div class="header__container">
       <a class="header__logo" href="#" aria-label="MiniGames home">
         <img
