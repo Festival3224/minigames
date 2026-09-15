@@ -3,7 +3,7 @@
 
 .hero {
   position: relative;
-  min-height: 627px;
+  min-height: calc(281.39px + 13.23vw);
   overflow: hidden;
 
   border-bottom: 2px solid $on-primary;
@@ -11,7 +11,11 @@
 
 .hero::before {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  left: 50%;
+
+  width: 118%;
+  height: 118%;
 
   background-image: url('../assets/hero-section.png');
   background-position: center;
@@ -19,7 +23,8 @@
   background-repeat: no-repeat;
 
   opacity: 0.8;
-  transform: translateY(-18px) scale(1.18);
+
+  transform: translate(-50%, -50%);
 
   content: '';
 }
@@ -37,43 +42,55 @@
   position: relative;
   z-index: 1;
 
-  min-height: 627px;
-  padding: $size-14 $size-15;
+  min-height: calc(281.39px + 13.23vw);
+
+  padding-block: clamp($size-8, 5.8vw, $size-14);
+  padding-inline: clamp($size-2, 6.25vw, $size-15);
 
   display: flex;
   align-items: center;
 }
 
 .hero__card {
-  width: 640px;
-  padding: $size-6;
+  width: clamp(343px, 33.33vw, 640px);
+  max-width: 100%;
+
+  padding: clamp($size-3, 2.5vw, $size-6);
 
   display: flex;
   flex-direction: column;
-  gap: $size-3;
+
+  gap: clamp($size-2, 1.25vw, $size-3);
 
   background: $bg;
-  border: 3px solid $on-primary;
-  border-radius: $corner-extra-large;
-  box-shadow: 8px 8px 0 $on-primary;
+
+  border: clamp(2px, 0.16vw, 3px) solid $on-primary;
+
+  border-radius: clamp($corner-medium, 1.25vw, $corner-extra-large);
+
+  box-shadow: clamp(4px, 0.42vw, 8px) clamp(4px, 0.42vw, 8px) 0 $on-primary;
 }
 
 .hero__title {
   margin: 0;
 
   color: $on-primary;
-  font-size: $display-large; // 56px
-  font-weight: $font-bold; // 700
-  line-height: 1.1; // 110%
+
+  font-size: clamp($display-small, 2.92vw, $display-large);
+
+  font-weight: $font-bold;
+  line-height: clamp(1.1, 1.16, 1.2);
 }
 
 .hero__text {
   margin: 0;
 
   color: $on-bg;
-  font-size: $body-large; // 18px
-  font-weight: $font-medium; // 500
-  line-height: 1.5; // 150%
+
+  font-size: clamp($label-medium, 0.94vw, $body-large);
+
+  font-weight: $font-medium;
+  line-height: clamp(1.4, 1.45, 1.5);
 }
 
 .hero__text--mobile {
@@ -82,7 +99,10 @@
 
 .hero__button {
   align-self: flex-start;
-  padding: $btn-large-y $btn-large-x;
+
+  padding-block: clamp($btn-small-y, 0.83vw, $btn-large-y);
+
+  padding-inline: clamp($btn-small-x, 1.25vw, $btn-large-x);
 
   background: $primary;
   color: $on-primary;
@@ -90,90 +110,16 @@
   border: 2px solid $on-primary;
   border-radius: $corner-small;
 
-  font-size: $body-large; // 18px
-  font-weight: $font-bold; // 700
+  font-size: clamp($label-medium, 0.94vw, $body-large);
+
+  font-weight: $font-bold;
   line-height: 1;
 
   cursor: pointer;
 }
 
-@media (max-width: $breakpoint-tablet) {
-  .hero {
-    min-height: 383px;
-  }
-
-  .hero::before {
-    transform: scale(1);
-  }
-
-  .hero__container {
-    min-height: 383px;
-    padding: $size-9 $size-5;
-  }
-
-  .hero__card {
-    width: 480px;
-    padding: $size-3;
-    gap: $size-2;
-
-    border-radius: $corner-large;
-  }
-
-  .hero__title {
-    font-size: $display-medium;
-  }
-
-  .hero__text {
-    font-size: $body-small;
-    line-height: 1.4;
-  }
-
-  .hero__button {
-    padding: $btn-medium-y $btn-medium-x;
-  }
-}
-
-@media (max-width: $breakpoint-mobile) {
-  .hero {
-    min-height: 331px;
-  }
-
-  .hero::before {
-    transform: scale(1);
-  }
-
-  .hero__container {
-    min-height: 331px;
-    padding: $size-8 $size-2;
-  }
-
-  .hero__card {
-    width: 100%;
-    padding: $size-3;
-    gap: $size-2;
-
-    border-width: 2px;
-    border-radius: $corner-medium;
-    box-shadow: 4px 4px 0 $on-primary;
-  }
-
-  .hero__title {
-    font-size: $display-small;
-    font-weight: $font-bold;
-    line-height: 1.2;
-  }
-
-  .hero__text {
-    font-size: $label-medium;
-    font-weight: $font-medium;
-    line-height: 1.4;
-  }
-
-  .hero__button {
-    font-size: $label-medium;
-    font-weight: $font-bold;
-  }
-
+/* Только контент действительно меняется на mobile */
+@media (max-width: 499px) {
   .hero__text--desktop {
     display: none;
   }

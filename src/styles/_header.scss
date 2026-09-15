@@ -100,7 +100,7 @@
   background: $on-primary;
 }
 
-@media (max-width: $breakpoint-tablet) {
+@media (max-width: $breakpoint-tablet-lg) {
   .header {
     height: 72px;
   }
@@ -119,7 +119,7 @@
   }
 }
 
-@media (max-width: $breakpoint-mobile) {
+@media (max-width: $breakpoint-mobile-lg) {
   .header {
     height: 64px;
   }
