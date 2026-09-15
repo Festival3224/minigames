@@ -2,34 +2,38 @@ import { createGameCard } from './game-card';
 
 const games = [
   {
-    // title: 'Cozy Cafe',
-    imageSrc: '/src/assets/cozy-cafe-card.png',
+    title: 'Tailside: Cozy Cafe Sim',
+    imageSrc: '/src/assets/tailside-cozy-cafe-sim-card.jpg',
+    rating: '4.8',
+    likes: '35.6K',
     className: 'game-card--edge',
   },
   {
-    title: 'Islanders: New Shores',
-    imageSrc: '/src/assets/islanders-card.jpg',
+    title: 'ISLANDERS: New Shores',
+    imageSrc: '/src/assets/islanders-new-shores-card.jpg',
     rating: '4.9',
     likes: '54.2K',
     className: 'game-card--regular',
   },
   {
     title: 'Vacation Cafe Simulator',
-    imageSrc: '/src/assets/vacation-cafe-card.jpg',
+    imageSrc: '/src/assets/vacation-cafe-simulator-card.jpg',
     rating: '4.8',
     likes: '28.7K',
     className: 'game-card--featured',
   },
   {
     title: 'Winter Burrow',
-    imageSrc: '/src/assets/winter-burrow-card.png',
+    imageSrc: '/src/assets/winter-burrow-card.jpg',
     rating: '4.9',
     likes: '32.4K',
     className: 'game-card--regular',
   },
   {
-    // title: 'Shelve the Potions',
-    imageSrc: '/src/assets/shelve-the-potions-card.png',
+    title: 'Shelve the Potions!',
+    imageSrc: '/src/assets/shelve-the-potions-card.jpg',
+    rating: '4.7',
+    likes: '21.3K',
     className: 'game-card--edge',
   },
 ];

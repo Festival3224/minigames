@@ -15,6 +15,10 @@
 .game-card--edge {
   width: 120px;
   height: 384px;
+  .game-card__title,
+  .game-card__meta {
+    display: none;
+  }
 }
 
 .game-card--regular {
