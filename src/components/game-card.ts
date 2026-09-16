@@ -1,10 +1,10 @@
-type GameCardProps = {
+interface GameCardProperties {
   title?: string;
   imageSrc: string;
   rating?: string;
   likes?: string;
   className?: string;
-};
+}
 
 export function createGameCard({
   title,
@@ -12,7 +12,7 @@ export function createGameCard({
   rating,
   likes,
   className = '',
-}: GameCardProps): HTMLElement {
+}: GameCardProperties): HTMLElement {
   const card = document.createElement('article');
 
   card.className = `game-card ${className}`.trim();
@@ -45,11 +45,11 @@ export function createGameCard({
       : '';
 
   const overlay = /* html */ `
-       <div class="game-card__overlay">
-           ${title ? `<h3 class="game-card__title">${title}</h3>` : ''}
-           ${meta}
-       </div>
-    `;
+    <div class="game-card__overlay">
+      ${title ? `<h3 class="game-card__title">${title}</h3>` : ''}
+      ${meta}
+    </div>
+  `;
 
   card.innerHTML = /* html */ `
     <img class="game-card__image" src="${imageSrc}" alt="" />

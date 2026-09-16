@@ -1,10 +1,8 @@
 import './styles/main.scss';
 import { createHomePage } from './pages/home';
 
-const app = document.querySelector<HTMLDivElement>('#app');
+const app = document.createElement('div');
+app.id = 'app';
 
-if (!app) {
-  throw new Error('App root element not found');
-}
-
-app.appendChild(createHomePage());
+document.body.append(app);
+app.append(createHomePage());

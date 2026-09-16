@@ -79,9 +79,8 @@ export function createNewGames(): HTMLElement {
     throw new Error('New games track not found');
   }
 
-  games.forEach((game) => {
+  for (const game of games) {
     track.append(createGameCard(game));
-  });
-
+  }
   return section;
 }
