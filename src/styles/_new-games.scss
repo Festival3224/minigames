@@ -1,6 +1,11 @@
 @use './tokens' as *;
+@use './breakpoints' as *;
 
 .new-games {
+  width: 100%;
+  max-width: $layout-max-width;
+  margin: 0 auto;
+
   padding: $size-5 $size-15;
 
   display: flex;
@@ -18,9 +23,48 @@
 
 .new-games__viewport {
   overflow: hidden;
+
+  margin-right: -$size-05;
+  padding-right: $size-05;
+  padding-bottom: $size-05;
 }
 
 .new-games__track {
+  width: 100%;
+
   display: flex;
   gap: $size-1;
+}
+
+@media (min-width: 1024px) and (max-width: 1919px) {
+  .new-games {
+    padding-inline: clamp($size-5, 6vw, $size-15);
+  }
+}
+
+@media (max-width: $breakpoint-tablet-lg) {
+  .new-games {
+    padding-inline: clamp($size-2, 5vw, $size-5);
+    padding-block: $size-3;
+    gap: $size-3;
+  }
+
+  .new-games__track {
+    height: 288px;
+    padding-inline: $size-1;
+
+    justify-content: space-between;
+    gap: 0;
+  }
+}
+
+@media (max-width: $breakpoint-mobile-lg) {
+  .new-games {
+    padding: $size-2;
+    gap: $size-2;
+  }
+
+  .new-games__controls {
+    display: none;
+  }
 }

@@ -1,13 +1,15 @@
 @use './tokens' as *;
+@use './breakpoints' as *;
 
 .game-card {
   position: relative;
   overflow: hidden;
-
   flex-shrink: 0;
 
+  // Exact Figma value; no matching token exists.
   border: 2.5px solid $on-primary;
   border-radius: $corner-extra-large;
+  box-shadow: $size-05 $size-05 0 $on-primary;
 
   background: $bg-footer;
 }
@@ -15,6 +17,7 @@
 .game-card--edge {
   width: 120px;
   height: 384px;
+
   .game-card__title,
   .game-card__meta {
     display: none;
@@ -34,7 +37,6 @@
 .game-card__image {
   width: 100%;
   height: 100%;
-
   object-fit: cover;
 }
 
@@ -63,16 +65,14 @@
 .game-card__title {
   margin: 0;
 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
   color: $white;
   font-size: $body-large;
   font-weight: $font-bold;
   line-height: 1;
-}
-
-.game-card__meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 .game-card__meta {
@@ -101,4 +101,85 @@
 .game-card__likes-icon {
   width: 24px;
   height: 24px;
+}
+
+@media (min-width: 1024px) and (max-width: 1919px) {
+  .game-card {
+    height: clamp(280px, calc(25vw + $size-3), 384px);
+  }
+
+  .game-card:nth-child(1),
+  .game-card:nth-child(5) {
+    width: clamp(72px, 6vw, 120px);
+  }
+
+  .game-card:nth-child(2),
+  .game-card:nth-child(4) {
+    width: clamp(160px, 15vw, 288px);
+  }
+
+  .game-card:nth-child(3) {
+    flex: 1 1 auto;
+    min-width: 380px;
+    max-width: 816px;
+  }
+}
+
+@media (max-width: $breakpoint-tablet-lg) {
+  .game-card:nth-child(1),
+  .game-card:nth-child(5) {
+    display: none;
+  }
+
+  .game-card:nth-child(2),
+  .game-card:nth-child(4) {
+    height: 280px;
+  }
+
+  .game-card:nth-child(3) {
+    height: 280px;
+  }
+
+  .game-card:nth-child(2) .game-card__title,
+  .game-card:nth-child(2) .game-card__meta,
+  .game-card:nth-child(4) .game-card__title,
+  .game-card:nth-child(4) .game-card__meta {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) and (max-width: $breakpoint-tablet-lg) {
+  .game-card:nth-child(2),
+  .game-card:nth-child(4) {
+    width: clamp(105px, 13vw, 140px);
+  }
+
+  .game-card:nth-child(3) {
+    width: clamp(448px, 56vw, 600px);
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .game-card:nth-child(2),
+  .game-card:nth-child(4) {
+    width: clamp(56px, calc(12.47vw + 9.24px), 105px);
+  }
+
+  .game-card:nth-child(3) {
+    width: clamp(218px, calc(58.52vw - 1.45px), 448px);
+  }
+
+  .game-card:nth-child(2),
+  .game-card:nth-child(3),
+  .game-card:nth-child(4) {
+    height: clamp(200px, calc(20.36vw + 123.65px), 280px);
+  }
+}
+
+@media (max-width: $breakpoint-mobile-lg) {
+  .game-card:nth-child(2),
+  .game-card:nth-child(3),
+  .game-card:nth-child(4) {
+    border-radius: $corner-large;
+  }
 }
