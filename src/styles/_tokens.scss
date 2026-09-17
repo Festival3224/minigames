@@ -28,6 +28,11 @@ $like: #ff4b4b;
 $error: #b3261e;
 $price-free: #0b8a8f;
 
+$avatar-random-2: hsla(156, 52%, 76%, 1);
+$avatar-random-3: hsla(205, 100%, 87%, 1);
+$avatar-random-4: hsla(300, 100%, 89%, 1);
+$avatar-random-5: hsla(265, 52%, 92%, 1);
+
 // Borders
 $outline: #e5e7eb;
 $outline-variant: #d2d2d2;
@@ -83,9 +88,13 @@ $label-large: 14px;
 $label-medium: 12px;
 $label-small: 10px;
 
+$font-primary: 'Inter', sans-serif;
+$font-table: 'Roboto', sans-serif;
+
 // Font weights
 $font-regular: 400;
 $font-medium: 500;
+$font-semibold: 600;
 $font-bold: 700;
 $font-extra-bold: 800;
 

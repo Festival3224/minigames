@@ -53,7 +53,7 @@ export function createNewGames(): HTMLElement {
           type="button"
           aria-label="Previous games"
         >
-          ←
+          <img src="/src/assets/icons/arrow_back.svg" alt="" aria-hidden="true" />
         </button>
 
         <button
@@ -61,7 +61,7 @@ export function createNewGames(): HTMLElement {
           type="button"
           aria-label="Next games"
         >
-          →
+          <img src="/src/assets/icons/arrow_forward.svg" alt="" aria-hidden="true" />
         </button>
       </div>
     </div>

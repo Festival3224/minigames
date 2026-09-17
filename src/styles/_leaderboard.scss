@@ -1,0 +1,163 @@
+@use './tokens' as *;
+@use './breakpoints' as *;
+
+.leaderboard {
+  width: 100%;
+  max-width: $layout-max-width;
+  margin: 0 auto;
+  padding: $size-5 $size-15;
+
+  display: flex;
+  flex-direction: column;
+  gap: $size-5;
+  background: $bg;
+}
+
+.leaderboard__title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: $size-1;
+  color: $on-primary;
+  font-size: $headline-large;
+  font-weight: $font-bold;
+  line-height: 1;
+
+  &::before {
+    width: $size-1;
+    height: $size-4;
+    flex-shrink: 0;
+
+    content: '';
+
+    background: $primary;
+    border: 1.5px solid $on-primary;
+    border-radius: $corner-extra-small;
+  }
+}
+
+.leaderboard__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+
+  background: $white;
+  font-family: $font-table;
+  font-weight: $font-semibold;
+
+  border: 2.5px solid $on-primary; // Exact Figma value; no matching token exists.
+  border-radius: $corner-large;
+  box-shadow: 6px 6px 0 $on-primary;
+}
+
+.leaderboard__table thead {
+  background: $tertiary;
+  color: $white;
+}
+
+.leaderboard__table th {
+  padding: $size-3;
+  text-align: center;
+  font-size: $body-medium;
+  font-weight: $font-extra-bold;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.leaderboard__table th:first-child {
+  width: 80px;
+}
+
+.leaderboard__table td {
+  padding: $size-2 $size-3;
+  border-bottom: 1px solid $outline;
+  color: $on-primary;
+  font-size: $body-medium;
+  text-align: center;
+  line-height: 1;
+}
+
+.leaderboard__table tbody tr:nth-child(odd) {
+  background: $bg;
+}
+
+.leaderboard__table tbody tr:nth-child(even) {
+  background: $white;
+}
+
+.leaderboard__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.leaderboard__table td.leaderboard__rank {
+  width: 80px;
+  font-weight: $font-extra-bold;
+}
+
+.leaderboard__table tbody tr:first-child .leaderboard__rank {
+  color: $primary;
+}
+
+.leaderboard__player {
+  display: flex;
+  align-items: center;
+  gap: calc($size-05 + $size-1);
+  text-align: left;
+}
+
+.leaderboard__avatar {
+  width: $size-5;
+  height: $size-5;
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid $on-primary;
+  border-radius: $corner-full;
+
+  font-size: $label-medium;
+  font-weight: $font-medium;
+}
+
+.leaderboard__table tbody tr:nth-child(1) .leaderboard__avatar {
+  background: $primary;
+}
+
+.leaderboard__table tbody tr:nth-child(2) .leaderboard__avatar {
+  background: $avatar-random-2;
+}
+
+.leaderboard__table tbody tr:nth-child(3) .leaderboard__avatar {
+  background: $avatar-random-3;
+}
+
+.leaderboard__table tbody tr:nth-child(4) .leaderboard__avatar {
+  background: $avatar-random-4;
+}
+
+.leaderboard__table tbody tr:nth-child(5) .leaderboard__avatar {
+  background: $avatar-random-5;
+}
+
+.leaderboard__player-name {
+  color: $on-primary;
+  font-size: $body-medium;
+  font-weight: $font-bold;
+  line-height: 1;
+}
+
+.leaderboard__game {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding-inline: $size-1;
+
+  border: 1px solid $on-primary;
+  border-radius: $corner-full;
+
+  font-size: $label-medium;
+  white-space: nowrap;
+}
