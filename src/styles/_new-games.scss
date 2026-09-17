@@ -67,8 +67,6 @@
 }
 
 .new-games__control {
-  /* width: $size-6;
-  height: $size-6; */
   padding: 0;
 
   display: flex;
@@ -99,11 +97,6 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
-
-/* .new-games__control img {
-  width: $size-3;
-  height: $size-3;
-} */
 
 .new-games {
   width: 100%;
@@ -154,9 +147,9 @@
   }
 
   .new-games__track {
-    height: 288px;
-    padding-inline: $size-1;
+    height: clamp(200px, calc(20.36vw + 123.65px), 288px);
 
+    padding-inline: $size-1;
     justify-content: space-between;
     gap: 0;
   }

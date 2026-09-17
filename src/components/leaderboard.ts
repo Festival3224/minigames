@@ -81,9 +81,22 @@ export function createLeaderboard(): HTMLElement {
             <span class="leaderboard__avatar">${getPlayerInitials(player.playerName)}</span>
             <span class="leaderboard__player-name">${player.playerName}</span>
           </td>
-          <td>${player.gamesPlayed}</td>
-          <td>${player.totalScore.toLocaleString('en-US')}</td>
-          <td>🔥 ${player.streakDays} days</td>
+          <td class="leaderboard__games">${player.gamesPlayed}</td>
+
+          <td class="leaderboard__score">
+            <span class="leaderboard__score-desktop">
+                ${player.totalScore.toLocaleString('en-US')}
+            </span>
+            <span class="leaderboard__score-mobile">
+                ${(player.totalScore / 1000).toFixed(1)}K
+             </span>
+          </td>
+
+          <td class="leaderboard__streak">
+            🔥
+            <span class="leaderboard__streak-desktop">${player.streakDays} days</span>
+            <span class="leaderboard__streak-tablet">${player.streakDays}d</span>
+          </td>
           <td>
             <span class="leaderboard__game">${player.favoriteGameName}</span>
           </td>
@@ -93,7 +106,10 @@ export function createLeaderboard(): HTMLElement {
     .join('');
 
   section.innerHTML = /* html */ `
-    <h2 class="leaderboard__title">Top Players This Week</h2>
+    <h2 class="leaderboard__title">
+        <span class="leaderboard__title-desktop">Top Players This Week</span>
+        <span class="leaderboard__title-mobile">Top Players</span>
+    </h2>
 
     <div class="leaderboard__table-wrapper">
       <table class="leaderboard__table">
@@ -101,8 +117,14 @@ export function createLeaderboard(): HTMLElement {
           <tr>
             <th>Rank</th>
             <th>Player</th>
-            <th>Games Played</th>
-            <th>Total Score</th>
+            <th class="leaderboard__games">
+                <span class="leaderboard__heading-desktop">Games Played</span>
+                <span class="leaderboard__heading-tablet">Games</span>
+            </th>
+            <th>
+                <span class="leaderboard__heading-desktop">Total Score</span>
+                <span class="leaderboard__heading-tablet">Score</span>
+            </th>
             <th>Streak</th>
             <th>Favorite Game</th>
           </tr>
