@@ -8,7 +8,7 @@ export function createHeader(): HTMLElement {
       <a class="header__logo" href="#" aria-label="MiniGames home">
         <img
             class="header__logo-icon"
-            src="/src/assets/logo-icon.svg"
+            src="/src/assets/icons/logo-icon.svg"
             alt=""
             aria-hidden="true"
         />
