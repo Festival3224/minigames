@@ -1,37 +1,46 @@
+import tailsideCafe from '../assets/tailside-cozy-cafe-sim-card.jpg';
+import islanders from '../assets/islanders-new-shores-card.jpg';
+import vacationCafe from '../assets/vacation-cafe-simulator-card.jpg';
+import winterBurrow from '../assets/winter-burrow-card.jpg';
+import shelvePotions from '../assets/shelve-the-potions-card.jpg';
+
+import arrowBack from '../assets/icons/arrow_back.svg';
+import arrowForward from '../assets/icons/arrow_forward.svg';
+
 import { createGameCard } from './game-card';
 
 const games = [
   {
     title: 'Tailside: Cozy Cafe Sim',
-    imageSrc: '/src/assets/tailside-cozy-cafe-sim-card.jpg',
+    imageSrc: tailsideCafe,
     rating: '4.8',
     likes: '35.6K',
     className: 'game-card--edge',
   },
   {
     title: 'ISLANDERS: New Shores',
-    imageSrc: '/src/assets/islanders-new-shores-card.jpg',
+    imageSrc: islanders,
     rating: '4.9',
     likes: '54.2K',
     className: 'game-card--regular',
   },
   {
     title: 'Vacation Cafe Simulator',
-    imageSrc: '/src/assets/vacation-cafe-simulator-card.jpg',
+    imageSrc: vacationCafe,
     rating: '4.8',
     likes: '28.7K',
     className: 'game-card--featured',
   },
   {
     title: 'Winter Burrow',
-    imageSrc: '/src/assets/winter-burrow-card.jpg',
+    imageSrc: winterBurrow,
     rating: '4.9',
     likes: '32.4K',
     className: 'game-card--regular',
   },
   {
     title: 'Shelve the Potions!',
-    imageSrc: '/src/assets/shelve-the-potions-card.jpg',
+    imageSrc: shelvePotions,
     rating: '4.7',
     likes: '21.3K',
     className: 'game-card--edge',
@@ -53,7 +62,7 @@ export function createNewGames(): HTMLElement {
           type="button"
           aria-label="Previous games"
         >
-          <img src="/src/assets/icons/arrow_back.svg" alt="" aria-hidden="true" />
+          <img src="${arrowBack}" alt="" aria-hidden="true" />
         </button>
 
         <button
@@ -61,7 +70,7 @@ export function createNewGames(): HTMLElement {
           type="button"
           aria-label="Next games"
         >
-          <img src="/src/assets/icons/arrow_forward.svg" alt="" aria-hidden="true" />
+          <img src="${arrowForward}" alt="" aria-hidden="true" />
         </button>
       </div>
     </div>

@@ -1,3 +1,6 @@
+import starIcon from '../assets/icons/star.svg';
+import heartIcon from '../assets/icons/heart.svg';
+
 interface GameCardProperties {
   title?: string;
   imageSrc: string;
@@ -24,7 +27,7 @@ export function createGameCard({
           <span class="game-card__rating">
             <img
               class="game-card__rating-icon"
-              src="/src/assets/icons/star.svg"
+              src="${starIcon}"
               alt=""
               aria-hidden="true"
             />
@@ -34,7 +37,7 @@ export function createGameCard({
           <span class="game-card__likes">
             <img
               class="game-card__likes-icon"
-              src="/src/assets/icons/heart.svg"
+              src="${heartIcon}"
               alt=""
               aria-hidden="true"
             />

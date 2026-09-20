@@ -1,4 +1,5 @@
 import { createAuthDialog } from './auth-dialog';
+import logoIcon from '../assets/icons/logo-icon.svg';
 
 export function createHeader(): HTMLElement {
   const header = document.createElement('header');
@@ -10,7 +11,7 @@ export function createHeader(): HTMLElement {
         <a class="header__logo" href="#" aria-label="MiniGames home">
           <img
               class="header__logo-icon"
-              src="/src/assets/icons/logo-icon.svg"
+              src="${logoIcon}"
               alt=""
               aria-hidden="true"
           />
@@ -54,7 +55,7 @@ export function createHeader(): HTMLElement {
           <a class="header__mobile-logo" href="#" aria-label="MiniGames home">
             <img
               class="header__mobile-logo-icon"
-              src="/src/assets/icons/logo-icon.svg"
+              src="${logoIcon}"
               alt=""
               aria-hidden="true"
             />
