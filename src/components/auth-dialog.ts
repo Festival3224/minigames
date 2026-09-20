@@ -11,6 +11,7 @@ export function createAuthDialog(): HTMLElement {
             <button
               class="auth-dialog__tab auth-dialog__tab--active"
               type="button"
+              data-auth-tab="login"
             >
               Login
             </button>
@@ -18,12 +19,13 @@ export function createAuthDialog(): HTMLElement {
             <button
               class="auth-dialog__tab"
               type="button"
+              data-auth-tab="register"
             >
               Register
             </button>
           </div>
 
-    <!-- <div class="auth-dialog__content"> -->
+    <div class="auth-dialog__login">
       <div class="auth-dialog__heading">
         <h2 class="auth-dialog__title">Welcome Back!</h2>
         <p class="auth-dialog__subtitle">
@@ -121,9 +123,34 @@ export function createAuthDialog(): HTMLElement {
         </button>
       </p>
 
+      </div>
     </div>
-        <!-- </div> -->
+    <div class="auth-dialog__register" hidden>
+        <!-- здесь будет Registr диалог -->
+    </div>
   `;
+
+  const loginView = overlay.querySelector<HTMLElement>('.auth-dialog__login');
+  const registerView = overlay.querySelector<HTMLElement>('.auth-dialog__register');
+
+  const loginTab = overlay.querySelector<HTMLButtonElement>('[data-auth-tab="login"]');
+  const registerTab = overlay.querySelector<HTMLButtonElement>('[data-auth-tab="register"]');
+
+  loginTab?.addEventListener('click', () => {
+    loginView?.removeAttribute('hidden');
+    registerView?.setAttribute('hidden', '');
+
+    loginTab.classList.add('auth-dialog__tab--active');
+    registerTab?.classList.remove('auth-dialog__tab--active');
+  });
+
+  registerTab?.addEventListener('click', () => {
+    registerView?.removeAttribute('hidden');
+    loginView?.setAttribute('hidden', '');
+
+    registerTab.classList.add('auth-dialog__tab--active');
+    loginTab?.classList.remove('auth-dialog__tab--active');
+  });
 
   function closeDialog(): void {
     overlay.remove();
