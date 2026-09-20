@@ -12,10 +12,13 @@
 
   opacity: 0;
   transition: opacity 320ms ease;
+
+  overflow-y: auto;
+  padding: $size-05;
 }
 
 .auth-dialog {
-  width: 420px;
+  width: min(420px, 100%);
   padding: $size-4;
   display: flex;
   flex-direction: column;
@@ -58,36 +61,41 @@
   padding: $btn-small-y $btn-small-x;
 
   border: 0;
+  border-radius: $corner-small;
   background: transparent;
 
   font-family: $font-primary;
-  font-size: $label-large;
-  font-weight: $font-medium;
+  font-size: $label-extra-large;
+  font-weight: $font-bold;
   line-height: 1;
   color: $on-bg;
   cursor: pointer;
+
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.auth-dialog__tab:not(.auth-dialog__tab--active):hover {
+  background: $surface;
+  color: $on-primary;
 }
 
 .auth-dialog__tab--active {
   background: $on-primary;
   color: $white;
+  border-radius: $corner-small;
 }
 
 .auth-dialog__form {
   display: contents;
 }
 
-/* .auth-dialog__login,
-.auth-dialog__register {
-  display: contents;
-} */
-
 .auth-dialog__login,
 .auth-dialog__register {
   display: flex;
   flex-direction: column;
   gap: $size-3;
-
   animation: auth-view-enter 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -139,7 +147,6 @@
 .auth-dialog__divider-line {
   flex: 1;
   height: 1px;
-
   background: $outline-variant;
 }
 
@@ -152,12 +159,10 @@
 
 .auth-dialog__title {
   margin: 0;
-
   font-family: $font-primary;
   font-size: $display-small;
   font-weight: $font-bold;
   line-height: 1;
-
   color: $on-primary;
 }
 
@@ -190,16 +195,31 @@
 .auth-dialog__input-wrapper {
   width: 100%;
   height: 48px;
-
   display: flex;
   align-items: center;
   gap: $size-2;
-
   padding-inline: $size-2;
-
   background: $white;
   border: 2px solid $on-primary;
   border-radius: $corner-small;
+
+  /* transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease; */
+
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.auth-dialog__input-wrapper:focus-within {
+  background: $surface-low;
+  border-color: $on-primary;
+  box-shadow: 0 0 0 2px rgba($on-primary, 0.15); // ????
+}
+
+.auth-dialog__input-wrapper:focus-within .auth-dialog__input {
+  color: $on-primary;
 }
 
 .auth-dialog__input {
@@ -214,7 +234,9 @@
   outline: 0;
 
   background: transparent;
-  color: $on-primary;
+  color: $on-bg;
+
+  transition: color 160ms ease;
 
   font-family: $font-primary;
   font-size: $label-medium;
@@ -255,17 +277,25 @@
 .auth-dialog__forgot {
   padding: 0;
   align-self: flex-end;
-
   border: 0;
   background: transparent;
-
   font-family: $font-primary;
   font-size: $label-large;
   font-weight: $font-medium;
-
   color: $tertiary;
-
   cursor: pointer;
+}
+
+.auth-dialog__forgot,
+.auth-dialog__switch-button {
+  transition:
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.auth-dialog__forgot:hover,
+.auth-dialog__switch-button:hover {
+  opacity: 0.75;
 }
 
 .auth-dialog__submit,
@@ -280,8 +310,22 @@
   font-size: $label-large;
   font-weight: $font-bold;
   line-height: 1;
-
   cursor: pointer;
+
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.auth-dialog__submit:hover,
+.auth-dialog__google:hover {
+  transform: translateY(-1px);
+}
+
+.auth-dialog__submit:active,
+.auth-dialog__google:active {
+  transform: translateY(1px);
 }
 
 .auth-dialog__submit {
@@ -290,6 +334,10 @@
   background: $primary;
   color: $on-primary;
   box-shadow: 0 4px 0 0 $on-primary;
+}
+
+.auth-dialog__submit:hover {
+  background: $primary-high;
 }
 
 .auth-dialog__google {
@@ -301,23 +349,19 @@
 
 .auth-dialog__divider-text {
   flex-shrink: 0;
-
   font-family: $font-primary;
   font-size: $label-small;
   font-weight: $font-medium;
   line-height: 1;
-
   color: $on-bg;
 }
 
 .auth-dialog__switch {
   margin: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
   gap: $size-05;
-
   font-family: $font-primary;
   font-size: $label-medium;
   line-height: 1.4;
@@ -326,10 +370,8 @@
 
 .auth-dialog__switch-button {
   padding: 0;
-
   border: 0;
   background: transparent;
-
   font-size: $label-large;
   font-weight: $font-bold;
   color: $on-primary;

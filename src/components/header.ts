@@ -95,6 +95,10 @@ export function createHeader(): HTMLElement {
 
   const loginButton = header.querySelector<HTMLButtonElement>('.header__login');
 
+  const mobileLoginButton = header.querySelector<HTMLButtonElement>('.header__mobile-login');
+
+  const mobileSignupButton = header.querySelector<HTMLButtonElement>('.header__mobile-signup');
+
   loginButton?.addEventListener('click', () => {
     const existingDialog = document.querySelector('.auth-overlay');
 
@@ -124,6 +128,36 @@ export function createHeader(): HTMLElement {
 
     document.body.classList.remove('menu-open');
   }
+
+  mobileLoginButton?.addEventListener('click', () => {
+    closeMenu();
+
+    const existingDialog = document.querySelector('.auth-overlay');
+
+    if (existingDialog) {
+      return;
+    }
+
+    document.body.append(createAuthDialog());
+  });
+
+  mobileSignupButton?.addEventListener('click', () => {
+    closeMenu();
+
+    const existingDialog = document.querySelector('.auth-overlay');
+
+    if (existingDialog) {
+      return;
+    }
+
+    const dialog = createAuthDialog();
+
+    document.body.append(dialog);
+
+    const registerTab = dialog.querySelector<HTMLButtonElement>('[data-auth-tab="register"]');
+
+    registerTab?.click();
+  });
 
   menuButton?.addEventListener('click', openMenu);
   closeButton?.addEventListener('click', closeMenu);

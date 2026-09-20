@@ -81,7 +81,7 @@ export function createAuthDialog(): HTMLElement {
                         aria-label="Show password"
                     >
                     <span class="material-symbols-outlined" aria-hidden="true">
-                        visibility
+                        visibility_off
                     </span>
                     </button>
                   </div>
@@ -268,6 +268,39 @@ export function createAuthDialog(): HTMLElement {
   const registerTab = overlay.querySelector<HTMLButtonElement>('[data-auth-tab="register"]');
 
   const switchButtons = overlay.querySelectorAll<HTMLButtonElement>('.auth-dialog__switch-button');
+
+  const passwordToggle = overlay.querySelector<HTMLButtonElement>('.auth-dialog__password-toggle');
+
+  const passwordInput = passwordToggle
+    ?.closest('.auth-dialog__input-wrapper')
+    ?.querySelector<HTMLInputElement>('.auth-dialog__input');
+
+  const forms = overlay.querySelectorAll<HTMLFormElement>('.auth-dialog__form');
+
+  passwordToggle?.addEventListener('click', () => {
+    if (!passwordInput) {
+      return;
+    }
+
+    const isPassword = passwordInput.type === 'password';
+
+    passwordInput.type = isPassword ? 'text' : 'password';
+
+    const icon = passwordToggle.querySelector<HTMLElement>('.material-symbols-outlined');
+
+    if (icon) {
+      icon.textContent = isPassword ? 'visibility' : 'visibility_off';
+    }
+
+    passwordToggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+  });
+
+  for (const form of forms) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+    });
+  }
+
   const dialog = overlay.querySelector<HTMLElement>('.auth-dialog');
 
   function animateDialogHeight(updateView: () => void): void {
