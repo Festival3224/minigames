@@ -118,7 +118,11 @@ export function createAuthDialog(): HTMLElement {
 
           <p class="auth-dialog__switch">
             Don’t have an account?
-            <button class="auth-dialog__switch-button" type="button">
+            <button
+               class="auth-dialog__switch-button"
+               type="button"
+               data-auth-switch="register"
+            >
               Register
             </button>
           </p>
@@ -245,7 +249,11 @@ export function createAuthDialog(): HTMLElement {
 
       <p class="auth-dialog__switch">
         Already have an account?
-        <button class="auth-dialog__switch-button" type="button">
+        <button
+          class="auth-dialog__switch-button"
+          type="button"
+          data-auth-switch="login"
+        >
           Login
         </button>
       </p>
@@ -259,21 +267,26 @@ export function createAuthDialog(): HTMLElement {
   const loginTab = overlay.querySelector<HTMLButtonElement>('[data-auth-tab="login"]');
   const registerTab = overlay.querySelector<HTMLButtonElement>('[data-auth-tab="register"]');
 
-  loginTab?.addEventListener('click', () => {
+  const switchButtons = overlay.querySelectorAll<HTMLButtonElement>('.auth-dialog__switch-button');
+
+  function showLogin(): void {
     loginView?.removeAttribute('hidden');
     registerView?.setAttribute('hidden', '');
 
-    loginTab.classList.add('auth-dialog__tab--active');
+    loginTab?.classList.add('auth-dialog__tab--active');
     registerTab?.classList.remove('auth-dialog__tab--active');
-  });
+  }
 
-  registerTab?.addEventListener('click', () => {
+  function showRegister(): void {
     registerView?.removeAttribute('hidden');
     loginView?.setAttribute('hidden', '');
 
-    registerTab.classList.add('auth-dialog__tab--active');
+    registerTab?.classList.add('auth-dialog__tab--active');
     loginTab?.classList.remove('auth-dialog__tab--active');
-  });
+  }
+
+  loginTab?.addEventListener('click', showLogin);
+  registerTab?.addEventListener('click', showRegister);
 
   function closeDialog(): void {
     overlay.remove();
@@ -291,6 +304,16 @@ export function createAuthDialog(): HTMLElement {
       closeDialog();
     }
   });
+
+  for (const button of switchButtons) {
+    button.addEventListener('click', () => {
+      if (button.dataset.authSwitch === 'register') {
+        showRegister();
+      } else {
+        showLogin();
+      }
+    });
+  }
 
   document.addEventListener('keydown', handleEscape);
 
