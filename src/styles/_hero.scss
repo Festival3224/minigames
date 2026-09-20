@@ -106,19 +106,26 @@
 
   background: $primary;
   color: $on-primary;
-
   border: 2px solid $on-primary;
   border-radius: $corner-small;
-
   font-size: clamp($label-medium, 0.94vw, $body-large);
-
   font-weight: $font-bold;
   line-height: 1;
-
   cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
 }
 
-/* Только контент действительно меняется на mobile */
+.hero__button:hover {
+  background: $primary-high;
+}
+
+.hero__button:active {
+  transform: translateY(1px);
+}
+
 @media (max-width: 499px) {
   .hero__text--desktop {
     display: none;

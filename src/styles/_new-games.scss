@@ -39,6 +39,23 @@
   border: 2px solid $on-primary;
   border-radius: $corner-full;
   cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.new-games__control:hover {
+  background: $surface;
+}
+
+.new-games__control--next:hover {
+  background: $primary-high;
+}
+
+.new-games__control:active {
+  transform: translateY(1px);
 }
 
 @media (max-width: $breakpoint-tablet-lg) {

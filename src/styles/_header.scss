@@ -333,7 +333,6 @@
   .header__signup {
     height: 44px;
     padding-inline: $btn-medium-x; // 20px
-    // padding: $btn-medium-y $btn-medium-x;
   }
 }
 
@@ -353,4 +352,74 @@
   .header__signup {
     display: none;
   }
+}
+
+.header__nav-link,
+.header__login,
+.header__signup,
+.header__menu,
+.header__mobile-link,
+.header__mobile-login,
+.header__mobile-signup {
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.header__mobile-close {
+  background: $bg-footer-low;
+  border: 2px solid transparent;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.header__nav-link:hover,
+.header__mobile-link:hover {
+  color: $on-primary;
+}
+
+.header__login:hover,
+.header__mobile-login:hover {
+  background: $surface;
+  color: $on-primary;
+}
+
+.header__signup:hover,
+.header__mobile-signup:hover {
+  background: $primary-high;
+}
+
+.header__menu:hover {
+  background: $surface;
+}
+
+.header__mobile-close:hover {
+  background: $bg-footer-lowest;
+  border-color: $primary;
+}
+
+.header__login:active,
+.header__signup:active,
+.header__mobile-login:active,
+.header__mobile-signup:active,
+.header__menu:active,
+.header__mobile-close:active {
+  transform: translateY(1px);
+}
+
+.header__nav-link:focus-visible,
+.header__login:focus-visible,
+.header__signup:focus-visible,
+.header__menu:focus-visible,
+.header__mobile-link:focus-visible,
+.header__mobile-login:focus-visible,
+.header__mobile-signup:focus-visible,
+.header__mobile-close:focus-visible {
+  outline: 2px solid $tertiary;
+  outline-offset: 3px;
 }
