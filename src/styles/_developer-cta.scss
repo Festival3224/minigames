@@ -1,0 +1,240 @@
+@use './tokens' as *;
+@use './breakpoints' as *;
+
+.developer-cta {
+  width: 100%;
+
+  padding-block: $size-2; // 16px
+  padding-inline: clamp($size-2, calc(6.11vw - 6.9px), $size-5);
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: $size-2;
+
+  background: $bg;
+  border-bottom: 1px solid $outline;
+}
+
+.developer-cta__image {
+  width: 100%;
+  height: clamp(227px, calc(18.58vw + 157.34px), 300px);
+
+  object-fit: cover;
+  object-position: center 53%;
+
+  border-radius: $corner-extra-large;
+}
+
+.developer-cta__card {
+  width: 100%;
+  height: clamp(256px, calc(324.4px - 8.91vw), 291px);
+
+  padding: clamp($size-3, calc(2.04vw + 16.36px), $size-4);
+
+  display: flex;
+  flex-direction: column;
+  gap: $size-2;
+
+  background: $white;
+  border: 2px solid $on-primary;
+  border-radius: $corner-extra-large;
+
+  box-shadow:
+    0 14px 30px -10px hsla(0, 0%, 0%, 0.08),
+    0 2px 8px -4px hsla(0, 0%, 0%, 0.04);
+}
+
+.developer-cta__title {
+  margin: 0;
+
+  color: $on-primary;
+
+  font-size: $headline-medium; // 24px
+  font-weight: $font-bold;
+  line-height: 1.2;
+}
+
+.developer-cta__text {
+  margin: 0;
+
+  color: $on-bg;
+
+  font-size: $label-medium; // 12px
+  font-weight: $font-regular;
+  line-height: 1.5;
+}
+
+.developer-cta__button {
+  width: fit-content;
+
+  padding: $size-1 $size-2;
+
+  display: inline-flex;
+  align-items: center;
+  gap: $size-1;
+
+  background: $primary;
+  color: $on-primary;
+
+  border: 2px solid $on-primary;
+  border-radius: $corner-medium;
+
+  font-family: $font-table;
+  font-size: $label-medium; // 12px
+  font-weight: $font-bold;
+  line-height: 1;
+
+  cursor: pointer;
+
+  box-shadow: 0 10px 20px -10px hsla(0, 0%, 0%, 0.1);
+}
+
+.developer-cta__button-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.developer-cta__contact {
+  margin: 0;
+
+  color: $on-bg-low;
+
+  font-size: $label-medium; // 12px
+  font-weight: $font-regular;
+  line-height: 1;
+}
+
+/* 500–767px */
+
+@media (min-width: 500px) {
+  .developer-cta {
+    padding-top: clamp($size-2, calc(1px + 3vw), $size-3);
+
+    gap: clamp($size-2, calc(1px + 3vw), $size-3);
+  }
+
+  .developer-cta__text,
+  .developer-cta__button {
+    font-size: clamp($label-medium, calc(8.25px + 0.75vw), $body-small);
+  }
+
+  .developer-cta__button {
+    padding-block: clamp($size-1, calc(4.25px + 0.75vw), 10px);
+
+    padding-inline: clamp($size-2, calc(8.51px + 1.5vw), 20px);
+  }
+}
+
+/* Tablet: 768–1023px */
+
+@media (min-width: $breakpoint-tablet) {
+  .developer-cta {
+    padding-block: $size-3;
+    padding-inline: clamp($size-5, calc(8.93vw - 51.4px), $size-15);
+
+    gap: $size-3;
+  }
+
+  .developer-cta__image {
+    height: clamp(300px, calc(70.59vw - 242px), 480px);
+  }
+
+  .developer-cta__card {
+    height: auto;
+    aspect-ratio: 688 / 256;
+
+    padding: $size-4;
+  }
+
+  .developer-cta__text,
+  .developer-cta__button {
+    font-size: $body-small; // 14px
+  }
+
+  .developer-cta__button {
+    padding: 10px 20px;
+  }
+}
+
+/* Desktop: 1024–1439px */
+
+@media (min-width: 1024px) {
+  .developer-cta {
+    padding-block: clamp($size-3, calc(-15.48px + 3.855vw), $size-5);
+
+    flex-direction: row;
+    align-items: center;
+
+    gap: clamp($size-3, calc(-15.48px + 3.855vw), $size-5);
+  }
+
+  .developer-cta__image {
+    width: 40.5%;
+    height: auto;
+    aspect-ratio: 680 / 480;
+
+    flex-shrink: 0;
+  }
+
+  .developer-cta__card {
+    width: auto;
+    height: auto;
+    aspect-ratio: auto;
+
+    flex: 1;
+    min-width: 0;
+
+    padding: $size-5;
+    gap: $size-3;
+  }
+
+  .developer-cta__title {
+    font-size: clamp($headline-medium, calc(14.86px + 0.893vw), $headline-large);
+  }
+
+  .developer-cta__text,
+  .developer-cta__button {
+    font-size: clamp($body-small, calc(4.15px + 0.96vw), $body-large);
+  }
+
+  .developer-cta__button {
+    padding-block: clamp(10px, calc(-4.8px + 1.446vw), $btn-large-y);
+
+    padding-inline: clamp(20px, calc(10.13px + 0.964vw), $btn-large-x);
+  }
+
+  .developer-cta__button-icon {
+    width: clamp(16px, calc(-3.75px + 1.93vw), $size-3);
+
+    height: clamp(16px, calc(-3.75px + 1.93vw), $size-3);
+  }
+}
+
+/* Large desktop: 1440px+ */
+
+@media (min-width: 1440px) {
+  .developer-cta {
+    padding-block: $size-5;
+    gap: $size-5;
+  }
+
+  .developer-cta__text,
+  .developer-cta__button {
+    font-size: $body-large; // 18px
+  }
+
+  .developer-cta__button {
+    padding: $btn-large-y $btn-large-x;
+  }
+
+  .developer-cta__button-icon {
+    width: $size-3;
+    height: $size-3;
+  }
+
+  .developer-cta__contact {
+    font-size: $body-small; // 14px
+  }
+}

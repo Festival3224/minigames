@@ -1,0 +1,130 @@
+@use './tokens' as *;
+@use './breakpoints' as *;
+
+.hero {
+  position: relative;
+  min-height: calc(281.39px + 13.23vw);
+  overflow: hidden;
+
+  border-bottom: 2px solid $on-primary;
+}
+
+.hero::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 118%;
+  height: 118%;
+
+  background-image: url('../assets/hero-section.png');
+  background-position: center;
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+
+  opacity: 0.8;
+
+  transform: translate(-50%, -50%);
+
+  content: '';
+}
+
+.hero::after {
+  position: absolute;
+  inset: 0;
+
+  background: hsla(246, 36%, 17%, 0.65);
+
+  content: '';
+}
+
+.hero__container {
+  position: relative;
+  z-index: 1;
+
+  min-height: calc(281.39px + 13.23vw);
+
+  padding-block: clamp($size-8, 5.8vw, $size-14);
+  padding-inline: clamp($size-2, 6.25vw, $size-15);
+
+  display: flex;
+  align-items: center;
+}
+
+.hero__card {
+  width: clamp(343px, 33.33vw, 640px);
+  max-width: 100%;
+
+  padding: clamp($size-3, 2.5vw, $size-6);
+
+  display: flex;
+  flex-direction: column;
+
+  gap: clamp($size-2, 1.25vw, $size-3);
+
+  background: $bg;
+
+  border: clamp(2px, 0.16vw, 3px) solid $on-primary;
+
+  border-radius: clamp($corner-medium, 1.25vw, $corner-extra-large);
+
+  box-shadow: clamp(4px, 0.42vw, 8px) clamp(4px, 0.42vw, 8px) 0 $on-primary;
+}
+
+.hero__title {
+  margin: 0;
+
+  color: $on-primary;
+
+  font-size: clamp($display-small, 2.92vw, $display-large);
+
+  font-weight: $font-bold;
+  line-height: clamp(1.1, 1.16, 1.2);
+}
+
+.hero__text {
+  margin: 0;
+
+  color: $on-bg;
+
+  font-size: clamp($label-medium, 0.94vw, $body-large);
+
+  font-weight: $font-medium;
+  line-height: clamp(1.4, 1.45, 1.5);
+}
+
+.hero__text--mobile {
+  display: none;
+}
+
+.hero__button {
+  align-self: flex-start;
+
+  padding-block: clamp($btn-small-y, 0.83vw, $btn-large-y);
+
+  padding-inline: clamp($btn-small-x, 1.25vw, $btn-large-x);
+
+  background: $primary;
+  color: $on-primary;
+
+  border: 2px solid $on-primary;
+  border-radius: $corner-small;
+
+  font-size: clamp($label-medium, 0.94vw, $body-large);
+
+  font-weight: $font-bold;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+/* Только контент действительно меняется на mobile */
+@media (max-width: 499px) {
+  .hero__text--desktop {
+    display: none;
+  }
+
+  .hero__text--mobile {
+    display: block;
+  }
+}
