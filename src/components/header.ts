@@ -1,3 +1,5 @@
+import { createAuthDialog } from './auth-dialog';
+
 export function createHeader(): HTMLElement {
   const header = document.createElement('header');
 
@@ -89,6 +91,18 @@ export function createHeader(): HTMLElement {
   const closeButton = header.querySelector<HTMLButtonElement>('.header__mobile-close');
   const mobileMenu = header.querySelector<HTMLElement>('.header__mobile-menu');
   const backdrop = header.querySelector<HTMLElement>('.header__backdrop');
+
+  const loginButton = header.querySelector<HTMLButtonElement>('.header__login');
+
+  loginButton?.addEventListener('click', () => {
+    const existingDialog = document.querySelector('.auth-overlay');
+
+    if (existingDialog) {
+      return;
+    }
+
+    document.body.append(createAuthDialog());
+  });
 
   function openMenu(): void {
     mobileMenu?.classList.add('header__mobile-menu--open');
