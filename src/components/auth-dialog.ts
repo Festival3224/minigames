@@ -6,127 +6,250 @@ export function createAuthDialog(): HTMLElement {
   overlay.className = 'auth-overlay';
 
   overlay.innerHTML = /* html */ `
-        <div class="auth-dialog" role="dialog" aria-modal="true" aria-label="Authentication">
-          <div class="auth-dialog__tabs">
-            <button
-              class="auth-dialog__tab auth-dialog__tab--active"
-              type="button"
-              data-auth-tab="login"
-            >
-              Login
-            </button>
+            <div class="auth-dialog" role="dialog" aria-modal="true" aria-label="Authentication">
+              <div class="auth-dialog__tabs">
+                <button
+                  class="auth-dialog__tab auth-dialog__tab--active"
+                  type="button"
+                  data-auth-tab="login"
+                >
+                  Login
+                </button>
 
-            <button
-              class="auth-dialog__tab"
-              type="button"
-              data-auth-tab="register"
-            >
-              Register
-            </button>
+                <button
+                  class="auth-dialog__tab"
+                  type="button"
+                  data-auth-tab="register"
+                >
+                  Register
+                </button>
+              </div>
+
+        <div class="auth-dialog__login">
+          <div class="auth-dialog__heading">
+            <h2 class="auth-dialog__title">Welcome Back!</h2>
+            <p class="auth-dialog__subtitle">
+              Sign in to resume your games and progress.
+            </p>
           </div>
 
-    <div class="auth-dialog__login">
+          <form class="auth-dialog__form">
+            <div class="auth-dialog__form-fields">
+                <label class="auth-dialog__field">
+                  <span class="auth-dialog__label">Email Address</span>
+
+                  <div class="auth-dialog__input-wrapper">
+                    <span
+                      class="material-symbols-outlined auth-dialog__input-icon"
+                      aria-hidden="true"
+                    >
+                      mail
+                    </span>
+
+                    <input
+                      class="auth-dialog__input"
+                      type="email"
+                      name="email"
+                      placeholder="e.g. alex@minigames.com"
+                      autocomplete="email"
+                    />
+                  </div>
+                </label>
+
+                <label class="auth-dialog__field">
+                  <span class="auth-dialog__label">Password</span>
+
+                  <div class="auth-dialog__input-wrapper">
+                    <span
+                      class="material-symbols-outlined auth-dialog__input-icon"
+                      aria-hidden="true"
+                    >
+                      lock
+                    </span>
+
+                    <input
+                        class="auth-dialog__input"
+                        type="password"
+                        name="password"
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                    />
+
+                    <button
+                        class="auth-dialog__password-toggle"
+                        type="button"
+                        aria-label="Show password"
+                    >
+                    <span class="material-symbols-outlined" aria-hidden="true">
+                        visibility
+                    </span>
+                    </button>
+                  </div>
+                </label>
+
+                <button class="auth-dialog__forgot" type="button">
+                   Forgot Password?
+                </button>
+            </div>
+
+
+            <div class="auth-dialog__actions">
+                <button class="auth-dialog__submit" type="submit">
+                  Login
+                </button>
+
+                <div class="auth-dialog__divider">
+                    <span class="auth-dialog__divider-line"></span>
+                    <span class="auth-dialog__divider-text">OR</span>
+                    <span class="auth-dialog__divider-line"></span>
+                </div>
+
+                <button class="auth-dialog__google" type="button">
+                    <img
+                        class="auth-dialog__google-icon"
+                        src="${googleIcon}"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    Continue with Google
+                </button>
+            </div>
+          </form>
+
+          <p class="auth-dialog__switch">
+            Don’t have an account?
+            <button class="auth-dialog__switch-button" type="button">
+              Register
+            </button>
+          </p>
+  
+        </div>
+
+        <div class="auth-dialog__register" hidden>
       <div class="auth-dialog__heading">
-        <h2 class="auth-dialog__title">Welcome Back!</h2>
+        <h2 class="auth-dialog__title">Create Account</h2>
         <p class="auth-dialog__subtitle">
-          Sign in to resume your games and progress.
+          Join MiniGames to track your score & streak.
         </p>
       </div>
 
       <form class="auth-dialog__form">
         <div class="auth-dialog__form-fields">
-            <label class="auth-dialog__field">
-              <span class="auth-dialog__label">Email Address</span>
+          <label class="auth-dialog__field">
+            <span class="auth-dialog__label">Username</span>
 
-              <div class="auth-dialog__input-wrapper">
-                <span
-                  class="material-symbols-outlined auth-dialog__input-icon"
-                  aria-hidden="true"
-                >
-                  mail
-                </span>
+            <div class="auth-dialog__input-wrapper">
+              <span
+                class="material-symbols-outlined auth-dialog__input-icon"
+                aria-hidden="true"
+              >
+                person
+              </span>
 
-                <input
-                  class="auth-dialog__input"
-                  type="email"
-                  name="email"
-                  placeholder="e.g. alex@minigames.com"
-                  autocomplete="email"
-                />
-              </div>
-            </label>
+              <input
+                class="auth-dialog__input"
+                type="text"
+                name="username"
+                placeholder="e.g. CozyGamer_99"
+                autocomplete="username"
+              />
+            </div>
+          </label>
 
-            <label class="auth-dialog__field">
-              <span class="auth-dialog__label">Password</span>
+          <label class="auth-dialog__field">
+            <span class="auth-dialog__label">Email Address</span>
 
-              <div class="auth-dialog__input-wrapper">
-                <span
-                  class="material-symbols-outlined auth-dialog__input-icon"
-                  aria-hidden="true"
-                >
-                  lock
-                </span>
+            <div class="auth-dialog__input-wrapper">
+              <span
+                class="material-symbols-outlined auth-dialog__input-icon"
+                aria-hidden="true"
+              >
+                mail
+              </span>
 
-                <input
-                    class="auth-dialog__input"
-                    type="password"
-                    name="password"
-                    placeholder="••••••••"
-                    autocomplete="current-password"
-                />
+              <input
+                class="auth-dialog__input"
+                type="email"
+                name="email"
+                placeholder="your.email@domain.com"
+                autocomplete="email"
+              />
+            </div>
+          </label>
 
-                <button
-                    class="auth-dialog__password-toggle"
-                    type="button"
-                    aria-label="Show password"
-                >
-                <span class="material-symbols-outlined" aria-hidden="true">
-                    visibility
-                </span>
-                </button>
-              </div>
-            </label>
+          <label class="auth-dialog__field">
+            <span class="auth-dialog__label">Password</span>
 
-            <button class="auth-dialog__forgot" type="button">
-               Forgot Password?
-            </button>
+            <div class="auth-dialog__input-wrapper">
+              <span
+                class="material-symbols-outlined auth-dialog__input-icon"
+                aria-hidden="true"
+              >
+                lock
+              </span>
+
+              <input
+                class="auth-dialog__input"
+                type="password"
+                name="password"
+                placeholder="Min. 8 characters"
+                autocomplete="new-password"
+              />
+            </div>
+          </label>
+
+          <label class="auth-dialog__field">
+            <span class="auth-dialog__label">Confirm Password</span>
+
+            <div class="auth-dialog__input-wrapper">
+              <span
+                class="material-symbols-outlined auth-dialog__input-icon"
+                aria-hidden="true"
+              >
+                lock
+              </span>
+
+              <input
+                class="auth-dialog__input"
+                type="password"
+                name="confirmPassword"
+                placeholder="Repeat your password"
+                autocomplete="new-password"
+              />
+            </div>
+          </label>
         </div>
 
-
         <div class="auth-dialog__actions">
-            <button class="auth-dialog__submit" type="submit">
-              Login
-            </button>
+          <button class="auth-dialog__submit" type="submit">
+            Create Account
+          </button>
 
-            <div class="auth-dialog__divider">
-                <span class="auth-dialog__divider-line"></span>
-                <span class="auth-dialog__divider-text">OR</span>
-                <span class="auth-dialog__divider-line"></span>
-            </div>
+          <div class="auth-dialog__divider">
+            <span class="auth-dialog__divider-line"></span>
+            <span class="auth-dialog__divider-text">OR</span>
+            <span class="auth-dialog__divider-line"></span>
+          </div>
 
-            <button class="auth-dialog__google" type="button">
-                <img
-                    class="auth-dialog__google-icon"
-                    src="${googleIcon}"
-                    alt=""
-                    aria-hidden="true"
-                />
-                Continue with Google
-            </button>
+          <button class="auth-dialog__google" type="button">
+            <img
+              class="auth-dialog__google-icon"
+              src="${googleIcon}"
+              alt=""
+              aria-hidden="true"
+            />
+            Sign up with Google
+          </button>
         </div>
       </form>
 
       <p class="auth-dialog__switch">
-        Don’t have an account?
+        Already have an account?
         <button class="auth-dialog__switch-button" type="button">
-          Register
+          Login
         </button>
       </p>
-
-      </div>
     </div>
-    <div class="auth-dialog__register" hidden>
-        <!-- здесь будет Registr диалог -->
     </div>
   `;
 
