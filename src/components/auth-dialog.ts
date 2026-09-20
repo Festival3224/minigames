@@ -268,29 +268,77 @@ export function createAuthDialog(): HTMLElement {
   const registerTab = overlay.querySelector<HTMLButtonElement>('[data-auth-tab="register"]');
 
   const switchButtons = overlay.querySelectorAll<HTMLButtonElement>('.auth-dialog__switch-button');
+  const dialog = overlay.querySelector<HTMLElement>('.auth-dialog');
+
+  function animateDialogHeight(updateView: () => void): void {
+    if (!dialog) {
+      updateView();
+      return;
+    }
+
+    const startHeight = dialog.getBoundingClientRect().height;
+
+    dialog.style.height = `${startHeight}px`;
+
+    updateView();
+
+    dialog.style.height = 'auto';
+    const targetHeight = dialog.getBoundingClientRect().height;
+
+    dialog.style.height = `${startHeight}px`;
+
+    requestAnimationFrame(() => {
+      dialog.style.height = `${targetHeight}px`;
+    });
+
+    const handleTransitionEnd = (event: TransitionEvent): void => {
+      if (event.propertyName !== 'height') {
+        return;
+      }
+
+      dialog.style.height = 'auto';
+      dialog.removeEventListener('transitionend', handleTransitionEnd);
+    };
+
+    dialog.addEventListener('transitionend', handleTransitionEnd);
+  }
 
   function showLogin(): void {
-    loginView?.removeAttribute('hidden');
-    registerView?.setAttribute('hidden', '');
+    animateDialogHeight(() => {
+      loginView?.removeAttribute('hidden');
+      registerView?.setAttribute('hidden', '');
 
-    loginTab?.classList.add('auth-dialog__tab--active');
-    registerTab?.classList.remove('auth-dialog__tab--active');
+      loginTab?.classList.add('auth-dialog__tab--active');
+      registerTab?.classList.remove('auth-dialog__tab--active');
+    });
   }
 
   function showRegister(): void {
-    registerView?.removeAttribute('hidden');
-    loginView?.setAttribute('hidden', '');
+    animateDialogHeight(() => {
+      registerView?.removeAttribute('hidden');
+      loginView?.setAttribute('hidden', '');
 
-    registerTab?.classList.add('auth-dialog__tab--active');
-    loginTab?.classList.remove('auth-dialog__tab--active');
+      registerTab?.classList.add('auth-dialog__tab--active');
+      loginTab?.classList.remove('auth-dialog__tab--active');
+    });
   }
 
   loginTab?.addEventListener('click', showLogin);
   registerTab?.addEventListener('click', showRegister);
 
   function closeDialog(): void {
-    overlay.remove();
-    document.removeEventListener('keydown', handleEscape);
+    // overlay.classList.add('auth-overlay--closing');
+    overlay.classList.remove('auth-overlay--open');
+
+    /* globalThis.setTimeout(() => {
+      overlay.remove();
+      document.removeEventListener('keydown', handleEscape);
+    }, 360); */
+
+    setTimeout(() => {
+      overlay.remove();
+      document.removeEventListener('keydown', handleEscape);
+    }, 360);
   }
 
   function handleEscape(event: KeyboardEvent): void {
@@ -316,6 +364,10 @@ export function createAuthDialog(): HTMLElement {
   }
 
   document.addEventListener('keydown', handleEscape);
+
+  requestAnimationFrame(() => {
+    overlay.classList.add('auth-overlay--open');
+  });
 
   return overlay;
 }
