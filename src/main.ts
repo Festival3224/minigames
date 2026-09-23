@@ -1,8 +1,16 @@
 import './styles/main.scss';
-import { createHomePage } from './pages/home';
+import { getRouteFromHash, renderRoute } from './router';
+// import { createHomePage } from './pages/home';
 
 const app = document.createElement('div');
 app.id = 'app';
 
 document.body.append(app);
-app.append(createHomePage());
+
+function handleRouteChange(): void {
+  renderRoute(getRouteFromHash());
+}
+
+addEventListener('hashchange', handleRouteChange);
+
+handleRouteChange();
