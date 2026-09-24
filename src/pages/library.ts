@@ -1,6 +1,14 @@
 import { createHeader } from '../components/header';
 import { createFooter } from '../components/footer';
 
+import vacationCafe from '../assets/vacation-cafe-simulator-card.jpg';
+import { createLibraryGameCard } from '../components/library-game-card';
+
+import categoriesData from '../data/categories.json';
+import gamesData from '../data/all-games-seed.json';
+
+import { formatLikesCount, formatRating } from '../utils/format';
+
 export function createLibraryPage(): HTMLElement {
   const page = document.createElement('div');
   page.className = 'page';
@@ -29,19 +37,18 @@ export function createLibraryPage(): HTMLElement {
   const filters = document.createElement('div');
   filters.className = 'library__filters';
 
-  const categories = ['All Games', 'Puzzle', 'Card', 'Match', 'Farm', 'Strategy', 'Arcade'];
-
-  for (const category of categories) {
+  // chips
+  for (const category of categoriesData.data) {
     const button = document.createElement('button');
+
     button.className = 'library__filter';
     button.type = 'button';
-    button.textContent = category;
+    button.textContent = category.label;
+    button.dataset.category = category.slug;
 
-    const isActive = category === 'All Games';
+    button.setAttribute('aria-pressed', String(category.isDefault));
 
-    button.setAttribute('aria-pressed', String(isActive));
-
-    if (isActive) {
+    if (category.isDefault) {
       button.classList.add('library__filter--active');
     }
 
@@ -118,16 +125,6 @@ export function createLibraryPage(): HTMLElement {
     });
   }
 
-  /* const sortButton = document.createElement('button');
-  sortButton.className = 'library__sort';
-  sortButton.type = 'button';
-  sortButton.innerHTML = `
-    <span>Sort by: Rating ↓</span>
-    <span class="material-symbols-outlined" aria-hidden="true">
-      arrow_drop_down
-    </span>
-  `; */
-
   const sort = document.createElement('div');
   sort.className = 'library__sort-wrapper';
 
@@ -199,9 +196,24 @@ export function createLibraryPage(): HTMLElement {
 
   sort.append(sortButton, sortMenu);
 
-  //   controls.append(filters, sortButton);
+  const gamesSection = document.createElement('section');
+  gamesSection.className = 'library__games';
+
+  const firstGame = gamesData.data[0];
+  gamesSection.append(
+    createLibraryGameCard({
+      title: firstGame.name, // 'Vacation Cafe Simulator'
+      imageSrc: vacationCafe,
+      category: firstGame.category, // 'Strategy'
+      description: firstGame.shortDescription, // 'Build and manage your dream café in a relaxing seaside setting.'
+      rating: formatRating(firstGame.rating),
+      likes: formatLikesCount(firstGame.likesCount),
+      price: firstGame.price,
+    }),
+  );
+
   controls.append(filters, sort);
-  main.append(titleSection, controls);
+  main.append(titleSection, controls, gamesSection);
 
   page.append(main);
   page.append(createFooter());
