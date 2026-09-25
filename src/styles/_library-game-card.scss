@@ -1,0 +1,385 @@
+@use './breakpoints' as *;
+@use 'tokens' as *;
+
+.library__games {
+  width: 100%;
+  max-width: $layout-max-width;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $size-2;
+
+  padding-inline: clamp($size-2, calc(19.35vw - 56.58px), $size-5);
+}
+
+@media (min-width: ($breakpoint-tablet + 1px)) {
+  .library__games {
+    gap: $size-3;
+    padding-inline: clamp($size-5, calc(31.5vw - 202.2px), $size-15);
+  }
+}
+
+@media (min-width: $breakpoint-desktop-sm) {
+  .library__games {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.library-game-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+
+  background-color: $white;
+  border-radius: $corner-large;
+
+  position: relative;
+
+  box-shadow: $shadow-card-offset $shadow-card-offset 0 $on-primary;
+
+  overflow: hidden;
+}
+
+.library-game-card::after {
+  content: '';
+
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+
+  border: $border-card solid $on-primary;
+  border-radius: inherit;
+
+  pointer-events: none;
+}
+
+/* 500-767px: horizontal transition layout, natural card height */
+@media (min-width: ($breakpoint-mobile-lg + 1px)) and (max-width: ($breakpoint-tablet - 1px)) {
+  .library-game-card {
+    flex-direction: row;
+    height: auto;
+    min-height: $library-card-height-tablet;
+  }
+}
+
+/* 768-1023px: tablet layout from Figma */
+@media (min-width: $breakpoint-tablet) {
+  .library-game-card {
+    flex-direction: row;
+    height: $library-card-height-tablet;
+  }
+}
+
+/* 1024px+: desktop */
+@media (min-width: ($breakpoint-tablet-lg + 1px)) {
+  .library-game-card {
+    height: $library-card-height-desktop;
+  }
+}
+
+.library-game-card__image {
+  display: block;
+  width: 100%;
+  height: $library-card-image-height-mobile;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* 500-767px: image grows smoothly from ~35% to tablet width */
+@media (min-width: ($breakpoint-mobile-lg + 1px)) and (max-width: ($breakpoint-tablet - 1px)) {
+  .library-game-card__image {
+    width: min(40%, $library-card-image-width-tablet);
+    height: auto;
+    align-self: stretch;
+  }
+}
+
+/* 768-1023px: exact tablet image size */
+@media (min-width: $breakpoint-tablet) {
+  .library-game-card__image {
+    width: $library-card-image-width-tablet;
+    height: 100%;
+  }
+}
+
+@media (min-width: ($breakpoint-tablet-lg + 1px)) {
+  .library-game-card__image {
+    width: min(40%, $library-card-image-width-desktop);
+  }
+}
+
+.library-game-card__content {
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'heading heading'
+    'description description'
+    'meta price'
+    'details details';
+
+  gap: $size-2;
+  padding: $size-2;
+}
+
+/* 500-767px: keep mobile content order inside horizontal card */
+@media (min-width: ($breakpoint-mobile-lg + 1px)) and (max-width: ($breakpoint-tablet - 1px)) {
+  .library-game-card__content {
+    flex: 1 1 0;
+
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'heading heading'
+      'description description'
+      'meta price'
+      'details details';
+
+    column-gap: $size-1;
+    row-gap: $library-card-gap-tablet;
+  }
+}
+
+/* 768px+: Figma tablet/desktop content structure */
+@media (min-width: $breakpoint-tablet) {
+  .library-game-card__content {
+    flex: 1 1 0;
+    height: 100%;
+
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'heading price'
+      'description description'
+      'meta details';
+
+    column-gap: $size-1;
+    row-gap: $library-card-gap-tablet;
+  }
+}
+
+@media (min-width: ($breakpoint-tablet-lg + 1px)) {
+  .library-game-card__content {
+    row-gap: $library-card-gap-desktop;
+  }
+}
+
+.library-game-card__heading {
+  grid-area: heading;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $size-1;
+
+  min-width: 0;
+}
+
+/* 500-767px: title and tag stay on separate lines */
+@media (min-width: ($breakpoint-mobile-lg + 1px)) and (max-width: ($breakpoint-tablet - 1px)) {
+  .library-game-card__heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.library-game-card__title {
+  margin: 0;
+  min-width: 0;
+
+  color: $on-primary;
+  font-family: $font-primary;
+  font-size: $headline-small;
+  font-weight: $font-bold;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (min-width: $breakpoint-desktop-sm) {
+  .library-game-card__title {
+    font-size: $headline-medium;
+  }
+}
+
+.library-game-card__tag {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+
+  padding: $size-02 $size-1;
+
+  color: $on-primary;
+  background-color: $secondary;
+  border: 1.5px solid $on-primary;
+  border-radius: $headline-small;
+
+  font-family: $font-primary;
+  font-size: $label-medium;
+  font-weight: $font-bold;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (min-width: ($breakpoint-mobile-lg + 1px)) {
+  .library-game-card__tag {
+    padding-block: $size-05;
+    border-radius: $corner-extra-large;
+  }
+}
+
+@media (min-width: $breakpoint-tablet) {
+  .library-game-card__heading {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+
+    gap: $size-2; // 16px
+    min-width: 0;
+  }
+
+  .library-game-card__title {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  .library-game-card__tag {
+    flex: 0 0 auto;
+  }
+}
+
+.library-game-card__description {
+  grid-area: description;
+
+  margin: 0;
+  min-width: 0;
+
+  color: $on-bg;
+  font-family: $font-primary;
+  font-size: $body-small;
+  font-weight: $font-medium;
+  line-height: 1.4;
+
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* @media (min-width: ($breakpoint-tablet-lg + 1px)) {
+  .library-game-card__description {
+    display: block;
+    overflow: visible;
+
+    font-size: $body-medium;
+
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+  }
+} */
+
+@media (min-width: $breakpoint-desktop-sm) {
+  .library-game-card__description {
+    display: block;
+    overflow: visible;
+
+    font-size: $body-medium;
+
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+  }
+}
+
+.library-game-card__meta {
+  grid-area: meta;
+
+  display: flex;
+  align-items: center;
+  gap: $size-2;
+
+  min-width: 0;
+}
+
+@media (min-width: ($breakpoint-tablet-lg + 1px)) {
+  .library-game-card__meta {
+    gap: $size-3;
+  }
+}
+
+.library-game-card__price {
+  grid-area: price;
+  align-self: center;
+  justify-self: end;
+
+  color: $price-free;
+  font-family: $font-primary;
+  font-size: $headline-small;
+  font-weight: $font-bold;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (min-width: ($breakpoint-tablet-lg + 1px)) {
+  .library-game-card__price {
+    font-size: $headline-medium;
+  }
+}
+
+.library-game-card__rating,
+.library-game-card__likes {
+  display: inline-flex;
+  align-items: center;
+  gap: $size-05;
+
+  height: $size-3;
+  white-space: nowrap;
+}
+
+.library-game-card__rating img,
+.library-game-card__likes img {
+  width: $size-3;
+  height: $size-3;
+  flex: 0 0 auto;
+}
+
+.library-game-card__details {
+  grid-area: details;
+
+  width: 100%;
+  padding: $btn-medium-y $btn-medium-x;
+
+  color: $on-primary;
+  background-color: $primary;
+  border: $size-02 solid $on-primary;
+  border-radius: $corner-small;
+
+  font-family: $font-primary;
+  font-size: $label-large;
+  font-weight: $font-bold;
+  line-height: 1;
+  letter-spacing: 0;
+
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.library-game-card__details:hover {
+  background-color: $primary-high;
+}
+
+@media (min-width: ($breakpoint-mobile-lg + 1px)) {
+  .library-game-card__details {
+    justify-self: end;
+    width: auto;
+    padding: $size-1 $size-2;
+  }
+}
+
+@media (min-width: ($breakpoint-tablet-lg + 1px)) {
+  .library-game-card__details {
+    padding: $btn-medium-y $btn-medium-x;
+  }
+}

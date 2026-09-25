@@ -1,0 +1,58 @@
+@use './breakpoints' as *;
+@use 'tokens' as *;
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $size-1;
+
+  padding: $size-5 $size-15;
+
+  @media (min-width: ($breakpoint-tablet-lg + 1px)) {
+    gap: $size-2; // 16px desktop
+  }
+}
+
+.pagination__page,
+.pagination__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: $size-5;
+  height: $size-5;
+  flex: 0 0 $size-5;
+  padding: 0;
+
+  border: $size-02 solid $on-primary;
+  border-radius: $corner-full;
+
+  background: $white;
+  color: $on-primary;
+
+  font-family: $font-primary;
+  font-size: $label-large;
+  font-weight: $font-bold;
+  line-height: 1;
+  letter-spacing: 0;
+
+  cursor: pointer;
+}
+
+.pagination__arrow .material-symbols-outlined {
+  font-size: $size-3; // 24px
+  line-height: 1;
+}
+
+.pagination__page--active {
+  background-color: $bg-footer-low;
+  color: $white;
+}
+
+.pagination__arrow:disabled {
+  opacity: 0.5;
+  background-color: $bg;
+  border-color: $outline-variant;
+  cursor: default;
+}
