@@ -1,5 +1,6 @@
 import { createHeader } from '../components/header';
 import { createPagination } from '../components/pagination';
+import { createGameDetailsDialog } from '../components/game-details-dialog';
 import { createFooter } from '../components/footer';
 
 import vacationCafe from '../assets/vacation-cafe-simulator-card.jpg';
@@ -231,6 +232,23 @@ export function createLibraryPage(): HTMLElement {
       }),
     );
   }
+
+  gamesSection.addEventListener('click', (event) => {
+    const target = event.target;
+
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const detailsButton = target.closest('.library-game-card__details');
+
+    if (!detailsButton) {
+      return;
+    }
+
+    const dialog = createGameDetailsDialog();
+    document.body.append(dialog);
+  });
 
   const gamesPerPage = 6;
   const totalPages = Math.ceil(gamesData.data.length / gamesPerPage);
