@@ -2,6 +2,22 @@ import { createHeader } from '../components/header';
 import { createFooter } from '../components/footer';
 
 import vacationCafe from '../assets/vacation-cafe-simulator-card.jpg';
+import winterBurrow from '../assets/winter-burrow-card.jpg';
+import shelvePotions from '../assets/shelve-the-potions-card.jpg';
+
+import heartopia from '../assets/library/heartopia-card.jpg';
+import palia from '../assets/library/palia-card.jpg';
+import catMail from '../assets/library/cat-mail-co-card.jpg';
+
+const gameImages: Record<string, string> = {
+  'vacation-cafe-simulator': vacationCafe,
+  'winter-burrow': winterBurrow,
+  'shelve-the-potions': shelvePotions,
+  heartopia,
+  palia,
+  'cat-mail-co': catMail,
+};
+
 import { createLibraryGameCard } from '../components/library-game-card';
 
 import categoriesData from '../data/categories.json';
@@ -199,7 +215,7 @@ export function createLibraryPage(): HTMLElement {
   const gamesSection = document.createElement('section');
   gamesSection.className = 'library__games';
 
-  const firstGame = gamesData.data[0];
+  /*  const firstGame = gamesData.data[0];
   gamesSection.append(
     createLibraryGameCard({
       title: firstGame.name, // 'Vacation Cafe Simulator'
@@ -210,7 +226,23 @@ export function createLibraryPage(): HTMLElement {
       likes: formatLikesCount(firstGame.likesCount),
       price: firstGame.price,
     }),
-  );
+  ); */
+
+  const games = gamesData.data.slice(0, 6);
+
+  for (const game of games) {
+    gamesSection.append(
+      createLibraryGameCard({
+        title: game.name,
+        imageSrc: gameImages[game.slug],
+        category: game.category,
+        description: game.shortDescription,
+        rating: formatRating(game.rating),
+        likes: formatLikesCount(game.likesCount),
+        price: game.price,
+      }),
+    );
+  }
 
   controls.append(filters, sort);
   main.append(titleSection, controls, gamesSection);
