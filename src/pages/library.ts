@@ -1,4 +1,5 @@
 import { createHeader } from '../components/header';
+import { createPagination } from '../components/pagination';
 import { createFooter } from '../components/footer';
 
 import vacationCafe from '../assets/vacation-cafe-simulator-card.jpg';
@@ -215,19 +216,6 @@ export function createLibraryPage(): HTMLElement {
   const gamesSection = document.createElement('section');
   gamesSection.className = 'library__games';
 
-  /*  const firstGame = gamesData.data[0];
-  gamesSection.append(
-    createLibraryGameCard({
-      title: firstGame.name, // 'Vacation Cafe Simulator'
-      imageSrc: vacationCafe,
-      category: firstGame.category, // 'Strategy'
-      description: firstGame.shortDescription, // 'Build and manage your dream café in a relaxing seaside setting.'
-      rating: formatRating(firstGame.rating),
-      likes: formatLikesCount(firstGame.likesCount),
-      price: firstGame.price,
-    }),
-  ); */
-
   const games = gamesData.data.slice(0, 6);
 
   for (const game of games) {
@@ -244,8 +232,13 @@ export function createLibraryPage(): HTMLElement {
     );
   }
 
+  const gamesPerPage = 6;
+  const totalPages = Math.ceil(gamesData.data.length / gamesPerPage);
+
+  const pagination = createPagination(totalPages);
+
   controls.append(filters, sort);
-  main.append(titleSection, controls, gamesSection);
+  main.append(titleSection, controls, gamesSection, pagination);
 
   page.append(main);
   page.append(createFooter());
