@@ -28,6 +28,8 @@ $like: #ff4b4b;
 $error: #b3261e;
 $price-free: #0b8a8f;
 
+$details-dialog: #111111;
+
 $avatar-random-2: hsla(156, 52%, 76%, 1);
 $avatar-random-3: hsla(205, 100%, 87%, 1);
 $avatar-random-4: hsla(300, 100%, 89%, 1);
@@ -129,3 +131,9 @@ $shadow-card-offset: 4px;
 
 $library-card-gap-tablet: 11.5px;
 $library-card-gap-desktop: 17.5px;
+
+$game-details-width-desktop: 600px;
+$game-details-hero-height: 220px;
+$game-details-shadow-offset: 8px;
+$game-details-close-shadow-offset: 2px;
+$game-details-widget-shadow-offset: 3px;

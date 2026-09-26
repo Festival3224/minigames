@@ -16,11 +16,190 @@
 .game-details-dialog {
   position: relative;
 
-  width: min(90vw, 800px);
-  max-height: 90vh;
-
-  overflow-y: auto;
+  width: min(100%, $game-details-width-desktop);
+  //  width: $game-details-width-desktop;
 
   background-color: $bg;
-  border-radius: $corner-large;
+
+  border: 1px solid $outline-variant;
+  border-radius: $corner-extra-large;
+
+  box-shadow: $game-details-shadow-offset $game-details-shadow-offset 0 $details-dialog;
+
+  overflow: hidden;
+}
+
+.game-details-dialog::after {
+  content: '';
+
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+
+  border: 1px solid $outline-variant;
+  border-radius: inherit;
+
+  pointer-events: none;
+}
+
+//hero
+.game-details-dialog__hero {
+  position: relative;
+  width: 100%;
+  height: $game-details-hero-height;
+}
+
+.game-details-dialog__hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.game-details-dialog__close {
+  position: absolute;
+  top: $size-2;
+  right: $size-2;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: $size-5; // 40px
+  height: $size-5; // 40px
+
+  padding: 0;
+
+  background-color: $white;
+
+  border: 2px solid $on-primary;
+  border-radius: $corner-full;
+
+  box-shadow: $game-details-close-shadow-offset $game-details-close-shadow-offset 0 #111111;
+
+  color: $on-primary;
+
+  cursor: pointer;
+}
+
+.game-details-dialog__close .material-symbols-outlined {
+  width: $size-3; // 24px
+  height: $size-3; // 24px
+
+  font-size: $size-3;
+  line-height: 1;
+}
+
+//content
+.game-details-dialog__content {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  padding: $size-3; // 24px
+  gap: $size-3; // 24px
+}
+
+.game-details-dialog__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+}
+
+.game-details-dialog__title {
+  margin: 0;
+
+  color: $on-primary;
+
+  font-family: $font-primary;
+  font-size: $display-medium;
+  font-weight: $font-bold;
+  line-height: 1;
+  letter-spacing: -0.012em;
+}
+
+.game-details-dialog__ratings {
+  display: flex;
+  align-items: center;
+  gap: $size-2; // 16px
+}
+
+.game-details-dialog__rating,
+.game-details-dialog__likes {
+  display: inline-flex;
+  align-items: center;
+  color: $on-primary;
+  gap: $size-05; // 4px
+  white-space: nowrap;
+  font-family: $font-primary;
+  font-size: $label-large;
+  font-weight: $font-bold;
+  line-height: 1;
+}
+
+.game-details-dialog__rating img,
+.game-details-dialog__likes img {
+  width: $size-3; // 24px
+  height: $size-3; // 24px
+}
+
+.game-details-dialog__description {
+  margin: 0;
+
+  color: $on-bg;
+
+  font-family: $font-primary;
+  font-size: $body-medium;
+  font-weight: $font-regular;
+  line-height: 20px;
+}
+
+// widgets
+.game-details-dialog__info {
+  display: flex;
+  gap: $size-2; // 16px
+  width: 100%;
+}
+
+.game-details-dialog__info-item {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  min-width: 0;
+  height: 56px;
+
+  padding: $size-1 $size-2; // 8px 16px
+  gap: $size-1; // 8px
+
+  background-color: $white;
+
+  border: 1px solid $outline-variant;
+  border-radius: $corner-small;
+
+  box-shadow: $game-details-widget-shadow-offset $game-details-widget-shadow-offset 0 $on-primary;
+}
+
+.game-details-dialog__info-label {
+  color: $on-bg;
+
+  font-family: $font-primary;
+  font-size: $label-medium;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.game-details-dialog__info-value {
+  color: $on-primary;
+
+  font-family: $font-primary;
+  font-size: $label-large;
+  font-weight: $font-bold;
+  line-height: 1;
+  letter-spacing: 0;
 }
