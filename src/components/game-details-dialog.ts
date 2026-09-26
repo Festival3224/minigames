@@ -1,5 +1,7 @@
 import tukoniData from '../data/game-tukoni-forest-keepers.json';
-import { formatLikesCount, formatRating } from '../utils/format';
+import { formatLikesCount, formatRating, formatRelativeTime } from '../utils/format';
+
+import commentsData from '../data/comments-tukoni-forest-keepers.json';
 
 import tukoniHero from '../assets/library/tukoni-forest-keepers-hero.jpg';
 
@@ -9,8 +11,89 @@ import heartIcon from '../assets/icons/heart.svg';
 export function createGameDetailsDialog(): HTMLElement {
   const game = tukoniData.data;
 
+  const medalByPosition: Record<number, string> = {
+    1: '🥇',
+    2: '🥈',
+    3: '🥉',
+  };
+
+  const recordsMarkup = game.topRecords
+    .map(
+      (record) => `
+      <div class="game-details-dialog__record">
+        <div class="game-details-dialog__record-player-group">
+          <span class="game-details-dialog__record-medal" aria-hidden="true">
+            ${medalByPosition[record.position] ?? ''}
+          </span>
+
+          <span class="game-details-dialog__record-player">
+            ${record.playerName}
+          </span>
+        </div>
+
+        <div class="game-details-dialog__record-result-group">
+          <span class="game-details-dialog__record-score">
+            ${record.score.toLocaleString()} pts
+          </span>
+
+          <span class="game-details-dialog__record-time">
+            ${formatRelativeTime(record.achievedAt)}
+          </span>
+        </div>  
+      </div>
+    `,
+    )
+    .join('');
+
+  const comments = commentsData.data;
+
+  const commentsMarkup = comments
+    .map((comment, index) => {
+      const likeClass = comment.isLikedByCurrentUser
+        ? ' game-details-dialog__comment-likes-group--active'
+        : '';
+
+      return `
+      <article class="game-details-dialog__comment">
+        <div class="game-details-dialog__comment-header">
+          <div class="game-details-dialog__comment-author-group">
+            <span
+              class="game-details-dialog__comment-avatar game-details-dialog__comment-avatar--${index + 1}"
+            >
+              ${comment.authorName.charAt(0)}
+            </span>
+
+            <span class="game-details-dialog__comment-author">
+              ${comment.authorName}
+            </span>
+          </div>
+
+          <span class="game-details-dialog__comment-time">
+            ${formatRelativeTime(comment.createdAt)}
+          </span>
+        </div>
+
+        <p class="game-details-dialog__comment-text">
+          ${comment.text}
+        </p>
+
+        <div class="game-details-dialog__comment-likes">
+          <div class="game-details-dialog__comment-likes-group${likeClass}">
+            <span class="material-symbols-outlined" aria-hidden="true">
+              favorite
+            </span>
+
+            <span>${comment.likesCount}</span>
+          </div>  
+        </div>
+      </article>
+    `;
+    })
+    .join('');
+
   const backdrop = document.createElement('div');
   backdrop.className = 'game-details-backdrop';
+  document.body.classList.add('dialog-open');
 
   const dialog = document.createElement('section');
   dialog.className = 'game-details-dialog';
@@ -82,26 +165,96 @@ export function createGameDetailsDialog(): HTMLElement {
       </div>
     </div>
 
-    <div class="game-details-dialog__actions">
-      <!-- buttons -->
+   <div class="game-details-dialog__actions">
+      <button class="game-details-dialog__play" type="button">
+        Play Now
+      </button>
+
+      <button
+        class="game-details-dialog__favorite"
+        type="button"
+        aria-label="Add to Favorites"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">
+          favorite
+        </span>
+
+        <span class="game-details-dialog__favorite-text">
+          Add to Favorites
+        </span>
+      </button>
     </div>
 
     <section class="game-details-dialog__records">
-     ${game.topRecords} <!-- Top Records -->
+      <div class="game-details-dialog__records-title">
+        <span aria-hidden="true">🏆</span>
+        <h3>Top Records</h3>
+      </div>
+
+      <div class="game-details-dialog__records-list">
+        ${recordsMarkup}
+      </div>
     </section>
 
     <section class="game-details-dialog__comments">
-      <!-- Comments -->
+      <h3 class="game-details-dialog__comments-title">
+        Comments (${commentsData.meta.totalComments})
+      </h3>
+
+    <div class="game-details-dialog__comment-form">
+      <div class="game-details-dialog__user-avatar" aria-hidden="true">
+        U
+      </div>
+
+      <textarea
+        class="game-details-dialog__comment-input"
+        placeholder="Write a comment..."
+        aria-label="Write a comment"
+      ></textarea>
+
+      <button
+        class="game-details-dialog__send"
+        type="button"
+        aria-label="Send comment"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">
+          send
+        </span>
+      </button>
+    </div>
+
+      <div class="game-details-dialog__comments-list">
+        ${commentsMarkup}
+      </div>
     </section>
   </div>
 `;
 
   backdrop.append(dialog);
 
+  const commentInput = dialog.querySelector<HTMLTextAreaElement>(
+    '.game-details-dialog__comment-input',
+  );
+
+  const sendButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__send');
+
+  const updateSendButtonState = (): void => {
+    if (!commentInput || !sendButton) {
+      return;
+    }
+
+    sendButton.disabled = commentInput.value.trim().length === 0;
+  };
+
+  commentInput?.addEventListener('input', updateSendButtonState);
+
+  updateSendButtonState();
+
   const closeButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__close');
 
   function closeDialog(): void {
     document.removeEventListener('keydown', handleKeydown);
+    document.body.classList.remove('dialog-open');
     backdrop.remove();
   }
 

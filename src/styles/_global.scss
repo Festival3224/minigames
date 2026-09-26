@@ -18,6 +18,10 @@ body {
   color: $on-bg;
 }
 
+body.dialog-open {
+  overflow: hidden;
+}
+
 img {
   display: block;
   max-width: 100%;
