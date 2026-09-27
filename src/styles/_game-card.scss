@@ -6,11 +6,14 @@
   overflow: hidden;
   flex-shrink: 0;
 
-  // Exact Figma value; no matching token exists.
-  border: 2.5px solid $on-primary;
+  transition:
+    width 300ms ease,
+    height 300ms ease,
+    flex 300ms ease;
+
+  border: 2.5px solid $on-primary; // Exact Figma value; no matching token exists.
   border-radius: $corner-extra-large;
   box-shadow: $size-05 $size-05 0 $on-primary;
-
   background: $bg-footer;
 }
 
