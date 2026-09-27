@@ -56,3 +56,8 @@
   border-color: $outline-variant;
   cursor: default;
 }
+
+.pagination__page:hover:not(.pagination__page--active),
+.pagination__arrow:hover:not(:disabled) {
+  background-color: $surface;
+}

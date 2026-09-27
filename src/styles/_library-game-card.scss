@@ -269,18 +269,6 @@
   line-clamp: 2;
 }
 
-/* @media (min-width: ($breakpoint-tablet-lg + 1px)) {
-  .library-game-card__description {
-    display: block;
-    overflow: visible;
-
-    font-size: $body-medium;
-
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
-  }
-} */
-
 @media (min-width: $breakpoint-desktop-sm) {
   .library-game-card__description {
     display: block;
