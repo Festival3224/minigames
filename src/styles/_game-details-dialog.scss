@@ -6,11 +6,15 @@
   inset: 0;
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+
   background-color: rgb(0 0 0 / 50%);
   overflow-y: auto;
   scrollbar-width: none;
+  @media (min-width: $breakpoint-tablet) {
+    align-items: center;
+  }
 }
 
 .game-details-dialog::-webkit-scrollbar {
@@ -19,14 +23,24 @@
 
 .game-details-dialog {
   position: relative;
-  width: min(100%, $game-details-width-desktop);
-  max-height: calc(100vh - 2 * $size-2);
+  width: 100%;
+  min-height: 812px;
+  height: auto;
+
   overflow-y: auto;
+  scrollbar-width: none;
+
   background-color: $bg;
   border: 0;
   border-radius: $corner-extra-large;
 
   box-shadow: $game-details-shadow-offset $game-details-shadow-offset 0 $details-dialog;
+
+  @media (min-width: $breakpoint-tablet) {
+    width: $game-details-width-desktop;
+    min-height: 0;
+    max-height: calc(100vh - 2 * $size-2);
+  }
 }
 
 .game-details-dialog::after {
@@ -59,8 +73,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: $size-5; // 40px
-  height: $size-5; // 40px
+  width: $size-4;
+  height: $size-4;
   padding: 0;
   background-color: $white;
   border: 2px solid $on-primary;
@@ -71,6 +85,10 @@
 
   cursor: pointer;
   transition: background-color 160ms ease;
+  @media (min-width: $breakpoint-tablet) {
+    width: $size-5;
+    height: $size-5;
+  }
 }
 
 .game-details-dialog__close:hover {
@@ -78,10 +96,16 @@
 }
 
 .game-details-dialog__close .material-symbols-outlined {
-  width: $size-3; // 24px
-  height: $size-3; // 24px
-  font-size: $size-3;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $size-3;
+  height: $size-3;
+  font-size: $body-large; // 18px
+  line-height: $body-large;
+  @media (min-width: $breakpoint-tablet) {
+    font-size: $size-3; // 24px
+  }
 }
 
 //content
@@ -89,15 +113,23 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: $size-3; // 24px
+  padding: $size-3;
   gap: $size-3; // 24px
 }
 
 .game-details-dialog__title-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+
   width: 100%;
+  gap: $size-1;
+  @media (min-width: $breakpoint-tablet) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+  }
 }
 
 .game-details-dialog__title {
@@ -146,9 +178,15 @@
 
 // widgets
 .game-details-dialog__info {
-  display: flex;
-  gap: $size-2; // 16px
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
   width: 100%;
+  gap: $size-2;
+  @media (min-width: $breakpoint-tablet) {
+    display: flex;
+    gap: $size-2; // 16px
+  }
 }
 
 .game-details-dialog__info-item {
@@ -219,14 +257,11 @@
 
 .game-details-dialog__favorite {
   flex: 1;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: $size-1; // 8px
-
-  height: 48px;
-
+  gap: $size-1;
+  height: $size-6;
   padding: $btn-large-y $btn-large-x;
 
   background-color: $white;
@@ -248,6 +283,22 @@
 .game-details-dialog__favorite .material-symbols-outlined {
   font-size: $size-3; // 24px
   line-height: 1;
+}
+
+.game-details-dialog__play:hover {
+  background-color: $primary-high;
+}
+
+.game-details-dialog__favorite:hover {
+  background-color: $surface;
+}
+
+.game-details-dialog__favorite--active {
+  background-color: $white;
+}
+
+.game-details-dialog__favorite--active .material-symbols-outlined {
+  color: $like;
 }
 
 @media (max-width: $breakpoint-mobile-lg) {
@@ -308,7 +359,10 @@
 
 .game-details-dialog__record-player-group,
 .game-details-dialog__record-result-group {
-  gap: $size-2;
+  gap: $size-05;
+  @media (min-width: $breakpoint-tablet) {
+    gap: $size-2;
+  }
 }
 
 .game-details-dialog__record-player,
@@ -319,6 +373,14 @@
   font-weight: $font-bold;
   line-height: 1;
   letter-spacing: 0;
+}
+
+.game-details-dialog__record-time {
+  font-size: $label-medium;
+  font-weight: $font-regular;
+  line-height: 1;
+  color: $on-bg;
+  white-space: nowrap;
 }
 
 // comments

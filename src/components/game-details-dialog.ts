@@ -8,90 +8,94 @@ import tukoniHero from '../assets/library/tukoni-forest-keepers-hero.jpg';
 import starIcon from '../assets/icons/star.svg';
 import heartIcon from '../assets/icons/heart.svg';
 
-export function createGameDetailsDialog(): HTMLElement {
-  const game = tukoniData.data;
+const medalByPosition: Record<number, string> = {
+  1: '🥇',
+  2: '🥈',
+  3: '🥉',
+};
 
-  const medalByPosition: Record<number, string> = {
-    1: '🥇',
-    2: '🥈',
-    3: '🥉',
-  };
-
-  const recordsMarkup = game.topRecords
+function createRecordsMarkup(): string {
+  return tukoniData.data.topRecords
     .map(
       (record) => `
-      <div class="game-details-dialog__record">
-        <div class="game-details-dialog__record-player-group">
-          <span class="game-details-dialog__record-medal" aria-hidden="true">
-            ${medalByPosition[record.position] ?? ''}
-          </span>
+        <div class="game-details-dialog__record">
+          <div class="game-details-dialog__record-player-group">
+            <span class="game-details-dialog__record-medal" aria-hidden="true">
+              ${medalByPosition[record.position] ?? ''}
+            </span>
 
-          <span class="game-details-dialog__record-player">
-            ${record.playerName}
-          </span>
+            <span class="game-details-dialog__record-player">
+              ${record.playerName}
+            </span>
+          </div>
+
+          <div class="game-details-dialog__record-result-group">
+            <span class="game-details-dialog__record-score">
+              ${record.score.toLocaleString()} pts
+            </span>
+
+            <span class="game-details-dialog__record-time">
+              ${formatRelativeTime(record.achievedAt)}
+            </span>
+          </div>
         </div>
-
-        <div class="game-details-dialog__record-result-group">
-          <span class="game-details-dialog__record-score">
-            ${record.score.toLocaleString()} pts
-          </span>
-
-          <span class="game-details-dialog__record-time">
-            ${formatRelativeTime(record.achievedAt)}
-          </span>
-        </div>  
-      </div>
-    `,
+      `,
     )
     .join('');
+}
 
-  const comments = commentsData.data;
-
-  const commentsMarkup = comments
+function createCommentsMarkup(): string {
+  return commentsData.data
     .map((comment, index) => {
       const likeClass = comment.isLikedByCurrentUser
         ? ' game-details-dialog__comment-likes-group--active'
         : '';
 
       return `
-      <article class="game-details-dialog__comment">
-        <div class="game-details-dialog__comment-header">
-          <div class="game-details-dialog__comment-author-group">
-            <span
-              class="game-details-dialog__comment-avatar game-details-dialog__comment-avatar--${index + 1}"
-            >
-              ${comment.authorName.charAt(0)}
-            </span>
+        <article class="game-details-dialog__comment">
+          <div class="game-details-dialog__comment-header">
+            <div class="game-details-dialog__comment-author-group">
+              <span
+                class="game-details-dialog__comment-avatar game-details-dialog__comment-avatar--${index + 1}"
+              >
+                ${comment.authorName.charAt(0)}
+              </span>
 
-            <span class="game-details-dialog__comment-author">
-              ${comment.authorName}
+              <span class="game-details-dialog__comment-author">
+                ${comment.authorName}
+              </span>
+            </div>
+
+            <span class="game-details-dialog__comment-time">
+              ${formatRelativeTime(comment.createdAt)}
             </span>
           </div>
 
-          <span class="game-details-dialog__comment-time">
-            ${formatRelativeTime(comment.createdAt)}
-          </span>
-        </div>
+          <p class="game-details-dialog__comment-text">
+            ${comment.text}
+          </p>
 
-        <p class="game-details-dialog__comment-text">
-          ${comment.text}
-        </p>
+          <div class="game-details-dialog__comment-likes">
+            <div class="game-details-dialog__comment-likes-group${likeClass}">
+              <span class="material-symbols-outlined" aria-hidden="true">
+                favorite
+              </span>
 
-        <div class="game-details-dialog__comment-likes">
-          <div class="game-details-dialog__comment-likes-group${likeClass}">
-            <span class="material-symbols-outlined" aria-hidden="true">
-              favorite
-            </span>
-
-            <span>${comment.likesCount}</span>
-          </div>  
-        </div>
-      </article>
-    `;
+              <span>${comment.likesCount}</span>
+            </div>
+          </div>
+        </article>
+      `;
     })
     .join('');
+}
 
+export function createGameDetailsDialog(): HTMLElement {
+  const game = tukoniData.data;
+  const recordsMarkup = createRecordsMarkup();
+  const commentsMarkup = createCommentsMarkup();
   const backdrop = document.createElement('div');
+
   backdrop.className = 'game-details-backdrop';
   document.body.classList.add('dialog-open');
 
@@ -174,6 +178,7 @@ export function createGameDetailsDialog(): HTMLElement {
         class="game-details-dialog__favorite"
         type="button"
         aria-label="Add to Favorites"
+        aria-pressed="false"
       >
         <span class="material-symbols-outlined" aria-hidden="true">
           favorite
@@ -229,6 +234,20 @@ export function createGameDetailsDialog(): HTMLElement {
     </section>
   </div>
 `;
+
+  const favoriteButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__favorite');
+
+  favoriteButton?.addEventListener('click', () => {
+    const isFavorited = favoriteButton.classList.toggle('game-details-dialog__favorite--active');
+
+    const text = favoriteButton.querySelector<HTMLElement>('.game-details-dialog__favorite-text');
+
+    if (text) {
+      text.textContent = isFavorited ? 'Remove from Favorites' : 'Add to Favorites';
+    }
+
+    favoriteButton.setAttribute('aria-pressed', String(isFavorited));
+  });
 
   backdrop.append(dialog);
 
