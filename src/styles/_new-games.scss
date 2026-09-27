@@ -130,7 +130,16 @@
   width: 100%;
   display: flex;
   gap: $size-1;
+
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+
   transition: transform 300ms ease;
+}
+
+.new-games__track:active {
+  cursor: grabbing;
 }
 
 @media (min-width: 1024px) and (max-width: 1919px) {

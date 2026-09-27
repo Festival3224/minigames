@@ -88,10 +88,26 @@ export function createNewGames(): HTMLElement {
     throw new Error('New games track not found');
   }
 
+  const previousButton = section.querySelector<HTMLButtonElement>(
+    '.new-games__control:not(.new-games__control--next)',
+  );
+
+  const nextButton = section.querySelector<HTMLButtonElement>('.new-games__control--next');
+
+  let currentIndex = 0;
+
+  function getVisibleGames() {
+    return Array.from({ length: 5 }, (_, offset) => {
+      const gameIndex = (currentIndex + offset) % featuredGames.length;
+
+      return featuredGames[gameIndex];
+    });
+  }
+
   const renderSlider = (): void => {
     track.replaceChildren();
 
-    const visibleGames = featuredGames.slice(0, 5);
+    const visibleGames = getVisibleGames();
 
     for (const [index, game] of visibleGames.entries()) {
       track.append(
@@ -105,44 +121,179 @@ export function createNewGames(): HTMLElement {
 
   renderSlider();
 
-  const previousButton = section.querySelector<HTMLButtonElement>(
-    '.new-games__control:not(.new-games__control--next)',
-  );
+  function setCardPositionClasses(cards: HTMLElement[]): void {
+    for (const [index, card] of cards.entries()) {
+      card.classList.remove('game-card--edge', 'game-card--regular', 'game-card--featured');
 
-  const nextButton = section.querySelector<HTMLButtonElement>('.new-games__control--next');
+      const className = cardClasses[index];
 
-  let currentIndex = 0;
+      if (className) {
+        card.classList.add(className);
+      }
+    }
+  }
 
-  const updateSlider = (): void => {
-    const firstCard = track.firstElementChild as HTMLElement | null;
+  const showNextSlide = (): void => {
+    const cards = [...track.children] as HTMLElement[];
+
+    const firstCard = cards[0];
 
     if (!firstCard) {
       return;
     }
 
-    const gap = Number(getComputedStyle(track).gap) || 0;
-    const step = firstCard.offsetWidth + gap;
+    currentIndex = (currentIndex + 1) % featuredGames.length;
 
-    track.style.transform = `translateX(-${currentIndex * step}px)`;
+    const nextGameIndex = (currentIndex + 4) % featuredGames.length;
+
+    const nextGame = featuredGames[nextGameIndex];
+
+    const newCard = createGameCard({
+      ...nextGame,
+      className: 'game-card--edge',
+    });
+
+    firstCard.remove();
+    track.append(newCard);
+
+    const updatedCards = [...track.children] as HTMLElement[];
+
+    setCardPositionClasses(updatedCards);
   };
 
-  previousButton?.addEventListener('click', () => {
-    if (currentIndex === 0) {
+  const showPreviousSlide = (): void => {
+    const cards = [...track.children] as HTMLElement[];
+
+    const lastCard = cards.at(-1);
+
+    if (!lastCard) {
       return;
     }
 
-    currentIndex -= 1;
-    updateSlider();
-  });
+    currentIndex = (currentIndex - 1 + featuredGames.length) % featuredGames.length;
 
-  nextButton?.addEventListener('click', () => {
-    if (currentIndex >= featuredGames.length - 1) {
+    const previousGame = featuredGames[currentIndex];
+
+    const newCard = createGameCard({
+      ...previousGame,
+      className: 'game-card--edge',
+    });
+
+    lastCard.remove();
+    track.prepend(newCard);
+
+    const updatedCards = [...track.children] as HTMLElement[];
+
+    setCardPositionClasses(updatedCards);
+  };
+
+  const autoplayDelay = 4000;
+
+  let autoplayTimer: number | undefined;
+  let autoplayStartedAt = 0;
+  let autoplayRemaining = autoplayDelay;
+
+  const startAutoplay = (delay = autoplayDelay): void => {
+    clearTimeout(autoplayTimer);
+
+    autoplayRemaining = delay;
+    autoplayStartedAt = Date.now();
+
+    autoplayTimer = setTimeout(() => {
+      showNextSlide();
+      startAutoplay();
+    }, delay);
+  };
+
+  const pauseAutoplay = (): void => {
+    if (autoplayTimer === undefined) {
       return;
     }
 
-    currentIndex += 1;
-    updateSlider();
+    const elapsed = Date.now() - autoplayStartedAt;
+
+    autoplayRemaining = Math.max(0, autoplayRemaining - elapsed);
+
+    clearTimeout(autoplayTimer);
+    autoplayTimer = undefined;
+  };
+
+  const resumeAutoplay = (): void => {
+    startAutoplay(autoplayRemaining);
+  };
+
+  const resetAutoplay = (): void => {
+    startAutoplay();
+  };
+
+  let pointerStartX = 0;
+  let pointerCurrentX = 0;
+  let isPointerDown = false;
+
+  const swipeThreshold = 50;
+
+  track.addEventListener('pointerdown', (event) => {
+    isPointerDown = true;
+
+    pointerStartX = event.clientX;
+    pointerCurrentX = event.clientX;
+
+    track.setPointerCapture(event.pointerId);
+
+    event.preventDefault();
+
+    pauseAutoplay();
   });
+
+  track.addEventListener('pointermove', (event) => {
+    if (!isPointerDown) {
+      return;
+    }
+
+    pointerCurrentX = event.clientX;
+  });
+
+  track.addEventListener('pointerup', (event) => {
+    if (!isPointerDown) {
+      return;
+    }
+
+    isPointerDown = false;
+
+    if (track.hasPointerCapture(event.pointerId)) {
+      track.releasePointerCapture(event.pointerId);
+    }
+
+    const distance = pointerCurrentX - pointerStartX;
+    const didSwipe = Math.abs(distance) >= swipeThreshold;
+
+    if (didSwipe) {
+      if (distance < 0) {
+        showNextSlide();
+      } else {
+        showPreviousSlide();
+      }
+      resetAutoplay();
+      return;
+    }
+    resumeAutoplay();
+  });
+
+  track.addEventListener('pointercancel', (event) => {
+    isPointerDown = false;
+
+    if (track.hasPointerCapture(event.pointerId)) {
+      track.releasePointerCapture(event.pointerId);
+    }
+
+    resumeAutoplay();
+  });
+
+  previousButton?.addEventListener('click', showPreviousSlide);
+
+  nextButton?.addEventListener('click', showNextSlide);
+
+  startAutoplay();
 
   return section;
 }

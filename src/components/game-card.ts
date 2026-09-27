@@ -55,7 +55,7 @@ export function createGameCard({
   `;
 
   card.innerHTML = /* html */ `
-    <img class="game-card__image" src="${imageSrc}" alt="" />
+    <img class="game-card__image" src="${imageSrc}" alt="" draggable="false"/>
 
     ${overlay}
   `;
