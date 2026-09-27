@@ -266,10 +266,10 @@
 
         <div class="header__actions">
           <nav class="header__nav" aria-label="Main navigation">
-            <a class="header__nav-link header__nav-link--active" href="#">Home</a>
-            <a class="header__nav-link" href="#">Library</a>
-            <a class="header__nav-link" href="#">Tournaments</a>
-            <a class="header__nav-link" href="#">Community</a>
+            <a class="header__nav-link" href="#home" data-route="home">Home</a>
+            <a class="header__nav-link" href="#library" data-route="library">Library</a>
+            <a class="header__nav-link" href="#home">Tournaments</a>
+            <a class="header__nav-link" href="#home">Community</a>
           </nav>
 
           <div class="header__user-actions">
@@ -318,10 +318,10 @@
       </div>
 
       <nav class="header__mobile-nav" aria-label="Mobile navigation">
-        <a class="header__mobile-link header__mobile-link--active" href="#">Home</a>
-        <a class="header__mobile-link" href="#">Library</a>
-        <a class="header__mobile-link" href="#">Tournaments</a>
-        <a class="header__mobile-link" href="#">Community</a>
+        <a class="header__mobile-link" href="#home" data-route="home">Home</a>
+        <a class="header__mobile-link" href="#library" data-route="library">Library</a>
+        <a class="header__mobile-link" href="#home">Tournaments</a>
+        <a class="header__mobile-link" href="#home">Community</a>
       </nav>
 
       <div class="header__mobile-actions">
@@ -332,7 +332,7 @@
 
     <div class="header__backdrop"></div>
 
-  `;let r=e.querySelector(`.header__menu`),i=e.querySelector(`.header__mobile-close`),a=e.querySelector(`.header__mobile-menu`),o=e.querySelector(`.header__backdrop`),s=e.querySelector(`.header__login`),c=e.querySelector(`.header__mobile-login`),l=e.querySelector(`.header__mobile-signup`);s?.addEventListener(`click`,()=>{document.querySelector(`.auth-overlay`)||document.body.append(t())});function u(){a?.classList.add(`header__mobile-menu--open`),o?.classList.add(`header__backdrop--visible`),r?.setAttribute(`aria-expanded`,`true`),a?.setAttribute(`aria-hidden`,`false`),document.body.classList.add(`menu-open`)}function d(){a?.classList.remove(`header__mobile-menu--open`),o?.classList.remove(`header__backdrop--visible`),r?.setAttribute(`aria-expanded`,`false`),a?.setAttribute(`aria-hidden`,`true`),document.body.classList.remove(`menu-open`)}c?.addEventListener(`click`,()=>{d(),!document.querySelector(`.auth-overlay`)&&document.body.append(t())}),l?.addEventListener(`click`,()=>{if(d(),document.querySelector(`.auth-overlay`))return;let e=t();document.body.append(e),e.querySelector(`[data-auth-tab="register"]`)?.click()}),r?.addEventListener(`click`,u),i?.addEventListener(`click`,d),o?.addEventListener(`click`,d);let f=e.querySelectorAll(`.header__mobile-link`);for(let e of f)e.addEventListener(`click`,d);return e}function i(){let e=document.createElement(`section`);return e.className=`hero`,e.innerHTML=`
+  `;let r=e.querySelector(`.header__menu`),i=e.querySelector(`.header__mobile-close`),a=e.querySelector(`.header__mobile-menu`),o=e.querySelector(`.header__backdrop`),s=e.querySelector(`.header__login`),c=e.querySelector(`.header__mobile-login`),l=e.querySelector(`.header__mobile-signup`),u=location.hash===`#library`?`library`:`home`,d=e.querySelectorAll(`[data-route]`);for(let e of d)e.dataset.route===u&&(e.classList.contains(`header__nav-link`)&&e.classList.add(`header__nav-link--active`),e.classList.contains(`header__mobile-link`)&&e.classList.add(`header__mobile-link--active`));s?.addEventListener(`click`,()=>{document.querySelector(`.auth-overlay`)||document.body.append(t())});function f(){a?.classList.add(`header__mobile-menu--open`),o?.classList.add(`header__backdrop--visible`),r?.setAttribute(`aria-expanded`,`true`),a?.setAttribute(`aria-hidden`,`false`),document.body.classList.add(`menu-open`)}function p(){a?.classList.remove(`header__mobile-menu--open`),o?.classList.remove(`header__backdrop--visible`),r?.setAttribute(`aria-expanded`,`false`),a?.setAttribute(`aria-hidden`,`true`),document.body.classList.remove(`menu-open`)}c?.addEventListener(`click`,()=>{p(),!document.querySelector(`.auth-overlay`)&&document.body.append(t())}),l?.addEventListener(`click`,()=>{if(p(),document.querySelector(`.auth-overlay`))return;let e=t();document.body.append(e),e.querySelector(`[data-auth-tab="register"]`)?.click()}),r?.addEventListener(`click`,f),i?.addEventListener(`click`,p),o?.addEventListener(`click`,p);let m=e.querySelectorAll(`.header__mobile-link`);for(let e of m)e.addEventListener(`click`,p);return e}function i(){let e=document.createElement(`section`);return e.className=`hero`,e.innerHTML=`
     <div class="hero__container">
       <div class="hero__card">
         <h1 class="hero__title">
@@ -583,10 +583,237 @@
             alt=""
             aria-hidden="true"
           />
-          <span>@student-nickname</span>
+          <span>@Festival3224</span>
         </a>
       </div>
 
       <span class="footer__love">Designed with love</span>
     </div>
-  `,e}function E(){let e=document.createElement(`div`);e.append(r());let t=document.createElement(`main`);return t.append(i()),t.append(g()),t.append(y()),t.append(S()),t.append(T()),e.append(t),e}var D=document.createElement(`div`);D.id=`app`,document.body.append(D),D.append(E());
+  `,e}function E(){let e=document.createElement(`div`);e.append(r());let t=document.createElement(`main`);return t.append(i()),t.append(g()),t.append(y()),t.append(S()),t.append(T()),e.append(t),e}function D(e){let t=document.createElement(`nav`);t.className=`pagination`,t.setAttribute(`aria-label`,`Library pagination`);let n=1,r=t=>{if(e<=t)return Array.from({length:e},(e,t)=>t+1);let r=Math.max(1,n-Math.floor(t/2)),i=r+t-1;return i>e&&(i=e,r=i-t+1),Array.from({length:i-r+1},(e,t)=>r+t)},i=()=>{t.replaceChildren();let a=document.createElement(`button`);a.className=`pagination__arrow`,a.type=`button`,a.innerHTML=`
+      <span class="material-symbols-outlined" aria-hidden="true">
+        chevron_left
+      </span>
+    `,a.disabled=n===1,a.addEventListener(`click`,()=>{n<=1||(--n,i())}),t.append(a);let o=matchMedia(`(max-width: 499px)`).matches?3:4,s=r(o);for(let e of s){let r=document.createElement(`button`);r.className=`pagination__page`,r.type=`button`,r.textContent=String(e),r.dataset.page=String(e),e===n&&(r.classList.add(`pagination__page--active`),r.setAttribute(`aria-current`,`page`)),r.addEventListener(`click`,()=>{n=e,i()}),t.append(r)}let c=document.createElement(`button`);c.className=`pagination__arrow`,c.type=`button`,c.innerHTML=`
+      <span class="material-symbols-outlined" aria-hidden="true">
+        chevron_right
+      </span>
+    `,c.disabled=n===e,c.addEventListener(`click`,()=>{n>=e||(n+=1,i())}),t.append(c)};return i(),addEventListener(`resize`,i),t}var O={data:{slug:`tukoni-forest-keepers`,name:`Tukoni: Forest Keepers`,heroImage:`/assets/images/games/tukoni-forest-keepers-hero.jpg`,rating:4.9,likesCount:31200,isLikedByCurrentUser:!1,fullDescription:`Tukoni: Forest Keepers — a cozy hand-drawn puzzle-adventure. You are Traveller, a little forest spirit on an important mission. Wander storybook meadows, visit mushroom villages, meet adorable inhabitants, solve gentle hand-crafted puzzles, brew herbal teas and help the Tukoni forest prepare peacefully for the coming winter.`,specs:{genre:`Puzzle`,players:`Solo`,duration:`40-90 min`,price:`Free`},topRecords:[{position:1,playerName:`ForestSpirit`,score:356700,achievedAt:`2026-08-28T14:30:00Z`},{position:2,playerName:`TeaBrewer`,score:332400,achievedAt:`2026-08-25T09:12:00Z`},{position:3,playerName:`HerbalistPath`,score:308900,achievedAt:`2026-08-23T18:45:00Z`}]}};function k(e){return e<1e3?String(e):`${Math.floor(e/100)/10}K`}function A(e){return e.toFixed(1)}function j(e){let t=new Date(e),n=Math.floor((new Date().getTime()-t.getTime())/864e5);if(n<1)return`today`;if(n<7)return`${n} day${n===1?``:`s`} ago`;let r=Math.floor(n/7);return`${r} week${r===1?``:`s`} ago`}var M={data:[{commentId:`c5d9f2a1-7c3b-4e8f-9a0d-000000000001`,authorName:`ForestDweller`,text:`The hand-drawn art is absolutely magical 🍄 Every location feels like a page from a children's storybook. The mushroom village made me cry happy tears!`,likesCount:12,isLikedByCurrentUser:!1,createdAt:`2026-08-30T07:00:00Z`},{commentId:`c5d9f2a1-7c3b-4e8f-9a0d-000000000002`,authorName:`HerbalTeaLover`,text:`Perfect cozy evening game — brew a cup of chamomile, wrap in a blanket and help the little Tukoni prepare for winter. The puzzles are gentle but satisfying.`,likesCount:5,isLikedByCurrentUser:!1,createdAt:`2026-08-29T15:30:00Z`},{commentId:`c5d9f2a1-7c3b-4e8f-9a0d-000000000003`,authorName:`CottageCoreMia`,text:`I want to live inside this game forever 🌿 The NPCs are so charming, the tea recipes are real, and the atmosphere is pure warmth and calm.`,likesCount:8,isLikedByCurrentUser:!1,createdAt:`2026-08-27T20:10:00Z`}],meta:{totalComments:3,returnedCount:3,sort:`newest`}},N=`/minigames/assets/tukoni-forest-keepers-hero-D-UQTA7d.jpg`,P={1:`🥇`,2:`🥈`,3:`🥉`};function F(){return O.data.topRecords.map(e=>`
+        <div class="game-details-dialog__record">
+          <div class="game-details-dialog__record-player-group">
+            <span class="game-details-dialog__record-medal" aria-hidden="true">
+              ${P[e.position]??``}
+            </span>
+
+            <span class="game-details-dialog__record-player">
+              ${e.playerName}
+            </span>
+          </div>
+
+          <div class="game-details-dialog__record-result-group">
+            <span class="game-details-dialog__record-score">
+              ${e.score.toLocaleString()} pts
+            </span>
+
+            <span class="game-details-dialog__record-time">
+              ${j(e.achievedAt)}
+            </span>
+          </div>
+        </div>
+      `).join(``)}function I(){return M.data.map((e,t)=>{let n=e.isLikedByCurrentUser?` game-details-dialog__comment-likes-group--active`:``;return`
+        <article class="game-details-dialog__comment">
+          <div class="game-details-dialog__comment-header">
+            <div class="game-details-dialog__comment-author-group">
+              <span
+                class="game-details-dialog__comment-avatar game-details-dialog__comment-avatar--${t+1}"
+              >
+                ${e.authorName.charAt(0)}
+              </span>
+
+              <span class="game-details-dialog__comment-author">
+                ${e.authorName}
+              </span>
+            </div>
+
+            <span class="game-details-dialog__comment-time">
+              ${j(e.createdAt)}
+            </span>
+          </div>
+
+          <p class="game-details-dialog__comment-text">
+            ${e.text}
+          </p>
+
+          <div class="game-details-dialog__comment-likes">
+            <div class="game-details-dialog__comment-likes-group${n}">
+              <span class="material-symbols-outlined" aria-hidden="true">
+                favorite
+              </span>
+
+              <span>${e.likesCount}</span>
+            </div>
+          </div>
+        </article>
+      `}).join(``)}function L(){let e=O.data,t=F(),n=I(),r=document.createElement(`div`);r.className=`game-details-backdrop`,document.body.classList.add(`dialog-open`);let i=document.createElement(`section`);i.className=`game-details-dialog`,i.setAttribute(`role`,`dialog`),i.setAttribute(`aria-modal`,`true`),i.setAttribute(`aria-label`,`Game details`),i.innerHTML=`
+  <div class="game-details-dialog__hero">
+    <img
+      class="game-details-dialog__hero-image"
+      src="${N}"
+      alt=""
+    />
+
+    <button
+      class="game-details-dialog__close"
+      type="button"
+      aria-label="Close game details"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">
+        close
+      </span>
+    </button>
+  </div>
+
+  <div class="game-details-dialog__content">
+    <div class="game-details-dialog__title-row">  
+      <h2 class="game-details-dialog__title">
+        ${e.name}
+      </h2>  
+
+      <div class="game-details-dialog__ratings">
+        <span class="game-details-dialog__rating">
+          <img src="${f}" alt="" aria-hidden="true" />
+          ${A(e.rating)}
+        </span>
+
+        <span class="game-details-dialog__likes">
+          <img src="${p}" alt="" aria-hidden="true" />
+          ${k(e.likesCount)}
+        </span>
+      </div>
+    </div>
+
+    <p class="game-details-dialog__description">
+      ${e.fullDescription} <!-- description -->
+    </p>
+
+    <div class="game-details-dialog__info">
+      <div class="game-details-dialog__info-item">
+        <span class="game-details-dialog__info-label">Genre</span>
+        <span class="game-details-dialog__info-value">${e.specs.genre}</span>
+      </div>
+
+      <div class="game-details-dialog__info-item">
+        <span class="game-details-dialog__info-label">Players</span>
+        <span class="game-details-dialog__info-value">${e.specs.players}</span>
+      </div>
+
+      <div class="game-details-dialog__info-item">
+        <span class="game-details-dialog__info-label">Duration</span>
+        <span class="game-details-dialog__info-value">${e.specs.duration}</span>
+      </div>
+
+      <div class="game-details-dialog__info-item">
+        <span class="game-details-dialog__info-label">Price</span>
+        <span class="game-details-dialog__info-value">${e.specs.price}</span>
+      </div>
+    </div>
+
+   <div class="game-details-dialog__actions">
+      <button class="game-details-dialog__play" type="button">
+        Play Now
+      </button>
+
+      <button
+        class="game-details-dialog__favorite"
+        type="button"
+        aria-label="Add to Favorites"
+        aria-pressed="false"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">
+          favorite
+        </span>
+
+        <span class="game-details-dialog__favorite-text">
+          Add to Favorites
+        </span>
+      </button>
+    </div>
+
+    <section class="game-details-dialog__records">
+      <div class="game-details-dialog__records-title">
+        <span aria-hidden="true">🏆</span>
+        <h3>Top Records</h3>
+      </div>
+
+      <div class="game-details-dialog__records-list">
+        ${t}
+      </div>
+    </section>
+
+    <section class="game-details-dialog__comments">
+      <h3 class="game-details-dialog__comments-title">
+        Comments (${M.meta.totalComments})
+      </h3>
+
+    <div class="game-details-dialog__comment-form">
+      <div class="game-details-dialog__user-avatar" aria-hidden="true">
+        U
+      </div>
+
+      <textarea
+        class="game-details-dialog__comment-input"
+        placeholder="Write a comment..."
+        aria-label="Write a comment"
+      ></textarea>
+
+      <button
+        class="game-details-dialog__send"
+        type="button"
+        aria-label="Send comment"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">
+          send
+        </span>
+      </button>
+    </div>
+
+      <div class="game-details-dialog__comments-list">
+        ${n}
+      </div>
+    </section>
+  </div>
+`;let a=i.querySelector(`.game-details-dialog__favorite`);a?.addEventListener(`click`,()=>{let e=a.classList.toggle(`game-details-dialog__favorite--active`),t=a.querySelector(`.game-details-dialog__favorite-text`);t&&(t.textContent=e?`Remove from Favorites`:`Add to Favorites`),a.setAttribute(`aria-pressed`,String(e))}),r.append(i);let o=i.querySelector(`.game-details-dialog__comment-input`),s=i.querySelector(`.game-details-dialog__send`),c=()=>{o&&s&&(s.disabled=o.value.trim().length===0)};o?.addEventListener(`input`,c),c();let l=i.querySelector(`.game-details-dialog__close`);function u(){document.removeEventListener(`keydown`,d),document.body.classList.remove(`dialog-open`),r.remove()}function d(e){e.key===`Escape`&&u()}return l?.addEventListener(`click`,u),r.addEventListener(`click`,e=>{e.target===r&&u()}),document.addEventListener(`keydown`,d),r}var R=`/minigames/assets/heartopia-card-DRd_6OVG.jpg`,z=`/minigames/assets/palia-card-8xT8yeZQ.jpg`,B=`/minigames/assets/cat-mail-co-card-B0GMTC_n.jpg`;function V({title:e,imageSrc:t,category:n,description:r,rating:i,likes:a,price:o}){let s=document.createElement(`article`);return s.className=`library-game-card`,s.innerHTML=`
+    <img
+      class="library-game-card__image"
+      src="${t}"
+      alt=""
+    />
+
+    <div class="library-game-card__content">
+      <div class="library-game-card__heading">
+        <h2 class="library-game-card__title">${e}</h2>
+        <span class="library-game-card__tag">${n}</span>
+      </div>
+
+      <span class="library-game-card__price">${o}</span>
+
+      <p class="library-game-card__description">
+        ${r}
+      </p>
+
+      <div class="library-game-card__meta">
+        <span class="library-game-card__rating">
+          <img src="${f}" alt="" aria-hidden="true" />
+          ${i}
+        </span>
+
+        <span class="library-game-card__likes">
+          <img src="${p}" alt="" aria-hidden="true" />
+          ${a}
+        </span>
+      </div>
+
+      <button class="library-game-card__details" type="button">
+        Details
+      </button>
+    </div>
+  `,s}var H={data:[{slug:`all`,label:`All Games`,isDefault:!0},{slug:`puzzle`,label:`Puzzle`,isDefault:!1},{slug:`card`,label:`Card`,isDefault:!1},{slug:`match`,label:`Match`,isDefault:!1},{slug:`farm`,label:`Farm`,isDefault:!1},{slug:`strategy`,label:`Strategy`,isDefault:!1},{slug:`arcade`,label:`Arcade`,isDefault:!1}],meta:{totalItems:7,description:`Game categories for Library filter chips`}},U={data:[{slug:`vacation-cafe-simulator`,name:`Vacation Cafe Simulator`,category:`strategy`,price:`Free`,shortDescription:`Cozy Italian Vacation Cafe 🏖️ No timers, No stress 😌 cook traditional dishes 🍝 upgrade and customize 🏠 just drink Prosecco 🥂 relax and grow your dream cafe ✨`,rating:4.8,likesCount:28750,cardImage:`/assets/images/games/vacation-cafe-simulator-card.jpg`,featured:!0},{slug:`winter-burrow`,name:`Winter Burrow`,category:`farm`,price:`Free`,shortDescription:`A cozy woodland survival game about a mouse restoring their childhood burrow. Explore, gather resources, craft, knit warm sweaters, bake pies and meet the locals.`,rating:4.9,likesCount:32400,cardImage:`/assets/images/games/winter-burrow-card.jpg`,featured:!0},{slug:`shelve-the-potions`,name:`Shelve the Potions!`,category:`puzzle`,price:`Free`,shortDescription:`Organize 2000+ potions on shelves after the witch's cats have knocked them over, using clues around an enchanted cellar. Learn strange symbols and decipher cryptic notes.`,rating:4.7,likesCount:21300,cardImage:`/assets/images/games/shelve-the-potions-card.jpg`,featured:!0},{slug:`heartopia`,name:`Heartopia`,category:`strategy`,price:`$1.99`,shortDescription:`A multiplayer life simulation game crafted for creativity, freedom, and peace. Build your dream home, explore hobbies, and forge warm connections with friends in a cozy town.`,rating:4.6,likesCount:46800,cardImage:`/assets/images/games/heartopia-card.jpg`,featured:!0},{slug:`palia`,name:`Palia`,category:`strategy`,price:`Free`,shortDescription:`A free-to-play fantasy life sim adventure where you can craft, explore, and create the life and home of your dreams in a vibrant, heartwarming world.`,rating:4.8,likesCount:89500,cardImage:`/assets/images/games/palia-card.jpg`,featured:!0},{slug:`cat-mail-co`,name:`Cat Mail Co.`,category:`puzzle`,price:`Free`,shortDescription:`Run a cozy cat post office. Sort and deliver parcels from the daily boat. At night, the moon reveals hidden truths about packages. Clear a strange backlog and unlock new destinations.`,rating:4.9,likesCount:38200,cardImage:`/assets/images/games/cat-mail-co-card.jpg`,featured:!0},{slug:`leaf-it-alone`,name:`Leaf it Alone`,category:`arcade`,price:`Free`,shortDescription:`Finally, it's that time of the year to clean up this leafy mess. Derust your raking skills and don't waste a second — there's a whole lawn waiting!`,rating:4.4,likesCount:12600,cardImage:`/assets/images/games/leaf-it-alone-card.jpg`,featured:!1},{slug:`leafy-corner`,name:`Leafy Corner`,category:`farm`,price:`$1.99`,shortDescription:`Run a cute little plant shop. Grow, sell, and care for real-life plants, help customers find their dream plants, complete orders, and customize your cozy shop.`,rating:4.7,likesCount:19800,cardImage:`/assets/images/games/leafy-corner-card.jpg`,featured:!1},{slug:`grimshire`,name:`Grimshire`,category:`strategy`,price:`Free`,shortDescription:`A deadly plague threatens the village of Grimshire. Manage farmland, forage wilds, stop harvest rot and keep the cellar full. Can you help the community survive?`,rating:4.6,likesCount:15700,cardImage:`/assets/images/games/grimshire-card.jpg`,featured:!1},{slug:`tiny-glade`,name:`Tiny Glade`,category:`arcade`,price:`$3.99`,shortDescription:`A small diorama builder where you doodle whimsical castles, cozy cottages & romantic ruins. No management, combat or goals — just lovable dioramas.`,rating:4.9,likesCount:67300,cardImage:`/assets/images/games/tiny-glade-card.jpg`,featured:!0},{slug:`whisper-of-the-house`,name:`Whisper of the House`,category:`puzzle`,price:`Free`,shortDescription:`A cozy organizing & decorating game. Help townspeople move, organize, and clean their spaces. Your gentle touch may change their lives and uncover hidden stories.`,rating:4.8,likesCount:24900,cardImage:`/assets/images/games/whisper-of-the-house-card.jpg`,featured:!1},{slug:`tukoni-forest-keepers`,name:`Tukoni: Forest Keepers`,category:`puzzle`,price:`Free`,shortDescription:`A cute cozy puzzle adventure. Play as a forest spirit exploring hand-drawn magical locations, meet charming characters, solve puzzles, collect herbs and tea recipes.`,rating:4.9,likesCount:31200,cardImage:`/assets/images/games/tukoni-forest-keepers-card.jpg`,featured:!1},{slug:`cat-chess`,name:`Cat Chess`,category:`strategy`,price:`Free`,shortDescription:`Play the ancient and thrilling game of Chess but with... cats! Lead your furry friends to the Purrfect battle of brains and whiskers!`,rating:4.6,likesCount:17400,cardImage:`/assets/images/games/cat-chess-card.jpg`,featured:!1},{slug:`cast-n-chill`,name:`Cast n Chill`,category:`arcade`,price:`Free`,shortDescription:`A relaxing fishing game where you explore serene lakes, rivers, and oceans. Catch rare fish, upgrade your gear and reel in legendary catches - all with your loyal companion.`,rating:4.7,likesCount:26800,cardImage:`/assets/images/games/cast-n-chill-card.jpg`,featured:!1},{slug:`little-corners`,name:`Little Corners`,category:`puzzle`,price:`Free`,shortDescription:`Peel, place, and arrange stickers across tiny windows into different worlds. Relax and unwind to lofi beats, collect unique stickers and share cozy creations.`,rating:4.8,likesCount:41500,cardImage:`/assets/images/games/little-corners-card.jpg`,featured:!1},{slug:`tailside-cozy-cafe-sim`,name:`Tailside: Cozy Cafe Sim`,category:`strategy`,price:`Free`,shortDescription:`Run your own cozy café in Tailside! Brew coffee, decorate your café, follow small stories in the daily newspaper. Unlock new items, skills, villagers, and creature visitors.`,rating:4.8,likesCount:35600,cardImage:`/assets/images/games/tailside-cozy-cafe-sim-card.jpg`,featured:!0},{slug:`islanders-new-shores`,name:`ISLANDERS: New Shores`,category:`strategy`,price:`Free`,shortDescription:`Build your island retreat in a calm, minimalist world with exciting new features that keep the classic charm while inspiring fresh creativity.`,rating:4.9,likesCount:54200,cardImage:`/assets/images/games/islanders-new-shores-card.jpg`,featured:!0},{slug:`camper-van-make-it-home`,name:`Camper Van: Make it Home`,category:`puzzle`,price:`Free`,shortDescription:`Decorate and organize the camper van of your dreams! Build your own home-on-wheels using creative block organization puzzles and relaxing interior design.`,rating:4.7,likesCount:29300,cardImage:`/assets/images/games/camper-van-make-it-home-card.jpg`,featured:!1},{slug:`organized-inside`,name:`Organized Inside`,category:`puzzle`,price:`Free`,shortDescription:`A slow-paced life sim and tidying up game about a cat, passion, transformation and growth. Categorize household items while uncovering the meaning of life through organization.`,rating:4.8,likesCount:22700,cardImage:`/assets/images/games/organized-inside-card.jpg`,featured:!1},{slug:`cozy-solitaire`,name:`Cozy Solitaire`,category:`card`,price:`Free`,shortDescription:`Classic Solitaire game, accompanied by music and kitties.`,rating:4.5,likesCount:38900,cardImage:`/assets/images/games/cozy-solitaire-card.jpg`,featured:!1},{slug:`cozy-sudoku`,name:`Cozy Sudoku`,category:`puzzle`,price:`Free`,shortDescription:`Sudoku, tunes, and some furry friends.`,rating:4.6,likesCount:21500,cardImage:`/assets/images/games/cozy-sudoku-card.jpg`,featured:!1},{slug:`koroneko`,name:`KoroNeko`,category:`puzzle`,price:`Free`,shortDescription:`Roll your way through a cozy, kawaii world full of charming characters and challenging puzzles to save your siblings from Strawberry the Witch!`,rating:4.9,likesCount:47300,cardImage:`/assets/images/games/koroneko-card.jpg`,featured:!1},{slug:`wytchwood`,name:`Wytchwood`,category:`strategy`,price:`$4.99`,shortDescription:`A crafting adventure game set in a land of gothic fables. As the old witch, explore, collect ingredients, brew spells, and pass judgement upon a capricious cast of characters.`,rating:4.7,likesCount:33100,cardImage:`/assets/images/games/wytchwood-card.jpg`,featured:!1},{slug:`the-wild-at-heart`,name:`The Wild at Heart`,category:`strategy`,price:`Free`,shortDescription:`Wield a herd of quirky creatures to rebuild paths, battle beasts, and solve puzzles in a rich, interconnected nostalgic storybook fantasy world.`,rating:4.8,likesCount:30400,cardImage:`/assets/images/games/the-wild-at-heart-card.jpg`,featured:!1}],meta:{totalItems:24,description:`Full MiniGames library — seed snapshot (24 cozy titles), resets daily 03:00 UTC`,featuredCount:9}},W={"vacation-cafe-simulator":s,"winter-burrow":c,"shelve-the-potions":l,heartopia:R,palia:z,"cat-mail-co":B};function G(){let e=document.createElement(`div`);e.className=`page`,e.append(r());let t=document.createElement(`main`);t.className=`library`;let n=document.createElement(`section`);n.className=`library__title-section`;let i=document.createElement(`h1`);i.className=`library__title`,i.textContent=`Game Library`;let a=document.createElement(`p`);a.className=`library__subtitle`,a.textContent=`Browse our collection of casual mini-games`,n.append(i,a);let o=document.createElement(`section`);o.className=`library__controls`;let s=document.createElement(`div`);s.className=`library__filters`;for(let e of H.data){let t=document.createElement(`button`);t.className=`library__filter`,t.type=`button`,t.textContent=e.label,t.dataset.category=e.slug,t.setAttribute(`aria-pressed`,String(e.isDefault)),e.isDefault&&t.classList.add(`library__filter--active`),s.append(t)}let c=s.querySelectorAll(`.library__filter`),l=!1,u=!1,d=0,f=0,p=0;s.addEventListener(`pointerdown`,e=>{l=!0,u=!1,d=e.clientX,f=s.scrollLeft,p=0}),s.addEventListener(`pointermove`,e=>{if(!l)return;let t=e.clientX-d;p=Math.abs(t),!(p<=5)&&(u||(u=!0,s.setPointerCapture(e.pointerId)),s.scrollLeft=f-t)}),s.addEventListener(`pointerup`,e=>{l=!1,u&&s.hasPointerCapture(e.pointerId)&&s.releasePointerCapture(e.pointerId),u=!1}),s.addEventListener(`pointercancel`,()=>{l=!1,u=!1});for(let e of c)e.addEventListener(`click`,()=>{if(!(p>5)){for(let e of c)e.classList.remove(`library__filter--active`),e.setAttribute(`aria-pressed`,`false`);e.classList.add(`library__filter--active`),e.setAttribute(`aria-pressed`,`true`)}});let m=document.createElement(`div`);m.className=`library__sort-wrapper`;let h=document.createElement(`button`);h.className=`library__sort`,h.type=`button`,h.setAttribute(`aria-expanded`,`false`),h.setAttribute(`aria-haspopup`,`listbox`);let g=document.createElement(`span`);g.textContent=`Sort by: Rating ↓`;let _=document.createElement(`span`);_.className=`material-symbols-outlined`,_.setAttribute(`aria-hidden`,`true`),_.textContent=`arrow_drop_down`,h.append(g,_);let v=document.createElement(`div`);v.className=`library__sort-menu`,v.setAttribute(`role`,`listbox`),v.hidden=!0;for(let e of[`Rating ↑`,`Rating ↓`,`Name A→Z`,`Name Z→A`]){let t=document.createElement(`button`);t.className=`library__sort-option`,t.type=`button`,t.setAttribute(`role`,`option`),t.textContent=e,e===`Rating ↓`?(t.classList.add(`library__sort-option--active`),t.setAttribute(`aria-selected`,`true`)):t.setAttribute(`aria-selected`,`false`),v.append(t)}h.addEventListener(`click`,()=>{let e=!v.hidden;v.hidden=e,h.setAttribute(`aria-expanded`,String(!e))});let y=v.querySelectorAll(`.library__sort-option`);for(let e of y)e.addEventListener(`click`,()=>{for(let e of y)e.classList.remove(`library__sort-option--active`),e.setAttribute(`aria-selected`,`false`);e.classList.add(`library__sort-option--active`),e.setAttribute(`aria-selected`,`true`),g.textContent=`Sort by: ${e.textContent}`,v.hidden=!0,h.setAttribute(`aria-expanded`,`false`)});m.append(h,v);let b=document.createElement(`section`);b.className=`library__games`;let x=U.data.slice(0,6);for(let e of x)b.append(V({title:e.name,imageSrc:W[e.slug],category:e.category,description:e.shortDescription,rating:A(e.rating),likes:k(e.likesCount),price:e.price}));b.addEventListener(`click`,e=>{let t=e.target;if(!(t instanceof HTMLElement)||!t.closest(`.library-game-card__details`))return;let n=L();document.body.append(n)});let S=D(Math.ceil(U.data.length/6));return o.append(s,m),t.append(n,o,b,S),e.append(t),e.append(T()),e}function K(e){let t=document.querySelector(`#app`);if(t){if(t.replaceChildren(),e===`library`){t.append(G());return}t.append(E())}}function q(){return location.hash===`#library`?`library`:`home`}var J=document.createElement(`div`);J.id=`app`,document.body.append(J);function Y(){K(q())}addEventListener(`hashchange`,Y),Y();
