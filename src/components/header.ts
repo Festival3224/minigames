@@ -1,3 +1,4 @@
+// import { renderRoute } from '../router';
 import { createAuthDialog } from './auth-dialog';
 import logoIcon from '../assets/icons/logo-icon.svg';
 
@@ -20,10 +21,10 @@ export function createHeader(): HTMLElement {
 
         <div class="header__actions">
           <nav class="header__nav" aria-label="Main navigation">
-            <a class="header__nav-link header__nav-link--active" href="#">Home</a>
-            <a class="header__nav-link" href="#">Library</a>
-            <a class="header__nav-link" href="#">Tournaments</a>
-            <a class="header__nav-link" href="#">Community</a>
+            <a class="header__nav-link" href="#home" data-route="home">Home</a>
+            <a class="header__nav-link" href="#library" data-route="library">Library</a>
+            <a class="header__nav-link" href="#home">Tournaments</a>
+            <a class="header__nav-link" href="#home">Community</a>
           </nav>
 
           <div class="header__user-actions">
@@ -72,10 +73,10 @@ export function createHeader(): HTMLElement {
       </div>
 
       <nav class="header__mobile-nav" aria-label="Mobile navigation">
-        <a class="header__mobile-link header__mobile-link--active" href="#">Home</a>
-        <a class="header__mobile-link" href="#">Library</a>
-        <a class="header__mobile-link" href="#">Tournaments</a>
-        <a class="header__mobile-link" href="#">Community</a>
+        <a class="header__mobile-link" href="#home" data-route="home">Home</a>
+        <a class="header__mobile-link" href="#library" data-route="library">Library</a>
+        <a class="header__mobile-link" href="#home">Tournaments</a>
+        <a class="header__mobile-link" href="#home">Community</a>
       </nav>
 
       <div class="header__mobile-actions">
@@ -98,6 +99,23 @@ export function createHeader(): HTMLElement {
   const mobileLoginButton = header.querySelector<HTMLButtonElement>('.header__mobile-login');
 
   const mobileSignupButton = header.querySelector<HTMLButtonElement>('.header__mobile-signup');
+
+  const currentRoute = location.hash === '#library' ? 'library' : 'home';
+  const routeLinks = header.querySelectorAll<HTMLAnchorElement>('[data-route]');
+
+  for (const link of routeLinks) {
+    if (link.dataset.route !== currentRoute) {
+      continue;
+    }
+
+    if (link.classList.contains('header__nav-link')) {
+      link.classList.add('header__nav-link--active');
+    }
+
+    if (link.classList.contains('header__mobile-link')) {
+      link.classList.add('header__mobile-link--active');
+    }
+  }
 
   loginButton?.addEventListener('click', () => {
     const existingDialog = document.querySelector('.auth-overlay');

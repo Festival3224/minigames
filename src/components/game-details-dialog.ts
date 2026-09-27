@@ -1,0 +1,301 @@
+import tukoniData from '../data/game-tukoni-forest-keepers.json';
+import { formatLikesCount, formatRating, formatRelativeTime } from '../utils/format';
+
+import commentsData from '../data/comments-tukoni-forest-keepers.json';
+
+import tukoniHero from '../assets/library/tukoni-forest-keepers-hero.jpg';
+
+import starIcon from '../assets/icons/star.svg';
+import heartIcon from '../assets/icons/heart.svg';
+
+const medalByPosition: Record<number, string> = {
+  1: '🥇',
+  2: '🥈',
+  3: '🥉',
+};
+
+function createRecordsMarkup(): string {
+  return tukoniData.data.topRecords
+    .map(
+      (record) => `
+        <div class="game-details-dialog__record">
+          <div class="game-details-dialog__record-player-group">
+            <span class="game-details-dialog__record-medal" aria-hidden="true">
+              ${medalByPosition[record.position] ?? ''}
+            </span>
+
+            <span class="game-details-dialog__record-player">
+              ${record.playerName}
+            </span>
+          </div>
+
+          <div class="game-details-dialog__record-result-group">
+            <span class="game-details-dialog__record-score">
+              ${record.score.toLocaleString()} pts
+            </span>
+
+            <span class="game-details-dialog__record-time">
+              ${formatRelativeTime(record.achievedAt)}
+            </span>
+          </div>
+        </div>
+      `,
+    )
+    .join('');
+}
+
+function createCommentsMarkup(): string {
+  return commentsData.data
+    .map((comment, index) => {
+      const likeClass = comment.isLikedByCurrentUser
+        ? ' game-details-dialog__comment-likes-group--active'
+        : '';
+
+      return `
+        <article class="game-details-dialog__comment">
+          <div class="game-details-dialog__comment-header">
+            <div class="game-details-dialog__comment-author-group">
+              <span
+                class="game-details-dialog__comment-avatar game-details-dialog__comment-avatar--${index + 1}"
+              >
+                ${comment.authorName.charAt(0)}
+              </span>
+
+              <span class="game-details-dialog__comment-author">
+                ${comment.authorName}
+              </span>
+            </div>
+
+            <span class="game-details-dialog__comment-time">
+              ${formatRelativeTime(comment.createdAt)}
+            </span>
+          </div>
+
+          <p class="game-details-dialog__comment-text">
+            ${comment.text}
+          </p>
+
+          <div class="game-details-dialog__comment-likes">
+            <div class="game-details-dialog__comment-likes-group${likeClass}">
+              <span class="material-symbols-outlined" aria-hidden="true">
+                favorite
+              </span>
+
+              <span>${comment.likesCount}</span>
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join('');
+}
+
+export function createGameDetailsDialog(): HTMLElement {
+  const game = tukoniData.data;
+  const recordsMarkup = createRecordsMarkup();
+  const commentsMarkup = createCommentsMarkup();
+  const backdrop = document.createElement('div');
+
+  backdrop.className = 'game-details-backdrop';
+  document.body.classList.add('dialog-open');
+
+  const dialog = document.createElement('section');
+  dialog.className = 'game-details-dialog';
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-label', 'Game details');
+
+  dialog.innerHTML = `
+  <div class="game-details-dialog__hero">
+    <img
+      class="game-details-dialog__hero-image"
+      src="${tukoniHero}"
+      alt=""
+    />
+
+    <button
+      class="game-details-dialog__close"
+      type="button"
+      aria-label="Close game details"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">
+        close
+      </span>
+    </button>
+  </div>
+
+  <div class="game-details-dialog__content">
+    <div class="game-details-dialog__title-row">  
+      <h2 class="game-details-dialog__title">
+        ${game.name}
+      </h2>  
+
+      <div class="game-details-dialog__ratings">
+        <span class="game-details-dialog__rating">
+          <img src="${starIcon}" alt="" aria-hidden="true" />
+          ${formatRating(game.rating)}
+        </span>
+
+        <span class="game-details-dialog__likes">
+          <img src="${heartIcon}" alt="" aria-hidden="true" />
+          ${formatLikesCount(game.likesCount)}
+        </span>
+      </div>
+    </div>
+
+    <p class="game-details-dialog__description">
+      ${game.fullDescription} <!-- description -->
+    </p>
+
+    <div class="game-details-dialog__info">
+      <div class="game-details-dialog__info-item">
+        <span class="game-details-dialog__info-label">Genre</span>
+        <span class="game-details-dialog__info-value">${game.specs.genre}</span>
+      </div>
+
+      <div class="game-details-dialog__info-item">
+        <span class="game-details-dialog__info-label">Players</span>
+        <span class="game-details-dialog__info-value">${game.specs.players}</span>
+      </div>
+
+      <div class="game-details-dialog__info-item">
+        <span class="game-details-dialog__info-label">Duration</span>
+        <span class="game-details-dialog__info-value">${game.specs.duration}</span>
+      </div>
+
+      <div class="game-details-dialog__info-item">
+        <span class="game-details-dialog__info-label">Price</span>
+        <span class="game-details-dialog__info-value">${game.specs.price}</span>
+      </div>
+    </div>
+
+   <div class="game-details-dialog__actions">
+      <button class="game-details-dialog__play" type="button">
+        Play Now
+      </button>
+
+      <button
+        class="game-details-dialog__favorite"
+        type="button"
+        aria-label="Add to Favorites"
+        aria-pressed="false"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">
+          favorite
+        </span>
+
+        <span class="game-details-dialog__favorite-text">
+          Add to Favorites
+        </span>
+      </button>
+    </div>
+
+    <section class="game-details-dialog__records">
+      <div class="game-details-dialog__records-title">
+        <span aria-hidden="true">🏆</span>
+        <h3>Top Records</h3>
+      </div>
+
+      <div class="game-details-dialog__records-list">
+        ${recordsMarkup}
+      </div>
+    </section>
+
+    <section class="game-details-dialog__comments">
+      <h3 class="game-details-dialog__comments-title">
+        Comments (${commentsData.meta.totalComments})
+      </h3>
+
+    <div class="game-details-dialog__comment-form">
+      <div class="game-details-dialog__user-avatar" aria-hidden="true">
+        U
+      </div>
+
+      <textarea
+        class="game-details-dialog__comment-input"
+        placeholder="Write a comment..."
+        aria-label="Write a comment"
+      ></textarea>
+
+      <button
+        class="game-details-dialog__send"
+        type="button"
+        aria-label="Send comment"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">
+          send
+        </span>
+      </button>
+    </div>
+
+      <div class="game-details-dialog__comments-list">
+        ${commentsMarkup}
+      </div>
+    </section>
+  </div>
+`;
+
+  const favoriteButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__favorite');
+
+  favoriteButton?.addEventListener('click', () => {
+    const isFavorited = favoriteButton.classList.toggle('game-details-dialog__favorite--active');
+
+    const text = favoriteButton.querySelector<HTMLElement>('.game-details-dialog__favorite-text');
+
+    if (text) {
+      text.textContent = isFavorited ? 'Remove from Favorites' : 'Add to Favorites';
+    }
+
+    favoriteButton.setAttribute('aria-pressed', String(isFavorited));
+  });
+
+  backdrop.append(dialog);
+
+  const commentInput = dialog.querySelector<HTMLTextAreaElement>(
+    '.game-details-dialog__comment-input',
+  );
+
+  const sendButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__send');
+
+  const updateSendButtonState = (): void => {
+    if (!commentInput || !sendButton) {
+      return;
+    }
+
+    sendButton.disabled = commentInput.value.trim().length === 0;
+  };
+
+  commentInput?.addEventListener('input', updateSendButtonState);
+
+  updateSendButtonState();
+
+  const closeButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__close');
+
+  function closeDialog(): void {
+    document.removeEventListener('keydown', handleKeydown);
+    document.body.classList.remove('dialog-open');
+    backdrop.remove();
+  }
+
+  function handleKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape') {
+      return;
+    }
+
+    closeDialog();
+  }
+
+  closeButton?.addEventListener('click', closeDialog);
+
+  backdrop.addEventListener('click', (event) => {
+    if (event.target !== backdrop) {
+      return;
+    }
+
+    closeDialog();
+  });
+
+  document.addEventListener('keydown', handleKeydown);
+
+  return backdrop;
+}

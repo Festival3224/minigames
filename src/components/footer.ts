@@ -88,7 +88,7 @@ export function createFooter(): HTMLElement {
             alt=""
             aria-hidden="true"
           />
-          <span>@student-nickname</span>
+          <span>@Festival3224</span>
         </a>
       </div>
 

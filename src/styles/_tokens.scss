@@ -28,6 +28,8 @@ $like: #ff4b4b;
 $error: #b3261e;
 $price-free: #0b8a8f;
 
+$details-dialog: #111111;
+
 $avatar-random-2: hsla(156, 52%, 76%, 1);
 $avatar-random-3: hsla(205, 100%, 87%, 1);
 $avatar-random-4: hsla(300, 100%, 89%, 1);
@@ -45,6 +47,7 @@ $avatar-random-4: #ffc6ff;
 $avatar-random-5: #e8dff5;
 
 // Size
+$size-02: 2px;
 $size-05: 4px;
 $size-1: 8px;
 $size-2: 16px;
@@ -114,3 +117,23 @@ $btn-icon: 8px;
 
 // width
 $layout-max-width: 1920px;
+
+// additional
+$library-card-height-tablet: 152px;
+$library-card-height-desktop: 200px;
+
+$library-card-image-height-mobile: 160px;
+$library-card-image-width-tablet: 270px;
+$library-card-image-width-desktop: 320px;
+
+$border-card: 2.5px;
+$shadow-card-offset: 4px;
+
+$library-card-gap-tablet: 11.5px;
+$library-card-gap-desktop: 17.5px;
+
+$game-details-width-desktop: 600px;
+$game-details-hero-height: 220px;
+$game-details-shadow-offset: 8px;
+$game-details-close-shadow-offset: 2px;
+$game-details-widget-shadow-offset: 3px;

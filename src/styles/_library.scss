@@ -1,0 +1,242 @@
+@use 'tokens' as *;
+@use './breakpoints' as *;
+
+.page {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.library {
+  flex: 1;
+  width: 100%;
+  background-color: $bg;
+}
+
+.library__title-section {
+  width: 100%;
+  max-width: $layout-max-width;
+  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: $size-1;
+
+  //   padding: $size-5 $size-15;
+  padding-block: clamp($size-2, calc(-8.19px + 6.45vw), $size-3);
+
+  padding-inline: clamp($size-2, calc(-56.58px + 19.35vw), $size-5);
+}
+
+.library__title {
+  margin: 0;
+
+  color: $on-primary;
+  font-family: $font-primary;
+
+  font-size: clamp($display-small, calc(-12.29px + 9.68vw), $display-medium);
+  font-weight: $font-bold;
+  line-height: 1;
+}
+
+@media (min-width: ($breakpoint-tablet + 1px)) {
+  .library__title {
+    font-size: clamp($display-medium, calc(-24.55px + 7.87vw), $display-large);
+  }
+
+  .library__title-section {
+    padding-block: clamp($size-3, calc(-24.44px + 6.3vw), $size-5);
+
+    padding-inline: clamp($size-5, calc(-202.2px + 31.5vw), $size-15);
+  }
+}
+
+.library__subtitle {
+  margin: 0;
+
+  color: $on-bg;
+  font-family: $font-primary;
+
+  font-size: clamp($body-small, calc(7.95px + 1.61vw), $body-medium);
+
+  font-weight: $font-medium;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (min-width: ($breakpoint-tablet + 1px)) {
+  .library__subtitle {
+    font-size: clamp($body-medium, calc(9.94px + 0.79vw), $body-large);
+  }
+}
+
+.library__controls {
+  width: 100%;
+  max-width: $layout-max-width;
+  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $size-2;
+
+  padding-block: $size-2;
+  padding-inline: clamp($size-2, calc(19.35vw - 56.58px), $size-5);
+}
+
+.library__filters {
+  display: flex;
+  align-items: center;
+  gap: clamp($size-1, calc(1.92vw - 11.69px), $size-2);
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+
+  cursor: grab;
+  user-select: none;
+}
+
+.library__filters:active {
+  cursor: grabbing;
+}
+
+.library__filters::-webkit-scrollbar {
+  display: none;
+}
+
+.library__filter {
+  flex: 0 0 auto;
+  white-space: nowrap;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: $btn-small-y $btn-small-x;
+
+  color: $on-primary;
+  background-color: $white;
+  transition: background-color 160ms ease;
+
+  border: 2px solid $on-primary;
+  border-radius: $corner-large;
+
+  font-family: $font-primary;
+
+  font-size: clamp(12px, calc(0.51vw + 10.1px), 14px);
+
+  font-weight: $font-medium;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.library__filter:hover {
+  background-color: $surface;
+}
+
+.library__filter--active,
+.library__filter--active:hover {
+  background-color: $primary;
+  font-weight: $font-bold;
+}
+
+.library__sort {
+  flex: 0 0 auto;
+  white-space: nowrap;
+
+  display: inline-flex;
+  align-items: center;
+  gap: $size-1;
+
+  padding: $btn-medium-y $btn-medium-x;
+
+  color: $on-primary;
+  background-color: $white;
+
+  transition: background-color 160ms ease;
+
+  border: 2px solid $on-primary;
+  border-radius: $corner-extra-large;
+
+  font-family: $font-primary;
+  font-size: $label-large;
+  font-weight: $font-medium;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.library__sort:hover {
+  background-color: $surface;
+}
+
+.library__sort .material-symbols-outlined {
+  flex: 0 0 auto;
+  font-size: 24px;
+  line-height: 1;
+}
+
+@media (min-width: ($breakpoint-tablet + 1px)) {
+  .library__controls {
+    padding-inline: clamp($size-5, calc(31.5vw - 202.2px), $size-15);
+  }
+}
+
+@media (min-width: ($breakpoint-tablet-lg + 1px)) {
+  .library__controls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.library__sort-wrapper {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.library__sort-menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + $size-1);
+  right: 0;
+
+  min-width: 100%;
+
+  background-color: $white;
+  border: 2px solid $on-primary;
+  border-radius: $corner-large;
+
+  overflow: hidden;
+}
+
+.library__sort-menu[hidden] {
+  display: none;
+}
+
+.library__sort-option {
+  width: 100%;
+  padding: $size-1 $size-2;
+
+  color: $on-primary;
+  background-color: $white;
+  border: 0;
+
+  font-family: $font-primary;
+  text-align: left;
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.library__sort-option:hover {
+  background-color: $surface;
+}
+
+.library__sort-option--active {
+  background-color: $primary;
+}

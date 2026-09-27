@@ -46,18 +46,6 @@
     transform 160ms ease;
 }
 
-.new-games__control:hover {
-  background: $surface;
-}
-
-.new-games__control--next:hover {
-  background: $primary-high;
-}
-
-.new-games__control:active {
-  transform: translateY(1px);
-}
-
 @media (max-width: $breakpoint-tablet-lg) {
   .new-games__title {
     font-size: clamp($headline-medium, calc(2.08vw + 8px), $headline-large);
@@ -110,11 +98,6 @@
   transform: translateY(0);
 }
 
-.new-games__control:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
 .new-games {
   width: 100%;
   max-width: $layout-max-width;
@@ -145,9 +128,18 @@
 
 .new-games__track {
   width: 100%;
-
   display: flex;
   gap: $size-1;
+
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+
+  transition: transform 300ms ease;
+}
+
+.new-games__track:active {
+  cursor: grabbing;
 }
 
 @media (min-width: 1024px) and (max-width: 1919px) {
