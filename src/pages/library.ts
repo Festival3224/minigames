@@ -49,7 +49,7 @@ export function createLibraryPage(): HTMLElement {
 
   titleSection.append(title, subtitle);
 
-  const controls = document.createElement('section');
+  const controls = document.createElement('div');
   controls.className = 'library__controls';
 
   const filters = document.createElement('div');
@@ -214,7 +214,7 @@ export function createLibraryPage(): HTMLElement {
 
   sort.append(sortButton, sortMenu);
 
-  const gamesSection = document.createElement('section');
+  const gamesSection = document.createElement('div');
   gamesSection.className = 'library__games';
 
   const games = gamesData.data.slice(0, 6);

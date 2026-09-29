@@ -90,7 +90,7 @@ function createCommentsMarkup(): string {
     .join('');
 }
 
-export function createGameDetailsDialog(): HTMLElement {
+export function createGameDetailsDialog(onClose?: () => void): HTMLElement {
   const game = tukoniData.data;
   const recordsMarkup = createRecordsMarkup();
   const commentsMarkup = createCommentsMarkup();
@@ -272,9 +272,26 @@ export function createGameDetailsDialog(): HTMLElement {
   const closeButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__close');
 
   function closeDialog(): void {
+    if (backdrop.classList.contains('game-details-backdrop--closing')) {
+      return;
+    }
+
     document.removeEventListener('keydown', handleKeydown);
-    document.body.classList.remove('dialog-open');
-    backdrop.remove();
+
+    backdrop.classList.add('game-details-backdrop--closing');
+
+    const handleAnimationEnd = (event: AnimationEvent): void => {
+      if (event.target !== backdrop) {
+        return;
+      }
+
+      document.body.classList.remove('dialog-open');
+      backdrop.remove();
+
+      onClose?.();
+    };
+
+    backdrop.addEventListener('animationend', handleAnimationEnd);
   }
 
   function handleKeydown(event: KeyboardEvent): void {

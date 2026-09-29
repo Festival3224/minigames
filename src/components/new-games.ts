@@ -4,6 +4,7 @@ import arrowBack from '../assets/icons/arrow_back.svg';
 import arrowForward from '../assets/icons/arrow_forward.svg';
 
 import { createGameCard } from './game-card';
+import { createGameDetailsDialog } from './game-details-dialog';
 
 const gameImages = import.meta.glob('../assets/home/*-card.jpg', {
   eager: true,
@@ -229,6 +230,7 @@ export function createNewGames(): HTMLElement {
   let pointerStartX = 0;
   let pointerCurrentX = 0;
   let isPointerDown = false;
+  let pointerStartCard: HTMLElement | undefined;
 
   const swipeThreshold = 50;
 
@@ -237,6 +239,13 @@ export function createNewGames(): HTMLElement {
 
     pointerStartX = event.clientX;
     pointerCurrentX = event.clientX;
+
+    const target = event.target;
+
+    pointerStartCard =
+      target instanceof HTMLElement
+        ? (target.closest<HTMLElement>('.game-card') ?? undefined)
+        : undefined;
 
     track.setPointerCapture(event.pointerId);
 
@@ -273,10 +282,24 @@ export function createNewGames(): HTMLElement {
       } else {
         showPreviousSlide();
       }
+      pointerStartCard = undefined;
       resetAutoplay();
       return;
     }
-    resumeAutoplay();
+
+    if (!pointerStartCard) {
+      resumeAutoplay();
+      return;
+    }
+    pauseAutoplay();
+
+    const dialog = createGameDetailsDialog(() => {
+      resetAutoplay();
+    });
+
+    document.body.append(dialog);
+
+    pointerStartCard = undefined;
   });
 
   track.addEventListener('pointercancel', (event) => {

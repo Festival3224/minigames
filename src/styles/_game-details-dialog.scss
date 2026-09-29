@@ -12,6 +12,17 @@
   background-color: rgb(0 0 0 / 50%);
   overflow-y: auto;
   scrollbar-width: none;
+
+  animation: dialog-backdrop-in 300ms ease forwards;
+
+  &--closing {
+    animation: dialog-backdrop-out 250ms ease forwards;
+
+    .game-details-dialog {
+      animation: dialog-out 250ms ease forwards;
+    }
+  }
+
   @media (min-width: $breakpoint-tablet) {
     align-items: center;
   }
@@ -19,6 +30,7 @@
 
 .game-details-dialog::-webkit-scrollbar {
   display: none;
+  animation: dialog-in 300ms ease forwards;
 }
 
 .game-details-dialog {
@@ -50,6 +62,50 @@
   z-index: 10;
   border-radius: inherit;
   pointer-events: none;
+}
+
+@keyframes dialog-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-backdrop-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes dialog-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
 }
 
 //hero
