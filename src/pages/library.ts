@@ -1,31 +1,50 @@
+import { fetchLibraryGames } from '../api/games-api';
+
 import { createHeader } from '../components/header';
 import { createPagination } from '../components/pagination';
 import { createGameDetailsDialog } from '../components/game-details-dialog';
 import { createFooter } from '../components/footer';
 
-import vacationCafe from '../assets/vacation-cafe-simulator-card.jpg';
+/* import vacationCafe from '../assets/vacation-cafe-simulator-card.jpg';
 import winterBurrow from '../assets/winter-burrow-card.jpg';
 import shelvePotions from '../assets/shelve-the-potions-card.jpg';
 
 import heartopia from '../assets/library/heartopia-card.jpg';
 import palia from '../assets/library/palia-card.jpg';
-import catMail from '../assets/library/cat-mail-co-card.jpg';
+import catMail from '../assets/library/cat-mail-co-card.jpg';*/
 
-const gameImages: Record<string, string> = {
+/* const gameImages: Record<string, string> = {
   'vacation-cafe-simulator': vacationCafe,
   'winter-burrow': winterBurrow,
   'shelve-the-potions': shelvePotions,
   heartopia,
   palia,
   'cat-mail-co': catMail,
-};
+}; */
 
 import { createLibraryGameCard } from '../components/library-game-card';
 
 import categoriesData from '../data/categories.json';
-import gamesData from '../data/all-games-seed.json';
+// import gamesData from '../data/all-games-seed.json';
 
 import { formatLikesCount, formatRating } from '../utils/format';
+
+const gameImages = import.meta.glob('../assets/**/*-card.jpg', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+function getGameImage(cardImage: string): string {
+  const fileName = cardImage.split('/').pop();
+
+  if (!fileName) {
+    return '';
+  }
+
+  const imagePath = Object.keys(gameImages).find((path) => path.endsWith(`/${fileName}`));
+
+  return imagePath ? gameImages[imagePath] : '';
+}
 
 export function createLibraryPage(): HTMLElement {
   const page = document.createElement('div');
@@ -217,13 +236,13 @@ export function createLibraryPage(): HTMLElement {
   const gamesSection = document.createElement('div');
   gamesSection.className = 'library__games';
 
-  const games = gamesData.data.slice(0, 6);
+  /*   const games = gamesData.data.slice(0, 6);
 
   for (const game of games) {
     gamesSection.append(
       createLibraryGameCard({
         title: game.name,
-        imageSrc: gameImages[game.slug],
+        imageSrc: getGameImage(game.cardImage),
         category: game.category,
         description: game.shortDescription,
         rating: formatRating(game.rating),
@@ -231,7 +250,29 @@ export function createLibraryPage(): HTMLElement {
         price: game.price,
       }),
     );
-  }
+  } */
+
+  const renderGames = async (): Promise<void> => {
+    const games = await fetchLibraryGames();
+
+    gamesSection.replaceChildren();
+
+    for (const game of games) {
+      gamesSection.append(
+        createLibraryGameCard({
+          title: game.name,
+          imageSrc: getGameImage(game.cardImage),
+          category: game.category,
+          description: game.shortDescription,
+          rating: formatRating(game.rating),
+          likes: formatLikesCount(game.likesCount),
+          price: game.price,
+        }),
+      );
+    }
+  };
+
+  void renderGames();
 
   gamesSection.addEventListener('click', (event) => {
     const target = event.target;
@@ -250,10 +291,7 @@ export function createLibraryPage(): HTMLElement {
     document.body.append(dialog);
   });
 
-  const gamesPerPage = 6;
-  const totalPages = Math.ceil(gamesData.data.length / gamesPerPage);
-
-  const pagination = createPagination(totalPages);
+  const pagination = createPagination(1);
 
   controls.append(filters, sort);
   main.append(titleSection, controls, gamesSection, pagination);
