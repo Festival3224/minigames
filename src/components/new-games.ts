@@ -1,4 +1,4 @@
-import gamesData from '../data/all-games-seed.json';
+import { fetchFeaturedGames } from '../api/games-api';
 
 import arrowBack from '../assets/icons/arrow_back.svg';
 import arrowForward from '../assets/icons/arrow_forward.svg';
@@ -16,29 +16,6 @@ function getGameImage(cardImage: string): string {
 
   return fileName ? (gameImages[`../assets/home/${fileName}`] ?? '') : '';
 }
-
-const sliderOrder = [
-  'tailside-cozy-cafe-sim',
-  'islanders-new-shores',
-  'vacation-cafe-simulator',
-  'winter-burrow',
-  'shelve-the-potions',
-  'heartopia',
-  'palia',
-  'cat-mail-co',
-  'tiny-glade',
-];
-
-const featuredGames = sliderOrder
-  .map((slug) => gamesData.data.find((game) => game.slug === slug))
-  .filter((game) => game !== undefined)
-  .map((game) => ({
-    slug: game.slug,
-    title: game.name,
-    imageSrc: getGameImage(game.cardImage),
-    rating: game.rating.toFixed(1),
-    likes: `${(game.likesCount / 1000).toFixed(1)}K`,
-  }));
 
 const cardClasses = [
   'game-card--edge',
@@ -89,11 +66,29 @@ export function createNewGames(): HTMLElement {
     throw new Error('New games track not found');
   }
 
+  let featuredGames: {
+    slug: string;
+    title: string;
+    imageSrc: string;
+    rating: string;
+    likes: string;
+  }[] = [];
+
   const previousButton = section.querySelector<HTMLButtonElement>(
     '.new-games__control:not(.new-games__control--next)',
   );
 
   const nextButton = section.querySelector<HTMLButtonElement>('.new-games__control--next');
+
+  const setControlsDisabled = (isDisabled: boolean): void => {
+    if (previousButton) {
+      previousButton.disabled = isDisabled;
+    }
+
+    if (nextButton) {
+      nextButton.disabled = isDisabled;
+    }
+  };
 
   let currentIndex = 0;
 
@@ -104,6 +99,33 @@ export function createNewGames(): HTMLElement {
       return featuredGames[gameIndex];
     });
   }
+
+  const renderSkeleton = (): void => {
+    track.replaceChildren();
+
+    for (let index = 0; index < 5; index += 1) {
+      const skeleton = document.createElement('div');
+
+      skeleton.className = `game-card game-card--skeleton ${cardClasses[index]}`;
+
+      track.append(skeleton);
+    }
+  };
+
+  const renderEmptyState = (): void => {
+    track.replaceChildren();
+
+    const emptyState = document.createElement('div');
+
+    emptyState.className = 'new-games__empty';
+
+    emptyState.innerHTML = /* html */ `
+      <p class="new-games__empty-title">No featured games available.</p>
+      <p class="new-games__empty-text">Please check back later.</p>
+    `;
+
+    track.append(emptyState);
+  };
 
   const renderSlider = (): void => {
     track.replaceChildren();
@@ -120,7 +142,58 @@ export function createNewGames(): HTMLElement {
     }
   };
 
-  renderSlider();
+  const loadFeaturedGames = async (): Promise<void> => {
+    setControlsDisabled(true);
+    renderSkeleton();
+
+    try {
+      const games = await fetchFeaturedGames();
+
+      if (games.length === 0) {
+        renderEmptyState();
+        return;
+      }
+
+      featuredGames = games.map((game) => ({
+        slug: game.slug,
+        title: game.name,
+        imageSrc: getGameImage(game.cardImage),
+        rating: game.rating.toFixed(1),
+        likes: `${(game.likesCount / 1000).toFixed(1)}K`,
+      }));
+
+      setControlsDisabled(false);
+      renderSlider();
+      startAutoplay();
+    } catch {
+      renderErrorState();
+    }
+  };
+
+  const renderErrorState = (): void => {
+    track.replaceChildren();
+
+    const errorState = document.createElement('div');
+
+    errorState.className = 'new-games__error';
+
+    errorState.innerHTML = /* html */ `
+      <p class="new-games__error-title">Failed to load featured games.</p>
+      <button class="new-games__retry" type="button">
+        Retry
+      </button>
+    `;
+
+    const retryButton = errorState.querySelector<HTMLButtonElement>('.new-games__retry');
+
+    retryButton?.addEventListener('click', () => {
+      void loadFeaturedGames();
+    });
+
+    track.append(errorState);
+  };
+
+  void loadFeaturedGames();
 
   function setCardPositionClasses(cards: HTMLElement[]): void {
     for (const [index, card] of cards.entries()) {
@@ -135,6 +208,10 @@ export function createNewGames(): HTMLElement {
   }
 
   const showNextSlide = (): void => {
+    if (featuredGames.length === 0) {
+      return;
+    }
+
     const cards = [...track.children] as HTMLElement[];
 
     const firstCard = cards[0];
@@ -163,6 +240,10 @@ export function createNewGames(): HTMLElement {
   };
 
   const showPreviousSlide = (): void => {
+    if (featuredGames.length === 0) {
+      return;
+    }
+
     const cards = [...track.children] as HTMLElement[];
 
     const lastCard = cards.at(-1);
@@ -312,11 +393,15 @@ export function createNewGames(): HTMLElement {
     resumeAutoplay();
   });
 
-  previousButton?.addEventListener('click', showPreviousSlide);
+  previousButton?.addEventListener('click', () => {
+    showPreviousSlide();
+    resetAutoplay();
+  });
 
-  nextButton?.addEventListener('click', showNextSlide);
-
-  startAutoplay();
+  nextButton?.addEventListener('click', () => {
+    showNextSlide();
+    resetAutoplay();
+  });
 
   return section;
 }
