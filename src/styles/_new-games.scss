@@ -199,12 +199,12 @@
 }
 
 .new-games__empty-text {
-  margin: 8px 0 0;
+  margin: $btn-small-y 0 0;
 }
 
 .new-games__error {
   width: 100%;
-  min-height: 200px;
+  min-height: $library-card-height-desktop;
 
   display: flex;
   flex-direction: column;
@@ -222,7 +222,7 @@
 .new-games__retry {
   padding: $size-05 $size-2;
 
-  border: 2px solid $on-primary;
+  border: $size-02 solid $on-primary;
   border-radius: $corner-full;
 
   background: $white;

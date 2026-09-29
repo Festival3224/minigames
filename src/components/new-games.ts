@@ -6,6 +6,8 @@ import arrowForward from '../assets/icons/arrow_forward.svg';
 import { createGameCard } from './game-card';
 import { createGameDetailsDialog } from './game-details-dialog';
 
+import { hideSnackbar, showSnackbar } from './snackbar';
+
 const gameImages = import.meta.glob('../assets/home/*-card.jpg', {
   eager: true,
   import: 'default',
@@ -143,6 +145,8 @@ export function createNewGames(): HTMLElement {
   };
 
   const loadFeaturedGames = async (): Promise<void> => {
+    hideSnackbar();
+
     setControlsDisabled(true);
     renderSkeleton();
 
@@ -167,6 +171,11 @@ export function createNewGames(): HTMLElement {
       startAutoplay();
     } catch {
       renderErrorState();
+
+      showSnackbar({
+        message: 'Failed to load featured games.',
+        variant: 'error',
+      });
     }
   };
 
@@ -316,12 +325,15 @@ export function createNewGames(): HTMLElement {
   const swipeThreshold = 50;
 
   track.addEventListener('pointerdown', (event) => {
-    isPointerDown = true;
+    const target = event.target;
 
+    if (target instanceof HTMLElement && target.closest('.new-games__retry')) {
+      return;
+    }
+
+    isPointerDown = true;
     pointerStartX = event.clientX;
     pointerCurrentX = event.clientX;
-
-    const target = event.target;
 
     pointerStartCard =
       target instanceof HTMLElement
