@@ -220,6 +220,9 @@ export function createLibraryPage(): HTMLElement {
   const gamesSection = document.createElement('div');
   gamesSection.className = 'library__games';
 
+  const paginationContainer = document.createElement('div');
+  let currentPage = 1;
+
   // skeleton
   const renderGamesSkeleton = (): void => {
     gamesSection.replaceChildren();
@@ -270,20 +273,21 @@ export function createLibraryPage(): HTMLElement {
     gamesSection.append(errorState);
   };
 
-  const loadLibraryGames = async (): Promise<void> => {
+  /*   const result = await fetchLibraryGames(page);
+    currentPage = result.meta.page;
     hideSnackbar();
     renderGamesSkeleton();
     try {
-      const games = await fetchLibraryGames();
+      const result = await fetchLibraryGames();
 
-      if (games.length === 0) {
+      if (result.data.length === 0) {
         renderGamesEmptyState();
         return;
       }
 
       gamesSection.replaceChildren();
 
-      for (const game of games) {
+      for (const game of result.data) {
         gamesSection.append(
           createLibraryGameCard({
             title: game.name,
@@ -296,6 +300,64 @@ export function createLibraryPage(): HTMLElement {
           }),
         );
       }
+
+      paginationContainer.replaceChildren(
+        createPagination(
+          result.meta.totalPages,
+          currentPage,
+          (selectedPage) => {
+            void loadLibraryGames(selectedPage);
+          },
+        ),
+      );
+    } catch {
+      renderGamesErrorState();
+
+      showSnackbar({
+        message: 'Failed to load games.',
+        variant: 'error',
+      });
+    }
+  }; */
+
+  const loadLibraryGames = async (page = 1): Promise<void> => {
+    hideSnackbar();
+    renderGamesSkeleton();
+
+    try {
+      const result = await fetchLibraryGames(page);
+
+      currentPage = result.meta.page;
+
+      if (result.data.length === 0) {
+        renderGamesEmptyState();
+
+        paginationContainer.replaceChildren(createPagination(1, 1, () => {}));
+
+        return;
+      }
+
+      gamesSection.replaceChildren();
+
+      for (const game of result.data) {
+        gamesSection.append(
+          createLibraryGameCard({
+            title: game.name,
+            imageSrc: getGameImage(game.cardImage),
+            category: game.category,
+            description: game.shortDescription,
+            rating: formatRating(game.rating),
+            likes: formatLikesCount(game.likesCount),
+            price: game.price,
+          }),
+        );
+      }
+
+      paginationContainer.replaceChildren(
+        createPagination(result.meta.totalPages, currentPage, (selectedPage) => {
+          void loadLibraryGames(selectedPage);
+        }),
+      );
     } catch {
       renderGamesErrorState();
 
@@ -325,10 +387,11 @@ export function createLibraryPage(): HTMLElement {
     document.body.append(dialog);
   });
 
-  const pagination = createPagination(1);
+  // const paginationContainer = document.createElement('div');
+  // let currentPage = 1;
 
   controls.append(filters, sort);
-  main.append(titleSection, controls, gamesSection, pagination);
+  main.append(titleSection, controls, gamesSection, paginationContainer);
 
   page.append(main);
   page.append(createFooter());
