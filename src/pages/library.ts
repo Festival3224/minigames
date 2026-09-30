@@ -5,29 +5,13 @@ import { createPagination } from '../components/pagination';
 import { createGameDetailsDialog } from '../components/game-details-dialog';
 import { createFooter } from '../components/footer';
 
-/* import vacationCafe from '../assets/vacation-cafe-simulator-card.jpg';
-import winterBurrow from '../assets/winter-burrow-card.jpg';
-import shelvePotions from '../assets/shelve-the-potions-card.jpg';
-
-import heartopia from '../assets/library/heartopia-card.jpg';
-import palia from '../assets/library/palia-card.jpg';
-import catMail from '../assets/library/cat-mail-co-card.jpg';*/
-
-/* const gameImages: Record<string, string> = {
-  'vacation-cafe-simulator': vacationCafe,
-  'winter-burrow': winterBurrow,
-  'shelve-the-potions': shelvePotions,
-  heartopia,
-  palia,
-  'cat-mail-co': catMail,
-}; */
-
 import { createLibraryGameCard } from '../components/library-game-card';
 
 import categoriesData from '../data/categories.json';
-// import gamesData from '../data/all-games-seed.json';
 
 import { formatLikesCount, formatRating } from '../utils/format';
+
+import { hideSnackbar, showSnackbar } from '../components/snackbar';
 
 const gameImages = import.meta.glob('../assets/**/*-card.jpg', {
   eager: true,
@@ -236,43 +220,93 @@ export function createLibraryPage(): HTMLElement {
   const gamesSection = document.createElement('div');
   gamesSection.className = 'library__games';
 
-  /*   const games = gamesData.data.slice(0, 6);
-
-  for (const game of games) {
-    gamesSection.append(
-      createLibraryGameCard({
-        title: game.name,
-        imageSrc: getGameImage(game.cardImage),
-        category: game.category,
-        description: game.shortDescription,
-        rating: formatRating(game.rating),
-        likes: formatLikesCount(game.likesCount),
-        price: game.price,
-      }),
-    );
-  } */
-
-  const renderGames = async (): Promise<void> => {
-    const games = await fetchLibraryGames();
-
+  // skeleton
+  const renderGamesSkeleton = (): void => {
     gamesSection.replaceChildren();
 
-    for (const game of games) {
-      gamesSection.append(
-        createLibraryGameCard({
-          title: game.name,
-          imageSrc: getGameImage(game.cardImage),
-          category: game.category,
-          description: game.shortDescription,
-          rating: formatRating(game.rating),
-          likes: formatLikesCount(game.likesCount),
-          price: game.price,
-        }),
-      );
+    for (let index = 0; index < 6; index += 1) {
+      const skeleton = document.createElement('article');
+
+      skeleton.className = 'library-game-card library-game-card--skeleton';
+
+      gamesSection.append(skeleton);
     }
   };
 
-  void renderGames();
+  // Empty state
+  const renderGamesEmptyState = (): void => {
+    gamesSection.replaceChildren();
+
+    const emptyState = document.createElement('div');
+
+    emptyState.className = 'library__empty';
+
+    emptyState.innerHTML = /* html */ `
+      <p class="library__empty-title">No games available.</p>
+      <p class="library__empty-text">Please check back later.</p>
+    `;
+
+    gamesSection.append(emptyState);
+  };
+
+  // Error state + Retry
+  const renderGamesErrorState = (): void => {
+    gamesSection.replaceChildren();
+    const errorState = document.createElement('div');
+    errorState.className = 'library__error';
+    errorState.innerHTML = /* html */ `
+      <p class="library__error-title">Failed to load games.</p>
+      <button class="library__retry" type="button">
+        Retry
+      </button>
+    `;
+
+    const retryButton = errorState.querySelector<HTMLButtonElement>('.library__retry');
+
+    retryButton?.addEventListener('click', () => {
+      void loadLibraryGames();
+    });
+
+    gamesSection.append(errorState);
+  };
+
+  const loadLibraryGames = async (): Promise<void> => {
+    hideSnackbar();
+    renderGamesSkeleton();
+    try {
+      const games = await fetchLibraryGames();
+
+      if (games.length === 0) {
+        renderGamesEmptyState();
+        return;
+      }
+
+      gamesSection.replaceChildren();
+
+      for (const game of games) {
+        gamesSection.append(
+          createLibraryGameCard({
+            title: game.name,
+            imageSrc: getGameImage(game.cardImage),
+            category: game.category,
+            description: game.shortDescription,
+            rating: formatRating(game.rating),
+            likes: formatLikesCount(game.likesCount),
+            price: game.price,
+          }),
+        );
+      }
+    } catch {
+      renderGamesErrorState();
+
+      showSnackbar({
+        message: 'Failed to load games.',
+        variant: 'error',
+      });
+    }
+  };
+
+  void loadLibraryGames();
 
   gamesSection.addEventListener('click', (event) => {
     const target = event.target;

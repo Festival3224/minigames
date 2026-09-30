@@ -240,3 +240,36 @@
 .library__sort-option--active {
   background-color: $primary;
 }
+
+.library__empty,
+.library__error {
+  grid-column: 1 / -1;
+
+  width: 100%;
+  min-height: 200px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $size-2;
+
+  text-align: center;
+}
+
+.library__empty-title,
+.library__empty-text,
+.library__error-title {
+  margin: 0;
+}
+
+.library__retry {
+  padding: $size-2 $size-4;
+
+  border: 2px solid $on-primary;
+  border-radius: $corner-full;
+
+  background: $white;
+  color: $on-primary;
+  cursor: pointer;
+}
