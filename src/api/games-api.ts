@@ -45,8 +45,15 @@ export async function fetchFeaturedGames(): Promise<GameListItem[]> {
   return result.data;
 }
 
-export async function fetchLibraryGames(page = 1, category = 'all'): Promise<GamesResponse> {
-  const response = await fetch(`${API_BASE_URL}/games?category=${category}&page=${page}&limit=6`);
+export async function fetchLibraryGames(
+  page = 1,
+  category = 'all',
+  sort = 'rating-desc',
+): Promise<GamesResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/games?category=${category}&sort=${sort}&page=${page}&limit=6
+  `,
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to load library games: ${response.status}`);

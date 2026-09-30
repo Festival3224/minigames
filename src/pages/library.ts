@@ -57,24 +57,8 @@ export function createLibraryPage(): HTMLElement {
   filters.className = 'library__filters';
 
   // chips
-  /* for (const category of categoriesData.data) {
-    const button = document.createElement('button');
-
-    button.className = 'library__filter';
-    button.type = 'button';
-    button.textContent = category.label;
-    button.dataset.category = category.slug;
-
-    button.setAttribute('aria-pressed', String(category.isDefault));
-
-    if (category.isDefault) {
-      button.classList.add('library__filter--active');
-    }
-
-    filters.append(button);
-  } */
-
   let activeCategory = 'all';
+  let activeSort = 'rating-desc';
 
   const loadCategories = async (): Promise<void> => {
     const categories = await fetchCategories();
@@ -217,16 +201,24 @@ export function createLibraryPage(): HTMLElement {
   sortMenu.setAttribute('role', 'listbox');
   sortMenu.hidden = true;
 
-  const sortOptions = ['Rating ↑', 'Rating ↓', 'Name A→Z', 'Name Z→A'];
+  // const sortOptions = ['Rating ↑', 'Rating ↓', 'Name A→Z', 'Name Z→A'];
+  const sortOptions = [
+    { label: 'Rating ↓', value: 'rating-desc' },
+    { label: 'Rating ↑', value: 'rating-asc' },
+    { label: 'Name A→Z', value: 'name-asc' },
+    { label: 'Name Z→A', value: 'name-desc' },
+  ];
+
   for (const option of sortOptions) {
     const optionButton = document.createElement('button');
 
     optionButton.className = 'library__sort-option';
     optionButton.type = 'button';
     optionButton.setAttribute('role', 'option');
-    optionButton.textContent = option;
+    optionButton.textContent = option.label;
+    optionButton.dataset.sort = option.value;
 
-    if (option === 'Rating ↓') {
+    if (option.value === activeSort) {
       optionButton.classList.add('library__sort-option--active');
       optionButton.setAttribute('aria-selected', 'true');
     } else {
@@ -256,6 +248,17 @@ export function createLibraryPage(): HTMLElement {
       optionButton.setAttribute('aria-selected', 'true');
 
       sortLabel.textContent = `Sort by: ${optionButton.textContent}`;
+
+      const sortValue = optionButton.dataset.sort;
+
+      if (!sortValue) {
+        return;
+      }
+
+      activeSort = sortValue;
+      currentPage = 1;
+
+      void loadLibraryGames(1);
 
       sortMenu.hidden = true;
       sortButton.setAttribute('aria-expanded', 'false');
@@ -325,7 +328,7 @@ export function createLibraryPage(): HTMLElement {
     renderGamesSkeleton();
 
     try {
-      const result = await fetchLibraryGames(page, activeCategory);
+      const result = await fetchLibraryGames(page, activeCategory, activeSort);
 
       currentPage = result.meta.page;
 
