@@ -60,33 +60,89 @@ export function createLibraryPage(): HTMLElement {
   let activeCategory = 'all';
   let activeSort = 'rating-desc';
 
-  const loadCategories = async (): Promise<void> => {
-    const categories = await fetchCategories();
-
+  const renderCategoriesLoading = (): void => {
     filters.replaceChildren();
 
-    for (const category of categories) {
-      const button = document.createElement('button');
+    const loading = document.createElement('span');
+    loading.className = 'library__filters-loading';
+    loading.textContent = 'Loading categories...';
 
-      button.className = 'library__filter';
-      button.type = 'button';
-      button.textContent = category.label;
-      button.dataset.category = category.slug;
+    filters.append(loading);
+  };
 
-      button.setAttribute('aria-pressed', String(category.isDefault));
+  const renderCategoriesEmpty = (): void => {
+    filters.replaceChildren();
 
-      if (category.isDefault) {
-        activeCategory = category.slug;
-        button.classList.add('library__filter--active');
+    const empty = document.createElement('span');
+    empty.className = 'library__filters-empty';
+    empty.textContent = 'No categories available.';
+
+    filters.append(empty);
+  };
+
+  const renderCategoriesError = (): void => {
+    filters.replaceChildren();
+
+    const error = document.createElement('div');
+    error.className = 'library__filters-error';
+
+    error.innerHTML = /* html */ `
+      <span>Failed to load categories.</span>
+      <button class="library__filters-retry" type="button">
+        Retry
+      </button>
+    `;
+
+    const retryButton = error.querySelector<HTMLButtonElement>('.library__filters-retry');
+
+    retryButton?.addEventListener('click', () => {
+      void loadCategories();
+    });
+
+    filters.append(error);
+  };
+
+  const loadCategories = async (): Promise<void> => {
+    renderCategoriesLoading();
+
+    try {
+      const categories = await fetchCategories();
+
+      if (categories.length === 0) {
+        renderCategoriesEmpty();
+        return;
       }
 
-      filters.append(button);
+      filters.replaceChildren();
+
+      for (const category of categories) {
+        const button = document.createElement('button');
+
+        button.className = 'library__filter';
+        button.type = 'button';
+        button.textContent = category.label;
+        button.dataset.category = category.slug;
+
+        button.setAttribute('aria-pressed', String(category.isDefault));
+
+        if (category.isDefault) {
+          activeCategory = category.slug;
+          button.classList.add('library__filter--active');
+        }
+
+        filters.append(button);
+      }
+    } catch {
+      renderCategoriesError();
+
+      showSnackbar({
+        message: 'Failed to load categories.',
+        variant: 'error',
+      });
     }
   };
 
   void loadCategories();
-
-  // const filterButtons = filters.querySelectorAll<HTMLButtonElement>('.library__filter');
 
   let isPointerDown = false;
   let isDragging = false;

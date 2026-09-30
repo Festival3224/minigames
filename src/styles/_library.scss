@@ -263,8 +263,9 @@
   margin: 0;
 }
 
-.library__retry {
-  padding: $size-2 $size-4;
+.library__retry,
+.library__filters-retry {
+  padding: $size-05 $size-1;
 
   border: 2px solid $on-primary;
   border-radius: $corner-full;
