@@ -1,5 +1,3 @@
-import { fetchLibraryGames } from '../api/games-api';
-
 import { createHeader } from '../components/header';
 import { createPagination } from '../components/pagination';
 import { createGameDetailsDialog } from '../components/game-details-dialog';
@@ -7,7 +5,7 @@ import { createFooter } from '../components/footer';
 
 import { createLibraryGameCard } from '../components/library-game-card';
 
-import categoriesData from '../data/categories.json';
+import { fetchCategories, fetchLibraryGames } from '../api/games-api';
 
 import { formatLikesCount, formatRating } from '../utils/format';
 
@@ -59,7 +57,7 @@ export function createLibraryPage(): HTMLElement {
   filters.className = 'library__filters';
 
   // chips
-  for (const category of categoriesData.data) {
+  /* for (const category of categoriesData.data) {
     const button = document.createElement('button');
 
     button.className = 'library__filter';
@@ -74,9 +72,37 @@ export function createLibraryPage(): HTMLElement {
     }
 
     filters.append(button);
-  }
+  } */
 
-  const filterButtons = filters.querySelectorAll<HTMLButtonElement>('.library__filter');
+  let activeCategory = 'all';
+
+  const loadCategories = async (): Promise<void> => {
+    const categories = await fetchCategories();
+
+    filters.replaceChildren();
+
+    for (const category of categories) {
+      const button = document.createElement('button');
+
+      button.className = 'library__filter';
+      button.type = 'button';
+      button.textContent = category.label;
+      button.dataset.category = category.slug;
+
+      button.setAttribute('aria-pressed', String(category.isDefault));
+
+      if (category.isDefault) {
+        activeCategory = category.slug;
+        button.classList.add('library__filter--active');
+      }
+
+      filters.append(button);
+    }
+  };
+
+  void loadCategories();
+
+  // const filterButtons = filters.querySelectorAll<HTMLButtonElement>('.library__filter');
 
   let isPointerDown = false;
   let isDragging = false;
@@ -130,21 +156,42 @@ export function createLibraryPage(): HTMLElement {
     isDragging = false;
   });
 
-  for (const button of filterButtons) {
-    button.addEventListener('click', () => {
-      if (dragDistance > dragThreshold) {
-        return;
-      }
+  filters.addEventListener('click', (event) => {
+    if (dragDistance > dragThreshold) {
+      return;
+    }
 
-      for (const filterButton of filterButtons) {
-        filterButton.classList.remove('library__filter--active');
-        filterButton.setAttribute('aria-pressed', 'false');
-      }
+    const target = event.target;
 
-      button.classList.add('library__filter--active');
-      button.setAttribute('aria-pressed', 'true');
-    });
-  }
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const button = target.closest<HTMLButtonElement>('.library__filter');
+
+    if (!button) {
+      return;
+    }
+
+    const category = button.dataset.category;
+
+    if (!category) {
+      return;
+    }
+
+    for (const filterButton of filters.querySelectorAll<HTMLButtonElement>('.library__filter')) {
+      filterButton.classList.remove('library__filter--active');
+      filterButton.setAttribute('aria-pressed', 'false');
+    }
+
+    button.classList.add('library__filter--active');
+    button.setAttribute('aria-pressed', 'true');
+
+    activeCategory = category;
+    currentPage = 1;
+
+    void loadLibraryGames(1);
+  });
 
   const sort = document.createElement('div');
   sort.className = 'library__sort-wrapper';
@@ -273,59 +320,12 @@ export function createLibraryPage(): HTMLElement {
     gamesSection.append(errorState);
   };
 
-  /*   const result = await fetchLibraryGames(page);
-    currentPage = result.meta.page;
-    hideSnackbar();
-    renderGamesSkeleton();
-    try {
-      const result = await fetchLibraryGames();
-
-      if (result.data.length === 0) {
-        renderGamesEmptyState();
-        return;
-      }
-
-      gamesSection.replaceChildren();
-
-      for (const game of result.data) {
-        gamesSection.append(
-          createLibraryGameCard({
-            title: game.name,
-            imageSrc: getGameImage(game.cardImage),
-            category: game.category,
-            description: game.shortDescription,
-            rating: formatRating(game.rating),
-            likes: formatLikesCount(game.likesCount),
-            price: game.price,
-          }),
-        );
-      }
-
-      paginationContainer.replaceChildren(
-        createPagination(
-          result.meta.totalPages,
-          currentPage,
-          (selectedPage) => {
-            void loadLibraryGames(selectedPage);
-          },
-        ),
-      );
-    } catch {
-      renderGamesErrorState();
-
-      showSnackbar({
-        message: 'Failed to load games.',
-        variant: 'error',
-      });
-    }
-  }; */
-
   const loadLibraryGames = async (page = 1): Promise<void> => {
     hideSnackbar();
     renderGamesSkeleton();
 
     try {
-      const result = await fetchLibraryGames(page);
+      const result = await fetchLibraryGames(page, activeCategory);
 
       currentPage = result.meta.page;
 
@@ -386,9 +386,6 @@ export function createLibraryPage(): HTMLElement {
     const dialog = createGameDetailsDialog();
     document.body.append(dialog);
   });
-
-  // const paginationContainer = document.createElement('div');
-  // let currentPage = 1;
 
   controls.append(filters, sort);
   main.append(titleSection, controls, gamesSection, paginationContainer);
