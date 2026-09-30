@@ -371,3 +371,33 @@
     padding: $btn-medium-y $btn-medium-x;
   }
 }
+
+.library-game-card--skeleton {
+  position: relative;
+  overflow: hidden;
+
+  // min-height: $height-card;
+  background: $bg-footer;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      $ghostly-white-skeleton 50%,
+      transparent 100%
+    );
+
+    transform: translateX(-100%);
+    animation: library-card-skeleton 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes library-card-skeleton {
+  to {
+    transform: translateX(100%);
+  }
+}

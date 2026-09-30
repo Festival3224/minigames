@@ -1,9 +1,13 @@
-export function createPagination(totalPages: number): HTMLElement {
+export function createPagination(
+  totalPages: number,
+  currentPage: number,
+  onPageChange: (page: number) => void,
+): HTMLElement {
   const pagination = document.createElement('nav');
   pagination.className = 'pagination';
   pagination.setAttribute('aria-label', 'Library pagination');
 
-  let currentPage = 1;
+  // let currentPage = 1;
 
   const getVisiblePages = (maxVisible: number): number[] => {
     if (totalPages <= maxVisible) {
@@ -41,8 +45,9 @@ export function createPagination(totalPages: number): HTMLElement {
         return;
       }
 
-      currentPage -= 1;
-      render();
+      /* currentPage -= 1;
+      render(); */
+      onPageChange(currentPage - 1);
     });
 
     pagination.append(previousButton);
@@ -65,8 +70,7 @@ export function createPagination(totalPages: number): HTMLElement {
       }
 
       button.addEventListener('click', () => {
-        currentPage = page;
-        render();
+        onPageChange(page);
       });
 
       pagination.append(button);
@@ -89,8 +93,7 @@ export function createPagination(totalPages: number): HTMLElement {
         return;
       }
 
-      currentPage += 1;
-      render();
+      onPageChange(currentPage + 1);
     });
 
     pagination.append(nextButton);
