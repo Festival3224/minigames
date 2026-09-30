@@ -23,6 +23,16 @@ export interface GamesResponse {
   meta: GamesMeta;
 }
 
+export interface GameCategory {
+  slug: string;
+  label: string;
+  isDefault: boolean;
+}
+
+interface CategoriesResponse {
+  data: GameCategory[];
+}
+
 export async function fetchFeaturedGames(): Promise<GameListItem[]> {
   const response = await fetch(`${API_BASE_URL}/games?featured=true`);
 
@@ -35,14 +45,31 @@ export async function fetchFeaturedGames(): Promise<GameListItem[]> {
   return result.data;
 }
 
-export async function fetchLibraryGames(page = 1): Promise<GamesResponse> {
-  const response = await fetch(`${API_BASE_URL}/games?page=${page}&limit=6`);
+export async function fetchLibraryGames(
+  page = 1,
+  category = 'all',
+  sort = 'rating-desc',
+): Promise<GamesResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/games?category=${category}&sort=${sort}&page=${page}&limit=6
+  `,
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to load library games: ${response.status}`);
   }
 
-  // const result = (await response.json()) as GamesResponse;
-
   return (await response.json()) as GamesResponse;
+}
+
+export async function fetchCategories(): Promise<GameCategory[]> {
+  const response = await fetch(`${API_BASE_URL}/categories`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load categories: ${response.status}`);
+  }
+
+  const result = (await response.json()) as CategoriesResponse;
+
+  return result.data;
 }

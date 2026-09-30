@@ -1,5 +1,3 @@
-import { fetchLibraryGames } from '../api/games-api';
-
 import { createHeader } from '../components/header';
 import { createPagination } from '../components/pagination';
 import { createGameDetailsDialog } from '../components/game-details-dialog';
@@ -7,7 +5,7 @@ import { createFooter } from '../components/footer';
 
 import { createLibraryGameCard } from '../components/library-game-card';
 
-import categoriesData from '../data/categories.json';
+import { fetchCategories, fetchLibraryGames } from '../api/games-api';
 
 import { formatLikesCount, formatRating } from '../utils/format';
 
@@ -59,24 +57,92 @@ export function createLibraryPage(): HTMLElement {
   filters.className = 'library__filters';
 
   // chips
-  for (const category of categoriesData.data) {
-    const button = document.createElement('button');
+  let activeCategory = 'all';
+  let activeSort = 'rating-desc';
 
-    button.className = 'library__filter';
-    button.type = 'button';
-    button.textContent = category.label;
-    button.dataset.category = category.slug;
+  const renderCategoriesLoading = (): void => {
+    filters.replaceChildren();
 
-    button.setAttribute('aria-pressed', String(category.isDefault));
+    const loading = document.createElement('span');
+    loading.className = 'library__filters-loading';
+    loading.textContent = 'Loading categories...';
 
-    if (category.isDefault) {
-      button.classList.add('library__filter--active');
+    filters.append(loading);
+  };
+
+  const renderCategoriesEmpty = (): void => {
+    filters.replaceChildren();
+
+    const empty = document.createElement('span');
+    empty.className = 'library__filters-empty';
+    empty.textContent = 'No categories available.';
+
+    filters.append(empty);
+  };
+
+  const renderCategoriesError = (): void => {
+    filters.replaceChildren();
+
+    const error = document.createElement('div');
+    error.className = 'library__filters-error';
+
+    error.innerHTML = /* html */ `
+      <span>Failed to load categories.</span>
+      <button class="library__filters-retry" type="button">
+        Retry
+      </button>
+    `;
+
+    const retryButton = error.querySelector<HTMLButtonElement>('.library__filters-retry');
+
+    retryButton?.addEventListener('click', () => {
+      void loadCategories();
+    });
+
+    filters.append(error);
+  };
+
+  const loadCategories = async (): Promise<void> => {
+    renderCategoriesLoading();
+
+    try {
+      const categories = await fetchCategories();
+
+      if (categories.length === 0) {
+        renderCategoriesEmpty();
+        return;
+      }
+
+      filters.replaceChildren();
+
+      for (const category of categories) {
+        const button = document.createElement('button');
+
+        button.className = 'library__filter';
+        button.type = 'button';
+        button.textContent = category.label;
+        button.dataset.category = category.slug;
+
+        button.setAttribute('aria-pressed', String(category.isDefault));
+
+        if (category.isDefault) {
+          activeCategory = category.slug;
+          button.classList.add('library__filter--active');
+        }
+
+        filters.append(button);
+      }
+    } catch {
+      renderCategoriesError();
+
+      showSnackbar({
+        message: 'Failed to load categories.',
+        variant: 'error',
+      });
     }
+  };
 
-    filters.append(button);
-  }
-
-  const filterButtons = filters.querySelectorAll<HTMLButtonElement>('.library__filter');
+  void loadCategories();
 
   let isPointerDown = false;
   let isDragging = false;
@@ -130,21 +196,42 @@ export function createLibraryPage(): HTMLElement {
     isDragging = false;
   });
 
-  for (const button of filterButtons) {
-    button.addEventListener('click', () => {
-      if (dragDistance > dragThreshold) {
-        return;
-      }
+  filters.addEventListener('click', (event) => {
+    if (dragDistance > dragThreshold) {
+      return;
+    }
 
-      for (const filterButton of filterButtons) {
-        filterButton.classList.remove('library__filter--active');
-        filterButton.setAttribute('aria-pressed', 'false');
-      }
+    const target = event.target;
 
-      button.classList.add('library__filter--active');
-      button.setAttribute('aria-pressed', 'true');
-    });
-  }
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const button = target.closest<HTMLButtonElement>('.library__filter');
+
+    if (!button) {
+      return;
+    }
+
+    const category = button.dataset.category;
+
+    if (!category) {
+      return;
+    }
+
+    for (const filterButton of filters.querySelectorAll<HTMLButtonElement>('.library__filter')) {
+      filterButton.classList.remove('library__filter--active');
+      filterButton.setAttribute('aria-pressed', 'false');
+    }
+
+    button.classList.add('library__filter--active');
+    button.setAttribute('aria-pressed', 'true');
+
+    activeCategory = category;
+    currentPage = 1;
+
+    void loadLibraryGames(1);
+  });
 
   const sort = document.createElement('div');
   sort.className = 'library__sort-wrapper';
@@ -170,16 +257,24 @@ export function createLibraryPage(): HTMLElement {
   sortMenu.setAttribute('role', 'listbox');
   sortMenu.hidden = true;
 
-  const sortOptions = ['Rating ↑', 'Rating ↓', 'Name A→Z', 'Name Z→A'];
+  // const sortOptions = ['Rating ↑', 'Rating ↓', 'Name A→Z', 'Name Z→A'];
+  const sortOptions = [
+    { label: 'Rating ↓', value: 'rating-desc' },
+    { label: 'Rating ↑', value: 'rating-asc' },
+    { label: 'Name A→Z', value: 'name-asc' },
+    { label: 'Name Z→A', value: 'name-desc' },
+  ];
+
   for (const option of sortOptions) {
     const optionButton = document.createElement('button');
 
     optionButton.className = 'library__sort-option';
     optionButton.type = 'button';
     optionButton.setAttribute('role', 'option');
-    optionButton.textContent = option;
+    optionButton.textContent = option.label;
+    optionButton.dataset.sort = option.value;
 
-    if (option === 'Rating ↓') {
+    if (option.value === activeSort) {
       optionButton.classList.add('library__sort-option--active');
       optionButton.setAttribute('aria-selected', 'true');
     } else {
@@ -209,6 +304,17 @@ export function createLibraryPage(): HTMLElement {
       optionButton.setAttribute('aria-selected', 'true');
 
       sortLabel.textContent = `Sort by: ${optionButton.textContent}`;
+
+      const sortValue = optionButton.dataset.sort;
+
+      if (!sortValue) {
+        return;
+      }
+
+      activeSort = sortValue;
+      currentPage = 1;
+
+      void loadLibraryGames(1);
 
       sortMenu.hidden = true;
       sortButton.setAttribute('aria-expanded', 'false');
@@ -273,59 +379,12 @@ export function createLibraryPage(): HTMLElement {
     gamesSection.append(errorState);
   };
 
-  /*   const result = await fetchLibraryGames(page);
-    currentPage = result.meta.page;
-    hideSnackbar();
-    renderGamesSkeleton();
-    try {
-      const result = await fetchLibraryGames();
-
-      if (result.data.length === 0) {
-        renderGamesEmptyState();
-        return;
-      }
-
-      gamesSection.replaceChildren();
-
-      for (const game of result.data) {
-        gamesSection.append(
-          createLibraryGameCard({
-            title: game.name,
-            imageSrc: getGameImage(game.cardImage),
-            category: game.category,
-            description: game.shortDescription,
-            rating: formatRating(game.rating),
-            likes: formatLikesCount(game.likesCount),
-            price: game.price,
-          }),
-        );
-      }
-
-      paginationContainer.replaceChildren(
-        createPagination(
-          result.meta.totalPages,
-          currentPage,
-          (selectedPage) => {
-            void loadLibraryGames(selectedPage);
-          },
-        ),
-      );
-    } catch {
-      renderGamesErrorState();
-
-      showSnackbar({
-        message: 'Failed to load games.',
-        variant: 'error',
-      });
-    }
-  }; */
-
   const loadLibraryGames = async (page = 1): Promise<void> => {
     hideSnackbar();
     renderGamesSkeleton();
 
     try {
-      const result = await fetchLibraryGames(page);
+      const result = await fetchLibraryGames(page, activeCategory, activeSort);
 
       currentPage = result.meta.page;
 
@@ -386,9 +445,6 @@ export function createLibraryPage(): HTMLElement {
     const dialog = createGameDetailsDialog();
     document.body.append(dialog);
   });
-
-  // const paginationContainer = document.createElement('div');
-  // let currentPage = 1;
 
   controls.append(filters, sort);
   main.append(titleSection, controls, gamesSection, paginationContainer);
