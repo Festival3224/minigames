@@ -384,9 +384,18 @@ export function createNewGames(): HTMLElement {
       resumeAutoplay();
       return;
     }
+
+    const slug = pointerStartCard.dataset.slug;
+
+    if (!slug) {
+      resumeAutoplay();
+      pointerStartCard = undefined;
+      return;
+    }
+
     pauseAutoplay();
 
-    const dialog = createGameDetailsDialog(() => {
+    const dialog = createGameDetailsDialog(slug, () => {
       resetAutoplay();
     });
 

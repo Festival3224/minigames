@@ -1,12 +1,29 @@
-import tukoniData from '../data/game-tukoni-forest-keepers.json';
 import { formatLikesCount, formatRating, formatRelativeTime } from '../utils/format';
+
+import { fetchGameDetails } from '../api/games-api';
+import type { GameRecord } from '../api/games-api';
 
 import commentsData from '../data/comments-tukoni-forest-keepers.json';
 
-import tukoniHero from '../assets/library/tukoni-forest-keepers-hero.jpg';
-
 import starIcon from '../assets/icons/star.svg';
 import heartIcon from '../assets/icons/heart.svg';
+
+const heroImages = import.meta.glob('../assets/**/*-hero.jpg', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+function getGameHeroImage(heroImage: string): string {
+  const fileName = heroImage.split('/').pop();
+
+  if (!fileName) {
+    return '';
+  }
+
+  const imagePath = Object.keys(heroImages).find((path) => path.endsWith(`/${fileName}`));
+
+  return imagePath ? heroImages[imagePath] : '';
+}
 
 const medalByPosition: Record<number, string> = {
   1: '🥇',
@@ -14,8 +31,8 @@ const medalByPosition: Record<number, string> = {
   3: '🥉',
 };
 
-function createRecordsMarkup(): string {
-  return tukoniData.data.topRecords
+function createRecordsMarkup(records: GameRecord[]): string {
+  return records
     .map(
       (record) => `
         <div class="game-details-dialog__record">
@@ -90,9 +107,9 @@ function createCommentsMarkup(): string {
     .join('');
 }
 
-export function createGameDetailsDialog(onClose?: () => void): HTMLElement {
-  const game = tukoniData.data;
-  const recordsMarkup = createRecordsMarkup();
+export function createGameDetailsDialog(slug: string, onClose?: () => void): HTMLElement {
+  // const game = tukoniData.data;
+  // const recordsMarkup = createRecordsMarkup();
   const commentsMarkup = createCommentsMarkup();
   const backdrop = document.createElement('div');
 
@@ -105,11 +122,76 @@ export function createGameDetailsDialog(onClose?: () => void): HTMLElement {
   dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-label', 'Game details');
 
+  // void fetchGameDetails(slug);
+
+  const loadGameDetails = async (): Promise<void> => {
+    try {
+      const game = await fetchGameDetails(slug);
+
+      const heroImage = dialog.querySelector<HTMLImageElement>('.game-details-dialog__hero-image');
+      const title = dialog.querySelector<HTMLElement>('.game-details-dialog__title');
+      const rating = dialog.querySelector<HTMLElement>('.game-details-dialog__rating');
+      const likes = dialog.querySelector<HTMLElement>('.game-details-dialog__likes');
+      const description = dialog.querySelector<HTMLElement>('.game-details-dialog__description');
+      const infoValues = dialog.querySelectorAll<HTMLElement>('.game-details-dialog__info-value');
+      const recordsList = dialog.querySelector<HTMLElement>('.game-details-dialog__records-list');
+
+      if (heroImage) {
+        heroImage.src = getGameHeroImage(game.heroImage);
+      }
+
+      if (title) {
+        title.textContent = game.name;
+      }
+
+      if (rating) {
+        rating.innerHTML = `
+        <img src="${starIcon}" alt="" aria-hidden="true" />
+        ${formatRating(game.rating)}
+      `;
+      }
+
+      if (likes) {
+        likes.innerHTML = `
+        <img src="${heartIcon}" alt="" aria-hidden="true" />
+        ${formatLikesCount(game.likesCount)}
+      `;
+      }
+
+      if (description) {
+        description.textContent = game.fullDescription;
+      }
+
+      const specValues = [
+        game.specs.genre,
+        game.specs.players,
+        game.specs.duration,
+        game.specs.price,
+      ];
+
+      for (const [index, value] of specValues.entries()) {
+        const element = infoValues[index];
+
+        if (element) {
+          element.textContent = value;
+        }
+      }
+
+      if (recordsList) {
+        recordsList.innerHTML = createRecordsMarkup(game.topRecords);
+      }
+    } catch {
+      // error state добавим следующим шагом
+    }
+  };
+
+  void loadGameDetails();
+
   dialog.innerHTML = `
   <div class="game-details-dialog__hero">
     <img
       class="game-details-dialog__hero-image"
-      src="${tukoniHero}"
+      src=""
       alt=""
     />
 
@@ -127,45 +209,45 @@ export function createGameDetailsDialog(onClose?: () => void): HTMLElement {
   <div class="game-details-dialog__content">
     <div class="game-details-dialog__title-row">  
       <h2 class="game-details-dialog__title">
-        ${game.name}
+        Loading...
       </h2>  
 
       <div class="game-details-dialog__ratings">
         <span class="game-details-dialog__rating">
           <img src="${starIcon}" alt="" aria-hidden="true" />
-          ${formatRating(game.rating)}
+          ---
         </span>
 
         <span class="game-details-dialog__likes">
           <img src="${heartIcon}" alt="" aria-hidden="true" />
-          ${formatLikesCount(game.likesCount)}
+          ---
         </span>
       </div>
     </div>
 
     <p class="game-details-dialog__description">
-      ${game.fullDescription} <!-- description -->
+      Loading game details... <!-- description -->
     </p>
 
     <div class="game-details-dialog__info">
       <div class="game-details-dialog__info-item">
         <span class="game-details-dialog__info-label">Genre</span>
-        <span class="game-details-dialog__info-value">${game.specs.genre}</span>
+        <span class="game-details-dialog__info-value">-</span>
       </div>
 
       <div class="game-details-dialog__info-item">
         <span class="game-details-dialog__info-label">Players</span>
-        <span class="game-details-dialog__info-value">${game.specs.players}</span>
+        <span class="game-details-dialog__info-value">-</span>
       </div>
 
       <div class="game-details-dialog__info-item">
         <span class="game-details-dialog__info-label">Duration</span>
-        <span class="game-details-dialog__info-value">${game.specs.duration}</span>
+        <span class="game-details-dialog__info-value">-</span>
       </div>
 
       <div class="game-details-dialog__info-item">
         <span class="game-details-dialog__info-label">Price</span>
-        <span class="game-details-dialog__info-value">${game.specs.price}</span>
+        <span class="game-details-dialog__info-value">-</span>
       </div>
     </div>
 
@@ -196,9 +278,7 @@ export function createGameDetailsDialog(onClose?: () => void): HTMLElement {
         <h3>Top Records</h3>
       </div>
 
-      <div class="game-details-dialog__records-list">
-        ${recordsMarkup}
-      </div>
+      <div class="game-details-dialog__records-list"></div>
     </section>
 
     <section class="game-details-dialog__comments">
