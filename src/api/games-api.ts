@@ -115,3 +115,30 @@ export async function fetchGameDetails(slug: string): Promise<GameDetails> {
 
   return result.data;
 }
+
+export interface GameComment {
+  commentId: string;
+  authorName: string;
+  text: string;
+  likesCount: number;
+  isLikedByCurrentUser: boolean;
+  createdAt: string;
+}
+
+export interface GameCommentsResponse {
+  data: GameComment[];
+  meta: {
+    totalComments: number;
+    returnedCount: number;
+  };
+}
+
+export async function fetchGameComments(slug: string): Promise<GameCommentsResponse> {
+  const response = await fetch(`${API_BASE_URL}/games/${slug}/comments?limit=3&sort=newest`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load game comments: ${response.status}`);
+  }
+
+  return (await response.json()) as GameCommentsResponse;
+}

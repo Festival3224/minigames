@@ -726,3 +726,19 @@
 .game-details-dialog__empty-text {
   margin: 0;
 }
+
+.game-details-dialog__comments-empty {
+  padding: $size-4 0;
+  text-align: center;
+}
+
+.game-details-dialog__comments-loading,
+.game-details-dialog__comments-empty,
+.game-details-dialog__comments-error {
+  padding: $size-4 0;
+  text-align: center;
+}
+
+.game-details-dialog__comments-error {
+  color: $error;
+}

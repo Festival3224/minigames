@@ -4,7 +4,10 @@ import { showSnackbar } from './snackbar';
 import { fetchGameDetails } from '../api/games-api';
 import type { GameRecord } from '../api/games-api';
 
-import commentsData from '../data/comments-tukoni-forest-keepers.json';
+import { fetchGameComments } from '../api/games-api';
+import type { GameComment } from '../api/games-api';
+
+// import commentsData from '../data/comments-tukoni-forest-keepers.json';
 
 import starIcon from '../assets/icons/star.svg';
 import heartIcon from '../assets/icons/heart.svg';
@@ -62,8 +65,8 @@ function createRecordsMarkup(records: GameRecord[]): string {
     .join('');
 }
 
-function createCommentsMarkup(): string {
-  return commentsData.data
+function createCommentsMarkup(comments: GameComment[]): string {
+  return comments
     .map((comment, index) => {
       const likeClass = comment.isLikedByCurrentUser
         ? ' game-details-dialog__comment-likes-group--active'
@@ -109,9 +112,6 @@ function createCommentsMarkup(): string {
 }
 
 export function createGameDetailsDialog(slug: string, onClose?: () => void): HTMLElement {
-  // const game = tukoniData.data;
-  // const recordsMarkup = createRecordsMarkup();
-  const commentsMarkup = createCommentsMarkup();
   const backdrop = document.createElement('div');
 
   backdrop.className = 'game-details-backdrop';
@@ -256,6 +256,65 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
     }
   };
 
+  const loadGameComments = async (): Promise<void> => {
+    try {
+      const response = await fetchGameComments(slug);
+
+      if (response.data.length === 0) {
+        const commentsTitle = dialog.querySelector<HTMLElement>(
+          '.game-details-dialog__comments-title',
+        );
+
+        const commentsList = dialog.querySelector<HTMLElement>(
+          '.game-details-dialog__comments-list',
+        );
+
+        if (commentsTitle) {
+          commentsTitle.textContent = `Comments (${response.meta.totalComments})`;
+        }
+
+        if (commentsList) {
+          commentsList.innerHTML = /* html */ `
+            <div class="game-details-dialog__comments-empty">
+              No comments yet.
+            </div>
+          `;
+        }
+
+        return;
+      }
+
+      const commentsTitle = dialog.querySelector<HTMLElement>(
+        '.game-details-dialog__comments-title',
+      );
+
+      const commentsList = dialog.querySelector<HTMLElement>('.game-details-dialog__comments-list');
+
+      if (commentsTitle) {
+        commentsTitle.textContent = `Comments (${response.meta.totalComments})`;
+      }
+
+      if (commentsList) {
+        commentsList.innerHTML = createCommentsMarkup(response.data);
+      }
+    } catch {
+      const commentsList = dialog.querySelector<HTMLElement>('.game-details-dialog__comments-list');
+
+      if (commentsList) {
+        commentsList.innerHTML = /* html */ `
+          <div class="game-details-dialog__comments-error">
+            Failed to load comments.
+          </div>
+        `;
+      }
+
+      showSnackbar({
+        message: 'Failed to load comments.',
+        variant: 'error',
+      });
+    }
+  };
+
   dialog.innerHTML = `
   <div class="game-details-dialog__hero">
     <img
@@ -352,7 +411,7 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
 
     <section class="game-details-dialog__comments">
       <h3 class="game-details-dialog__comments-title">
-        Comments (${commentsData.meta.totalComments})
+        Comments (0)
       </h3>
 
     <div class="game-details-dialog__comment-form">
@@ -378,13 +437,18 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
     </div>
 
       <div class="game-details-dialog__comments-list">
-        ${commentsMarkup}
+        <div class="game-details-dialog__comments-list">
+          <div class="game-details-dialog__comments-loading">
+            Loading comments...
+          </div>
+        </div>
       </div>
     </section>
   </div>
 `;
 
   void loadGameDetails();
+  void loadGameComments();
 
   const favoriteButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__favorite');
 
