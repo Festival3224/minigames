@@ -401,6 +401,7 @@ export function createLibraryPage(): HTMLElement {
       for (const game of result.data) {
         gamesSection.append(
           createLibraryGameCard({
+            slug: game.slug,
             title: game.name,
             imageSrc: getGameImage(game.cardImage),
             category: game.category,
@@ -442,7 +443,14 @@ export function createLibraryPage(): HTMLElement {
       return;
     }
 
-    const dialog = createGameDetailsDialog();
+    const card = detailsButton.closest<HTMLElement>('.library-game-card');
+    const slug = card?.dataset.slug;
+
+    if (!slug) {
+      return;
+    }
+
+    const dialog = createGameDetailsDialog(slug);
     document.body.append(dialog);
   });
 

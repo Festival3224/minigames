@@ -33,6 +33,36 @@ interface CategoriesResponse {
   data: GameCategory[];
 }
 
+export interface GameRecord {
+  position: number;
+  playerName: string;
+  score: number;
+  achievedAt: string;
+}
+
+export interface GameSpecs {
+  genre: string;
+  players: string;
+  duration: string;
+  price: string;
+}
+
+export interface GameDetails {
+  slug: string;
+  name: string;
+  heroImage: string;
+  rating: number;
+  likesCount: number;
+  isLikedByCurrentUser: boolean;
+  fullDescription: string;
+  specs: GameSpecs;
+  topRecords: GameRecord[];
+}
+
+interface GameDetailsResponse {
+  data: GameDetails;
+}
+
 export async function fetchFeaturedGames(): Promise<GameListItem[]> {
   const response = await fetch(`${API_BASE_URL}/games?featured=true`);
 
@@ -72,4 +102,43 @@ export async function fetchCategories(): Promise<GameCategory[]> {
   const result = (await response.json()) as CategoriesResponse;
 
   return result.data;
+}
+
+export async function fetchGameDetails(slug: string): Promise<GameDetails> {
+  const response = await fetch(`${API_BASE_URL}/games/${slug}`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load game details: ${response.status}`);
+  }
+
+  const result = (await response.json()) as GameDetailsResponse;
+
+  return result.data;
+}
+
+export interface GameComment {
+  commentId: string;
+  authorName: string;
+  text: string;
+  likesCount: number;
+  isLikedByCurrentUser: boolean;
+  createdAt: string;
+}
+
+export interface GameCommentsResponse {
+  data: GameComment[];
+  meta: {
+    totalComments: number;
+    returnedCount: number;
+  };
+}
+
+export async function fetchGameComments(slug: string): Promise<GameCommentsResponse> {
+  const response = await fetch(`${API_BASE_URL}/games/${slug}/comments?limit=3&sort=newest`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load game comments: ${response.status}`);
+  }
+
+  return (await response.json()) as GameCommentsResponse;
 }

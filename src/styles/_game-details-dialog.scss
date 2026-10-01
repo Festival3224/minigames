@@ -265,7 +265,7 @@
   color: $on-bg;
   font-family: $font-primary;
   font-size: $label-medium;
-  font-weight: 400;
+  font-weight: $font-regular;
   line-height: 1;
   letter-spacing: 0;
 }
@@ -494,7 +494,7 @@
   border-radius: $corner-small;
   font-family: $font-primary;
   font-size: $body-small;
-  font-weight: 400;
+  font-weight: $font-regular;
   line-height: 1;
 }
 
@@ -578,7 +578,7 @@
   color: $on-primary;
   font-family: $font-primary;
   font-size: $label-medium;
-  font-weight: 400;
+  font-weight: $font-regular;
   line-height: 1;
 }
 
@@ -607,7 +607,7 @@
   color: $on-bg;
   font-family: $font-primary;
   font-size: $label-medium;
-  font-weight: 400;
+  font-weight: $font-regular;
   white-space: nowrap;
 }
 
@@ -616,7 +616,7 @@
   color: $on-primary;
   font-family: $font-primary;
   font-size: $body-small;
-  font-weight: 400;
+  font-weight: $font-regular;
   letter-spacing: 0;
 }
 
@@ -663,4 +663,82 @@
   font-family: $font-primary;
   font-size: $label-medium;
   font-weight: $font-bold;
+}
+
+.game-details-dialog__error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $size-4;
+
+  padding: $size-3 $size-4;
+
+  background: rgba($error, 0.08);
+  border-bottom: 1px solid rgba($error, 0.25);
+}
+
+.game-details-dialog__error-title {
+  margin: 0;
+
+  color: $error;
+  font-size: $label-large;
+  font-weight: $font-medium;
+}
+
+.game-details-dialog__retry {
+  padding: $size-05 $size-2;
+
+  border: 1px solid $error;
+  border-radius: $corner-extra-large;
+
+  background: transparent;
+  color: $error;
+
+  font: inherit;
+  font-size: $label-large;
+  font-weight: $font-medium;
+
+  cursor: pointer;
+}
+
+.game-details-dialog__retry:hover {
+  background: rgba($error, 0.08);
+}
+
+.game-details-dialog__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $size-2;
+
+  min-height: $library-card-image-width-desktop;
+  padding: $size-6;
+  text-align: center;
+}
+
+.game-details-dialog__empty-title {
+  margin: 0;
+  font-size: $btn-medium-x;
+  font-weight: $font-semibold;
+}
+
+.game-details-dialog__empty-text {
+  margin: 0;
+}
+
+.game-details-dialog__comments-empty {
+  padding: $size-4 0;
+  text-align: center;
+}
+
+.game-details-dialog__comments-loading,
+.game-details-dialog__comments-empty,
+.game-details-dialog__comments-error {
+  padding: $size-4 0;
+  text-align: center;
+}
+
+.game-details-dialog__comments-error {
+  color: $error;
 }
