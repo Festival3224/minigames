@@ -1,4 +1,5 @@
 import { formatLikesCount, formatRating, formatRelativeTime } from '../utils/format';
+import { showSnackbar } from './snackbar';
 
 import { fetchGameDetails } from '../api/games-api';
 import type { GameRecord } from '../api/games-api';
@@ -122,11 +123,76 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
   dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-label', 'Game details');
 
-  // void fetchGameDetails(slug);
+  const renderGameDetailsError = (): void => {
+    const oldError = dialog.querySelector('.game-details-dialog__error');
+    oldError?.remove();
+
+    const error = document.createElement('div');
+    error.className = 'game-details-dialog__error';
+
+    error.innerHTML = /* html */ `
+      <p class="game-details-dialog__error-title">
+        Failed to load game details.
+      </p>
+
+      <button
+        class="game-details-dialog__retry"
+        type="button"
+      >
+        Retry
+      </button>
+    `;
+
+    const retryButton = error.querySelector<HTMLButtonElement>('.game-details-dialog__retry');
+
+    retryButton?.addEventListener('click', () => {
+      error.remove();
+      void loadGameDetails();
+    });
+
+    dialog.prepend(error);
+
+    const title = dialog.querySelector<HTMLElement>('.game-details-dialog__title');
+
+    const description = dialog.querySelector<HTMLElement>('.game-details-dialog__description');
+
+    if (title) {
+      title.textContent = 'Game details unavailable';
+    }
+
+    if (description) {
+      description.textContent = 'Please try again.';
+    }
+  };
+
+  const renderGameDetailsEmpty = (): void => {
+    const content = dialog.querySelector<HTMLElement>('.game-details-dialog__content');
+
+    if (!content) {
+      return;
+    }
+
+    content.innerHTML = /* html */ `
+      <div class="game-details-dialog__empty">
+        <p class="game-details-dialog__empty-title">
+          Game details not available.
+        </p>
+
+        <p class="game-details-dialog__empty-text">
+          Please try another game.
+        </p>
+      </div>
+    `;
+  };
 
   const loadGameDetails = async (): Promise<void> => {
     try {
       const game = await fetchGameDetails(slug);
+
+      if (!game) {
+        renderGameDetailsEmpty();
+        return;
+      }
 
       const heroImage = dialog.querySelector<HTMLImageElement>('.game-details-dialog__hero-image');
       const title = dialog.querySelector<HTMLElement>('.game-details-dialog__title');
@@ -181,11 +247,14 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
         recordsList.innerHTML = createRecordsMarkup(game.topRecords);
       }
     } catch {
-      // error state добавим следующим шагом
+      renderGameDetailsError();
+
+      showSnackbar({
+        message: 'Failed to load game details.',
+        variant: 'error',
+      });
     }
   };
-
-  void loadGameDetails();
 
   dialog.innerHTML = `
   <div class="game-details-dialog__hero">
@@ -215,12 +284,12 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
       <div class="game-details-dialog__ratings">
         <span class="game-details-dialog__rating">
           <img src="${starIcon}" alt="" aria-hidden="true" />
-          ---
+          -
         </span>
 
         <span class="game-details-dialog__likes">
           <img src="${heartIcon}" alt="" aria-hidden="true" />
-          ---
+          -
         </span>
       </div>
     </div>
@@ -314,6 +383,8 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
     </section>
   </div>
 `;
+
+  void loadGameDetails();
 
   const favoriteButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__favorite');
 
