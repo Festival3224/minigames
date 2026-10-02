@@ -1,6 +1,26 @@
 import googleIcon from '../assets/icons/google.svg';
 
-export function createAuthDialog(): HTMLElement {
+export type AuthMode = 'login' | 'register';
+
+function updateAuthModeInUrl(mode: AuthMode): void {
+  const parameters = new URLSearchParams(location.search);
+
+  if (parameters.get('auth') === mode) {
+    return;
+  }
+
+  parameters.set('auth', mode);
+
+  const query = parameters.toString();
+  const path = query ? `${location.pathname}?${query}` : location.pathname;
+
+  history.replaceState({}, '', path);
+}
+
+export function createAuthDialog(
+  initialMode: AuthMode = 'login',
+  onClose?: () => void,
+): HTMLElement {
   const overlay = document.createElement('div');
 
   overlay.className = 'auth-overlay';
@@ -356,17 +376,28 @@ export function createAuthDialog(): HTMLElement {
     });
   }
 
-  loginTab?.addEventListener('click', showLogin);
-  registerTab?.addEventListener('click', showRegister);
+  if (initialMode === 'register') {
+    registerView?.removeAttribute('hidden');
+    loginView?.setAttribute('hidden', '');
+
+    registerTab?.classList.add('auth-dialog__tab--active');
+    loginTab?.classList.remove('auth-dialog__tab--active');
+  }
+
+  loginTab?.addEventListener('click', () => {
+    showLogin();
+    updateAuthModeInUrl('login');
+  });
+
+  registerTab?.addEventListener('click', () => {
+    showRegister();
+    updateAuthModeInUrl('register');
+  });
 
   function closeDialog(): void {
-    // overlay.classList.add('auth-overlay--closing');
-    overlay.classList.remove('auth-overlay--open');
+    onClose?.();
 
-    /* globalThis.setTimeout(() => {
-      overlay.remove();
-      document.removeEventListener('keydown', handleEscape);
-    }, 360); */
+    overlay.classList.remove('auth-overlay--open');
 
     setTimeout(() => {
       overlay.remove();
@@ -390,9 +421,12 @@ export function createAuthDialog(): HTMLElement {
     button.addEventListener('click', () => {
       if (button.dataset.authSwitch === 'register') {
         showRegister();
-      } else {
-        showLogin();
+        updateAuthModeInUrl('register');
+        return;
       }
+
+      showLogin();
+      updateAuthModeInUrl('login');
     });
   }
 
@@ -403,4 +437,24 @@ export function createAuthDialog(): HTMLElement {
   });
 
   return overlay;
+}
+
+export function restoreAuthDialogFromUrl(): void {
+  const authMode = new URLSearchParams(location.search).get('auth');
+
+  if (authMode !== 'login' && authMode !== 'register') {
+    return;
+  }
+
+  const existingDialog = document.querySelector('.auth-overlay');
+
+  if (existingDialog) {
+    return;
+  }
+
+  const dialog = createAuthDialog(authMode, () => {
+    history.back();
+  });
+
+  document.body.append(dialog);
 }

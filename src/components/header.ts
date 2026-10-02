@@ -1,6 +1,22 @@
 import { navigate } from '../router';
 import { createAuthDialog } from './auth-dialog';
+import type { AuthMode } from './auth-dialog';
 import logoIcon from '../assets/icons/logo-icon.svg';
+
+function updateAuthInUrl(mode?: AuthMode): void {
+  const parameters = new URLSearchParams(location.search);
+
+  if (mode) {
+    parameters.set('auth', mode);
+  } else {
+    parameters.delete('auth');
+  }
+
+  const query = parameters.toString();
+  const path = query ? `${location.pathname}?${query}` : location.pathname;
+
+  history.pushState({}, '', path);
+}
 
 export function createHeader(): HTMLElement {
   const header = document.createElement('header');
@@ -156,7 +172,13 @@ export function createHeader(): HTMLElement {
       return;
     }
 
-    document.body.append(createAuthDialog());
+    updateAuthInUrl('login');
+
+    document.body.append(
+      createAuthDialog('login', () => {
+        history.back();
+      }),
+    );
   });
 
   signupButton?.addEventListener('click', () => {
@@ -166,13 +188,13 @@ export function createHeader(): HTMLElement {
       return;
     }
 
-    const dialog = createAuthDialog();
+    updateAuthInUrl('register');
 
-    document.body.append(dialog);
-
-    const registerTab = dialog.querySelector<HTMLButtonElement>('[data-auth-tab="register"]');
-
-    registerTab?.click();
+    document.body.append(
+      createAuthDialog('register', () => {
+        history.back();
+      }),
+    );
   });
 
   function openMenu(): void {
@@ -204,7 +226,13 @@ export function createHeader(): HTMLElement {
       return;
     }
 
-    document.body.append(createAuthDialog());
+    updateAuthInUrl('login');
+
+    document.body.append(
+      createAuthDialog('login', () => {
+        history.back();
+      }),
+    );
   });
 
   mobileSignupButton?.addEventListener('click', () => {
@@ -216,13 +244,13 @@ export function createHeader(): HTMLElement {
       return;
     }
 
-    const dialog = createAuthDialog();
+    updateAuthInUrl('register');
 
-    document.body.append(dialog);
-
-    const registerTab = dialog.querySelector<HTMLButtonElement>('[data-auth-tab="register"]');
-
-    registerTab?.click();
+    document.body.append(
+      createAuthDialog('register', () => {
+        history.back();
+      }),
+    );
   });
 
   menuButton?.addEventListener('click', openMenu);
