@@ -166,7 +166,7 @@
   min-height: 22px;
   padding-inline: $size-1;
 
-  border: 1px solid $on-primary;
+  border: $size-01 solid $on-primary;
   border-radius: $corner-full;
 
   font-size: $label-medium;
@@ -284,30 +284,31 @@
 
   .leaderboard__table th:first-child,
   .leaderboard__table td.leaderboard__rank {
-    width: 64px;
+    width: $size-8;
   }
-
-  /*   .leaderboard__player {
-    gap: $size-1;
-  }
-
-  .leaderboard__avatar {
-    width: $size-3;
-    height: $size-3;
-    font-size: $label-small; // 10px
-  } */
 
   .leaderboard__player-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+}
 
-  /*  .leaderboard__score-desktop {
-    display: none;
-  }
+.leaderboard__retry {
+  padding: $size-2 $size-4;
 
-  .leaderboard__score-mobile {
-    display: inline;
-  } */
+  border: $size-01 solid $on-primary;
+  border-radius: $corner-large;
+
+  font: inherit;
+  font-weight: $font-medium;
+
+  cursor: pointer;
+}
+
+.leaderboard__error-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $size-3;
 }
