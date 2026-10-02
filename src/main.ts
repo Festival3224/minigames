@@ -1,6 +1,5 @@
 import './styles/main.scss';
-import { getRouteFromHash, renderRoute } from './router';
-// import { createHomePage } from './pages/home';
+import { getRouteFromLocation, renderRoute } from './router';
 
 const app = document.createElement('div');
 app.id = 'app';
@@ -8,9 +7,9 @@ app.id = 'app';
 document.body.append(app);
 
 function handleRouteChange(): void {
-  renderRoute(getRouteFromHash());
+  renderRoute(getRouteFromLocation());
 }
 
-addEventListener('hashchange', handleRouteChange);
+addEventListener('popstate', handleRouteChange);
 
 handleRouteChange();

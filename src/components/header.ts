@@ -1,4 +1,4 @@
-// import { renderRoute } from '../router';
+import { navigate } from '../router';
 import { createAuthDialog } from './auth-dialog';
 import logoIcon from '../assets/icons/logo-icon.svg';
 
@@ -9,7 +9,7 @@ export function createHeader(): HTMLElement {
 
   header.innerHTML = /* html */ `
       <div class="header__container">
-        <a class="header__logo" href="#" aria-label="MiniGames home">
+        <a class="header__logo" href="/" aria-label="MiniGames home">
           <img
               class="header__logo-icon"
               src="${logoIcon}"
@@ -21,10 +21,10 @@ export function createHeader(): HTMLElement {
 
         <div class="header__actions">
           <nav class="header__nav" aria-label="Main navigation">
-            <a class="header__nav-link" href="#home" data-route="home">Home</a>
-            <a class="header__nav-link" href="#library" data-route="library">Library</a>
-            <a class="header__nav-link" href="#home">Tournaments</a>
-            <a class="header__nav-link" href="#home">Community</a>
+            <a class="header__nav-link" href="/" data-route="home">Home</a>
+            <a class="header__nav-link" href="/library" data-route="library">Library</a>
+            <a class="header__nav-link" href="/">Tournaments</a>
+            <a class="header__nav-link" href="/">Community</a>
           </nav>
 
           <div class="header__user-actions">
@@ -73,10 +73,10 @@ export function createHeader(): HTMLElement {
       </div>
 
       <nav class="header__mobile-nav" aria-label="Mobile navigation">
-        <a class="header__mobile-link" href="#home" data-route="home">Home</a>
-        <a class="header__mobile-link" href="#library" data-route="library">Library</a>
-        <a class="header__mobile-link" href="#home">Tournaments</a>
-        <a class="header__mobile-link" href="#home">Community</a>
+        <a class="header__mobile-link" href="/" data-route="home">Home</a>
+        <a class="header__mobile-link" href="/library" data-route="library">Library</a>
+        <a class="header__mobile-link" href="/">Tournaments</a>
+        <a class="header__mobile-link" href="/">Community</a>
       </nav>
 
       <div class="header__mobile-actions">
@@ -95,12 +95,18 @@ export function createHeader(): HTMLElement {
   const backdrop = header.querySelector<HTMLElement>('.header__backdrop');
 
   const loginButton = header.querySelector<HTMLButtonElement>('.header__login');
+  const signupButton = header.querySelector<HTMLButtonElement>('.header__signup');
 
   const mobileLoginButton = header.querySelector<HTMLButtonElement>('.header__mobile-login');
 
   const mobileSignupButton = header.querySelector<HTMLButtonElement>('.header__mobile-signup');
 
-  const currentRoute = location.hash === '#library' ? 'library' : 'home';
+  const base = import.meta.env.BASE_URL;
+  const path = location.pathname.replace(base, '/') || '/';
+
+  const currentRoute = path === '/library' ? 'library' : 'home';
+
+  // const currentRoute = location.pathname === '/library' ? 'library' : 'home';
   const routeLinks = header.querySelectorAll<HTMLAnchorElement>('[data-route]');
 
   for (const link of routeLinks) {
@@ -117,6 +123,32 @@ export function createHeader(): HTMLElement {
     }
   }
 
+  for (const link of routeLinks) {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+
+      const route = link.dataset.route;
+
+      if (route === 'library') {
+        navigate('/library');
+        return;
+      }
+
+      navigate('/');
+    });
+  }
+
+  const logoLinks = header.querySelectorAll<HTMLAnchorElement>(
+    '.header__logo, .header__mobile-logo',
+  );
+
+  for (const logoLink of logoLinks) {
+    logoLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      navigate('/');
+    });
+  }
+
   loginButton?.addEventListener('click', () => {
     const existingDialog = document.querySelector('.auth-overlay');
 
@@ -125,6 +157,22 @@ export function createHeader(): HTMLElement {
     }
 
     document.body.append(createAuthDialog());
+  });
+
+  signupButton?.addEventListener('click', () => {
+    const existingDialog = document.querySelector('.auth-overlay');
+
+    if (existingDialog) {
+      return;
+    }
+
+    const dialog = createAuthDialog();
+
+    document.body.append(dialog);
+
+    const registerTab = dialog.querySelector<HTMLButtonElement>('[data-auth-tab="register"]');
+
+    registerTab?.click();
   });
 
   function openMenu(): void {
@@ -184,7 +232,16 @@ export function createHeader(): HTMLElement {
   const mobileLinks = header.querySelectorAll<HTMLAnchorElement>('.header__mobile-link');
 
   for (const link of mobileLinks) {
-    link.addEventListener('click', closeMenu);
+    link.addEventListener('click', (event) => {
+      closeMenu();
+
+      if (link.dataset.route) {
+        return;
+      }
+
+      event.preventDefault();
+      navigate('/');
+    });
   }
 
   return header;
