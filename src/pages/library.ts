@@ -11,6 +11,50 @@ import { formatLikesCount, formatRating } from '../utils/format';
 
 import { hideSnackbar, showSnackbar } from '../components/snackbar';
 
+type LibrarySort = 'rating-desc' | 'rating-asc' | 'name-asc' | 'name-desc';
+
+interface LibraryUrlState {
+  category: string;
+  sort: LibrarySort;
+  page: number;
+}
+
+function updateLibraryUrl(state: LibraryUrlState): void {
+  const parameters = new URLSearchParams();
+
+  parameters.set('category', state.category);
+  parameters.set('sort', state.sort);
+  parameters.set('page', String(state.page));
+
+  const base = import.meta.env.BASE_URL;
+  const path = `${base}library?${parameters.toString()}`;
+
+  history.pushState({}, '', path);
+}
+
+function getLibraryStateFromUrl(): LibraryUrlState {
+  const parameters = new URLSearchParams(location.search);
+
+  const category = parameters.get('category') ?? 'all';
+
+  const sortParameter = parameters.get('sort');
+  const allowedSorts: LibrarySort[] = ['rating-desc', 'rating-asc', 'name-asc', 'name-desc'];
+
+  const sort =
+    sortParameter && allowedSorts.includes(sortParameter as LibrarySort)
+      ? (sortParameter as LibrarySort)
+      : 'rating-desc';
+
+  const pageParameter = Number(parameters.get('page'));
+  const page = Number.isSafeInteger(pageParameter) && pageParameter > 0 ? pageParameter : 1;
+
+  return {
+    category,
+    sort,
+    page,
+  };
+}
+
 const gameImages = import.meta.glob('../assets/**/*-card.jpg', {
   eager: true,
   import: 'default',
@@ -29,6 +73,8 @@ function getGameImage(cardImage: string): string {
 }
 
 export function createLibraryPage(): HTMLElement {
+  const initialState = getLibraryStateFromUrl();
+
   const page = document.createElement('div');
   page.className = 'page';
 
@@ -57,8 +103,8 @@ export function createLibraryPage(): HTMLElement {
   filters.className = 'library__filters';
 
   // chips
-  let activeCategory = 'all';
-  let activeSort = 'rating-desc';
+  let activeCategory = initialState.category;
+  let activeSort = initialState.sort;
 
   const renderCategoriesLoading = (): void => {
     filters.replaceChildren();
@@ -123,10 +169,13 @@ export function createLibraryPage(): HTMLElement {
         button.textContent = category.label;
         button.dataset.category = category.slug;
 
-        button.setAttribute('aria-pressed', String(category.isDefault));
+        // button.setAttribute('aria-pressed', String(category.isDefault));
 
-        if (category.isDefault) {
-          activeCategory = category.slug;
+        const isActive = category.slug === activeCategory;
+
+        button.setAttribute('aria-pressed', String(isActive));
+
+        if (isActive) {
           button.classList.add('library__filter--active');
         }
 
@@ -230,6 +279,12 @@ export function createLibraryPage(): HTMLElement {
     activeCategory = category;
     currentPage = 1;
 
+    updateLibraryUrl({
+      category: activeCategory,
+      sort: activeSort,
+      page: currentPage,
+    });
+
     void loadLibraryGames(1);
   });
 
@@ -242,8 +297,22 @@ export function createLibraryPage(): HTMLElement {
   sortButton.setAttribute('aria-expanded', 'false');
   sortButton.setAttribute('aria-haspopup', 'listbox');
 
+  const sortMenu = document.createElement('div');
+  sortMenu.className = 'library__sort-menu';
+  sortMenu.setAttribute('role', 'listbox');
+  sortMenu.hidden = true;
+
+  const sortOptions = [
+    { label: 'Rating ↓', value: 'rating-desc' },
+    { label: 'Rating ↑', value: 'rating-asc' },
+    { label: 'Name A→Z', value: 'name-asc' },
+    { label: 'Name Z→A', value: 'name-desc' },
+  ];
+
+  const activeSortOption = sortOptions.find((option) => option.value === activeSort);
+
   const sortLabel = document.createElement('span');
-  sortLabel.textContent = 'Sort by: Rating ↓';
+  sortLabel.textContent = `Sort by: ${activeSortOption?.label ?? 'Rating ↓'}`;
 
   const sortIcon = document.createElement('span');
   sortIcon.className = 'material-symbols-outlined';
@@ -251,19 +320,6 @@ export function createLibraryPage(): HTMLElement {
   sortIcon.textContent = 'arrow_drop_down';
 
   sortButton.append(sortLabel, sortIcon);
-
-  const sortMenu = document.createElement('div');
-  sortMenu.className = 'library__sort-menu';
-  sortMenu.setAttribute('role', 'listbox');
-  sortMenu.hidden = true;
-
-  // const sortOptions = ['Rating ↑', 'Rating ↓', 'Name A→Z', 'Name Z→A'];
-  const sortOptions = [
-    { label: 'Rating ↓', value: 'rating-desc' },
-    { label: 'Rating ↑', value: 'rating-asc' },
-    { label: 'Name A→Z', value: 'name-asc' },
-    { label: 'Name Z→A', value: 'name-desc' },
-  ];
 
   for (const option of sortOptions) {
     const optionButton = document.createElement('button');
@@ -305,7 +361,7 @@ export function createLibraryPage(): HTMLElement {
 
       sortLabel.textContent = `Sort by: ${optionButton.textContent}`;
 
-      const sortValue = optionButton.dataset.sort;
+      const sortValue = optionButton.dataset.sort as LibrarySort | undefined;
 
       if (!sortValue) {
         return;
@@ -313,6 +369,12 @@ export function createLibraryPage(): HTMLElement {
 
       activeSort = sortValue;
       currentPage = 1;
+
+      updateLibraryUrl({
+        category: activeCategory,
+        sort: activeSort,
+        page: currentPage,
+      });
 
       void loadLibraryGames(1);
 
@@ -327,7 +389,7 @@ export function createLibraryPage(): HTMLElement {
   gamesSection.className = 'library__games';
 
   const paginationContainer = document.createElement('div');
-  let currentPage = 1;
+  let currentPage = initialState.page;
 
   // skeleton
   const renderGamesSkeleton = (): void => {
@@ -415,7 +477,15 @@ export function createLibraryPage(): HTMLElement {
 
       paginationContainer.replaceChildren(
         createPagination(result.meta.totalPages, currentPage, (selectedPage) => {
-          void loadLibraryGames(selectedPage);
+          currentPage = selectedPage;
+
+          updateLibraryUrl({
+            category: activeCategory,
+            sort: activeSort,
+            page: currentPage,
+          });
+
+          void loadLibraryGames(currentPage);
         }),
       );
     } catch {
@@ -428,7 +498,7 @@ export function createLibraryPage(): HTMLElement {
     }
   };
 
-  void loadLibraryGames();
+  void loadLibraryGames(currentPage);
 
   gamesSection.addEventListener('click', (event) => {
     const target = event.target;
