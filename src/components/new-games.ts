@@ -8,6 +8,22 @@ import { createGameDetailsDialog } from './game-details-dialog';
 
 import { hideSnackbar, showSnackbar } from './snackbar';
 
+function updateHomeGameInUrl(slug?: string): void {
+  const parameters = new URLSearchParams(location.search);
+
+  if (slug) {
+    parameters.set('game', slug);
+  } else {
+    parameters.delete('game');
+  }
+
+  const base = import.meta.env.BASE_URL;
+  const query = parameters.toString();
+  const path = query ? `${base}?${query}` : base;
+
+  history.pushState({}, '', path);
+}
+
 const gameImages = import.meta.glob('../assets/home/*-card.jpg', {
   eager: true,
   import: 'default',
@@ -395,7 +411,10 @@ export function createNewGames(): HTMLElement {
 
     pauseAutoplay();
 
+    updateHomeGameInUrl(slug);
+
     const dialog = createGameDetailsDialog(slug, () => {
+      history.back();
       resetAutoplay();
     });
 
@@ -423,6 +442,23 @@ export function createNewGames(): HTMLElement {
     showNextSlide();
     resetAutoplay();
   });
+
+  const gameSlug = new URLSearchParams(location.search).get('game');
+
+  if (gameSlug) {
+    pauseAutoplay();
+
+    const existingDialog = document.querySelector('.game-details-backdrop');
+
+    if (!existingDialog) {
+      const dialog = createGameDetailsDialog(gameSlug, () => {
+        history.back();
+        resetAutoplay();
+      });
+
+      document.body.append(dialog);
+    }
+  }
 
   return section;
 }

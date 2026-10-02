@@ -19,6 +19,21 @@ interface LibraryUrlState {
   page: number;
 }
 
+function updateGameInUrl(slug?: string): void {
+  const parameters = new URLSearchParams(location.search);
+
+  if (slug) {
+    parameters.set('game', slug);
+  } else {
+    parameters.delete('game');
+  }
+
+  const base = import.meta.env.BASE_URL;
+  const path = `${base}library?${parameters.toString()}`;
+
+  history.pushState({}, '', path);
+}
+
 function updateLibraryUrl(state: LibraryUrlState): void {
   const parameters = new URLSearchParams();
 
@@ -500,6 +515,20 @@ export function createLibraryPage(): HTMLElement {
 
   void loadLibraryGames(currentPage);
 
+  const gameSlug = new URLSearchParams(location.search).get('game');
+
+  if (gameSlug) {
+    const existingDialog = document.querySelector('.game-details-backdrop');
+
+    if (!existingDialog) {
+      const dialog = createGameDetailsDialog(gameSlug, () => {
+        history.back();
+      });
+
+      document.body.append(dialog);
+    }
+  }
+
   gamesSection.addEventListener('click', (event) => {
     const target = event.target;
 
@@ -520,7 +549,12 @@ export function createLibraryPage(): HTMLElement {
       return;
     }
 
-    const dialog = createGameDetailsDialog(slug);
+    updateGameInUrl(slug);
+
+    const dialog = createGameDetailsDialog(slug, () => {
+      history.back();
+    });
+
     document.body.append(dialog);
   });
 
