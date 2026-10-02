@@ -1,5 +1,6 @@
 import { createHomePage } from './pages/home';
 import { createLibraryPage } from './pages/library';
+import { createNotFoundPage } from './pages/not-found';
 
 export type Route = 'home' | 'library' | 'not-found';
 
@@ -33,8 +34,7 @@ export function renderRoute(route: Route): void {
     return;
   }
 
-  // 404 на следующем шаге
-  app.textContent = 'Page not found';
+  app.append(createNotFoundPage());
 }
 
 export function navigate(path: string): void {
