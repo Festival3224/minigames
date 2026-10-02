@@ -1,60 +1,6 @@
-interface LeaderboardPlayer {
-  rank: number;
-  playerName: string;
-  gamesPlayed: number;
-  totalScore: number;
-  streakDays: number;
-  favoriteGameSlug: string;
-  favoriteGameName: string;
-}
-
-const players: LeaderboardPlayer[] = [
-  {
-    rank: 1,
-    playerName: 'Alex_Pro99',
-    gamesPlayed: 142,
-    totalScore: 94_250,
-    streakDays: 12,
-    favoriteGameSlug: 'heartopia',
-    favoriteGameName: 'Heartopia',
-  },
-  {
-    rank: 2,
-    playerName: 'CozyGamer_x',
-    gamesPlayed: 118,
-    totalScore: 81_400,
-    streakDays: 8,
-    favoriteGameSlug: 'cat-mail-co',
-    favoriteGameName: 'Cat Mail Co.',
-  },
-  {
-    rank: 3,
-    playerName: 'MatchMaster',
-    gamesPlayed: 98,
-    totalScore: 72_110,
-    streakDays: 5,
-    favoriteGameSlug: 'tiny-glade',
-    favoriteGameName: 'Tiny Glade',
-  },
-  {
-    rank: 4,
-    playerName: 'BubblePop',
-    gamesPlayed: 87,
-    totalScore: 65_900,
-    streakDays: 3,
-    favoriteGameSlug: 'whisper-of-the-house',
-    favoriteGameName: 'Whisper of the House',
-  },
-  {
-    rank: 5,
-    playerName: 'SudokuGod',
-    gamesPlayed: 74,
-    totalScore: 59_320,
-    streakDays: 2,
-    favoriteGameSlug: 'cat-chess',
-    favoriteGameName: 'Cat Chess',
-  },
-];
+import { hideSnackbar, showSnackbar } from './snackbar';
+import { fetchLeaderboard } from '../api/games-api';
+import type { LeaderboardPlayer } from '../api/games-api';
 
 function getPlayerInitials(playerName: string): string {
   const initials: Record<string, string> = {
@@ -68,11 +14,8 @@ function getPlayerInitials(playerName: string): string {
   return initials[playerName] ?? playerName.slice(0, 2).toUpperCase();
 }
 
-export function createLeaderboard(): HTMLElement {
-  const section = document.createElement('section');
-  section.className = 'leaderboard';
-
-  const rows = players
+function createLeaderboardRows(players: LeaderboardPlayer[]): string {
+  return players
     .map(
       (player) => /* html */ `
         <tr>
@@ -85,11 +28,11 @@ export function createLeaderboard(): HTMLElement {
 
           <td class="leaderboard__score">
             <span class="leaderboard__score-desktop">
-                ${player.totalScore.toLocaleString('en-US')}
+              ${player.totalScore.toLocaleString('en-US')}
             </span>
             <span class="leaderboard__score-mobile">
-                ${(player.totalScore / 1000).toFixed(1)}K
-             </span>
+              ${(player.totalScore / 1000).toFixed(1)}K
+            </span>
           </td>
 
           <td class="leaderboard__streak">
@@ -97,6 +40,7 @@ export function createLeaderboard(): HTMLElement {
             <span class="leaderboard__streak-desktop">${player.streakDays} days</span>
             <span class="leaderboard__streak-tablet">${player.streakDays}d</span>
           </td>
+
           <td>
             <span class="leaderboard__game">${player.favoriteGameName}</span>
           </td>
@@ -104,6 +48,11 @@ export function createLeaderboard(): HTMLElement {
       `,
     )
     .join('');
+}
+
+export function createLeaderboard(): HTMLElement {
+  const section = document.createElement('section');
+  section.className = 'leaderboard';
 
   section.innerHTML = /* html */ `
     <h2 class="leaderboard__title">
@@ -130,12 +79,76 @@ export function createLeaderboard(): HTMLElement {
           </tr>
         </thead>
 
-        <tbody>
-          ${rows}
-        </tbody>
+        <tbody class="leaderboard__body"></tbody>
       </table>
     </div>
   `;
+
+  const body = section.querySelector<HTMLTableSectionElement>('.leaderboard__body');
+
+  if (!body) {
+    return section;
+  }
+
+  const loadLeaderboard = async (): Promise<void> => {
+    hideSnackbar();
+
+    body.innerHTML = /* html */ `
+      <tr>
+        <td colspan="6" class="leaderboard__loading">
+          Loading leaderboard...
+        </td>
+      </tr>
+    `;
+
+    try {
+      const players = await fetchLeaderboard();
+
+      if (players.length === 0) {
+        body.innerHTML = /* html */ `
+          <tr>
+            <td colspan="6" class="leaderboard__empty">
+              No leaderboard data available.
+            </td>
+          </tr>
+        `;
+
+        return;
+      }
+
+      body.innerHTML = createLeaderboardRows(players);
+    } catch {
+      body.innerHTML = /* html */ `
+        <tr>
+          <td colspan="6" class="leaderboard__error">
+            <div class="leaderboard__error-content">
+              <span>Failed to load leaderboard.</span>
+
+              <button
+                class="leaderboard__retry"
+                type="button"
+              >
+                Retry
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+
+      const retryButton = body.querySelector<HTMLButtonElement>('.leaderboard__retry');
+
+      retryButton?.addEventListener('click', () => {
+        void loadLeaderboard();
+      });
+
+      showSnackbar({
+        message: 'Failed to load leaderboard.',
+        variant: 'error',
+      });
+    }
+  };
+
+  void loadLeaderboard();
 
   return section;
 }

@@ -142,3 +142,33 @@ export async function fetchGameComments(slug: string): Promise<GameCommentsRespo
 
   return (await response.json()) as GameCommentsResponse;
 }
+
+export interface LeaderboardPlayer {
+  rank: number;
+  playerName: string;
+  gamesPlayed: number;
+  totalScore: number;
+  streakDays: number;
+  favoriteGameSlug: string;
+  favoriteGameName: string;
+}
+
+interface LeaderboardResponse {
+  data: LeaderboardPlayer[];
+  meta: {
+    totalItems: number;
+    description: string;
+  };
+}
+
+export async function fetchLeaderboard(): Promise<LeaderboardPlayer[]> {
+  const response = await fetch(`${API_BASE_URL}/leaderboard`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load leaderboard: ${response.status}`);
+  }
+
+  const result = (await response.json()) as LeaderboardResponse;
+
+  return result.data;
+}
