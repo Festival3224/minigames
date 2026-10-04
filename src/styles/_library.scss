@@ -121,7 +121,7 @@
   background-color: $white;
   transition: background-color 160ms ease;
 
-  border: 2px solid $on-primary;
+  border: $size-02 solid $on-primary;
   border-radius: $corner-large;
 
   font-family: $font-primary;
@@ -159,7 +159,7 @@
 
   transition: background-color 160ms ease;
 
-  border: 2px solid $on-primary;
+  border: $size-02 solid $on-primary;
   border-radius: $corner-extra-large;
 
   font-family: $font-primary;
@@ -176,7 +176,7 @@
 
 .library__sort .material-symbols-outlined {
   flex: 0 0 auto;
-  font-size: 24px;
+  font-size: $display-small;
   line-height: 1;
 }
 
@@ -208,7 +208,7 @@
   min-width: 100%;
 
   background-color: $white;
-  border: 2px solid $on-primary;
+  border: $size-02 solid $on-primary;
   border-radius: $corner-large;
 
   overflow: hidden;
@@ -239,4 +239,38 @@
 
 .library__sort-option--active {
   background-color: $primary;
+}
+
+.library__empty,
+.library__error {
+  grid-column: 1 / -1;
+
+  width: 100%;
+  min-height: $library-card-height-desktop;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $size-2;
+
+  text-align: center;
+}
+
+.library__empty-title,
+.library__empty-text,
+.library__error-title {
+  margin: 0;
+}
+
+.library__retry,
+.library__filters-retry {
+  padding: $size-05 $size-1;
+
+  border: $size-02 solid $on-primary;
+  border-radius: $corner-full;
+
+  background: $white;
+  color: $on-primary;
+  cursor: pointer;
 }

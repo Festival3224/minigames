@@ -4,7 +4,7 @@
 .developer-cta {
   width: 100%;
 
-  padding-block: $size-2; // 16px
+  padding-block: $size-2;
   padding-inline: clamp($size-2, calc(6.11vw - 6.9px), $size-5);
 
   display: flex;
@@ -87,12 +87,12 @@
 
   cursor: pointer;
 
-  box-shadow: 0 10px 20px -10px hsla(0, 0%, 0%, 0.1);
+  box-shadow: 0 $btn-medium-y $btn-medium-x -10px hsla(0, 0%, 0%, 0.1);
 }
 
 .developer-cta__button-icon {
-  width: 16px;
-  height: 16px;
+  width: $size-2;
+  height: $size-2;
   flex-shrink: 0;
 }
 
@@ -108,7 +108,7 @@
 
 /* 500–767px */
 
-@media (min-width: 500px) {
+@media (min-width: ($breakpoint-mobile-lg + 1px)) {
   .developer-cta {
     padding-top: clamp($size-2, calc(1px + 3vw), $size-3);
 
@@ -121,9 +121,9 @@
   }
 
   .developer-cta__button {
-    padding-block: clamp($size-1, calc(4.25px + 0.75vw), 10px);
+    padding-block: clamp($size-1, calc(4.25px + 0.75vw), $btn-medium-y);
 
-    padding-inline: clamp($size-2, calc(8.51px + 1.5vw), 20px);
+    padding-inline: clamp($size-2, calc(8.51px + 1.5vw), $btn-medium-x);
   }
 }
 
@@ -154,13 +154,13 @@
   }
 
   .developer-cta__button {
-    padding: 10px 20px;
+    padding: $btn-medium-y $btn-medium-x;
   }
 }
 
 /* Desktop: 1024–1439px */
 
-@media (min-width: 1024px) {
+@media (min-width: ($breakpoint-tablet-lg + 1px)) {
   .developer-cta {
     padding-block: clamp($size-3, calc(-15.48px + 3.855vw), $size-5);
 
@@ -206,15 +206,15 @@
   }
 
   .developer-cta__button-icon {
-    width: clamp(16px, calc(-3.75px + 1.93vw), $size-3);
+    width: clamp($size-2, calc(-3.75px + 1.93vw), $size-3);
 
-    height: clamp(16px, calc(-3.75px + 1.93vw), $size-3);
+    height: clamp($size-2, calc(-3.75px + 1.93vw), $size-3);
   }
 }
 
 /* Large desktop: 1440px+ */
 
-@media (min-width: 1440px) {
+@media (min-width: $breakpoint-desktop-sm) {
   .developer-cta {
     padding-block: $size-5;
     gap: $size-5;

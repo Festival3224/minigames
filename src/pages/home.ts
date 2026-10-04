@@ -4,6 +4,7 @@ import { createNewGames } from '../components/new-games';
 import { createLeaderboard } from '../components/leaderboard';
 import { createDeveloperCta } from '../components/developer-cta';
 import { createFooter } from '../components/footer';
+import { restoreAuthDialogFromUrl } from '../components/auth-dialog';
 
 export function createHomePage(): HTMLElement {
   const page = document.createElement('div');
@@ -19,6 +20,7 @@ export function createHomePage(): HTMLElement {
   main.append(createFooter());
 
   page.append(main);
+  restoreAuthDialogFromUrl();
 
   return page;
 }

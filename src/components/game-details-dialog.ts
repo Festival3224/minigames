@@ -1,12 +1,33 @@
-import tukoniData from '../data/game-tukoni-forest-keepers.json';
 import { formatLikesCount, formatRating, formatRelativeTime } from '../utils/format';
+import { showSnackbar } from './snackbar';
 
-import commentsData from '../data/comments-tukoni-forest-keepers.json';
+import { fetchGameDetails, GameNotFoundError } from '../api/games-api';
+import type { GameRecord } from '../api/games-api';
 
-import tukoniHero from '../assets/library/tukoni-forest-keepers-hero.jpg';
+import { fetchGameComments } from '../api/games-api';
+import type { GameComment } from '../api/games-api';
+
+// import commentsData from '../data/comments-tukoni-forest-keepers.json';
 
 import starIcon from '../assets/icons/star.svg';
 import heartIcon from '../assets/icons/heart.svg';
+
+const heroImages = import.meta.glob('../assets/**/*-hero.jpg', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+function getGameHeroImage(heroImage: string): string {
+  const fileName = heroImage.split('/').pop();
+
+  if (!fileName) {
+    return '';
+  }
+
+  const imagePath = Object.keys(heroImages).find((path) => path.endsWith(`/${fileName}`));
+
+  return imagePath ? heroImages[imagePath] : '';
+}
 
 const medalByPosition: Record<number, string> = {
   1: '🥇',
@@ -14,8 +35,8 @@ const medalByPosition: Record<number, string> = {
   3: '🥉',
 };
 
-function createRecordsMarkup(): string {
-  return tukoniData.data.topRecords
+function createRecordsMarkup(records: GameRecord[]): string {
+  return records
     .map(
       (record) => `
         <div class="game-details-dialog__record">
@@ -44,8 +65,8 @@ function createRecordsMarkup(): string {
     .join('');
 }
 
-function createCommentsMarkup(): string {
-  return commentsData.data
+function createCommentsMarkup(comments: GameComment[]): string {
+  return comments
     .map((comment, index) => {
       const likeClass = comment.isLikedByCurrentUser
         ? ' game-details-dialog__comment-likes-group--active'
@@ -90,10 +111,7 @@ function createCommentsMarkup(): string {
     .join('');
 }
 
-export function createGameDetailsDialog(): HTMLElement {
-  const game = tukoniData.data;
-  const recordsMarkup = createRecordsMarkup();
-  const commentsMarkup = createCommentsMarkup();
+export function createGameDetailsDialog(slug: string, onClose?: () => void): HTMLElement {
   const backdrop = document.createElement('div');
 
   backdrop.className = 'game-details-backdrop';
@@ -105,11 +123,208 @@ export function createGameDetailsDialog(): HTMLElement {
   dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-label', 'Game details');
 
+  const renderGameDetailsError = (): void => {
+    const oldError = dialog.querySelector('.game-details-dialog__error');
+    oldError?.remove();
+
+    const error = document.createElement('div');
+    error.className = 'game-details-dialog__error';
+
+    error.innerHTML = /* html */ `
+      <p class="game-details-dialog__error-title">
+        Failed to load game details.
+      </p>
+
+      <button
+        class="game-details-dialog__retry"
+        type="button"
+      >
+        Retry
+      </button>
+    `;
+
+    const retryButton = error.querySelector<HTMLButtonElement>('.game-details-dialog__retry');
+
+    retryButton?.addEventListener('click', () => {
+      error.remove();
+      void loadGameDetails();
+    });
+
+    dialog.prepend(error);
+
+    const title = dialog.querySelector<HTMLElement>('.game-details-dialog__title');
+
+    const description = dialog.querySelector<HTMLElement>('.game-details-dialog__description');
+
+    if (title) {
+      title.textContent = 'Game details unavailable';
+    }
+
+    if (description) {
+      description.textContent = 'Please try again.';
+    }
+  };
+
+  const renderGameDetailsEmpty = (): void => {
+    const content = dialog.querySelector<HTMLElement>('.game-details-dialog__content');
+
+    if (!content) {
+      return;
+    }
+
+    content.innerHTML = /* html */ `
+      <div class="game-details-dialog__empty">
+        <p class="game-details-dialog__empty-title">
+          Game not found.
+        </p>
+
+        <p class="game-details-dialog__empty-text">
+          Please try another game.
+        </p>
+      </div>
+    `;
+  };
+
+  const loadGameDetails = async (): Promise<void> => {
+    try {
+      const game = await fetchGameDetails(slug);
+
+      if (!game) {
+        renderGameDetailsEmpty();
+        return;
+      }
+
+      const heroImage = dialog.querySelector<HTMLImageElement>('.game-details-dialog__hero-image');
+      const title = dialog.querySelector<HTMLElement>('.game-details-dialog__title');
+      const rating = dialog.querySelector<HTMLElement>('.game-details-dialog__rating');
+      const likes = dialog.querySelector<HTMLElement>('.game-details-dialog__likes');
+      const description = dialog.querySelector<HTMLElement>('.game-details-dialog__description');
+      const infoValues = dialog.querySelectorAll<HTMLElement>('.game-details-dialog__info-value');
+      const recordsList = dialog.querySelector<HTMLElement>('.game-details-dialog__records-list');
+
+      if (heroImage) {
+        heroImage.src = getGameHeroImage(game.heroImage);
+      }
+
+      if (title) {
+        title.textContent = game.name;
+      }
+
+      if (rating) {
+        rating.innerHTML = `
+        <img src="${starIcon}" alt="" aria-hidden="true" />
+        ${formatRating(game.rating)}
+      `;
+      }
+
+      if (likes) {
+        likes.innerHTML = `
+        <img src="${heartIcon}" alt="" aria-hidden="true" />
+        ${formatLikesCount(game.likesCount)}
+      `;
+      }
+
+      if (description) {
+        description.textContent = game.fullDescription;
+      }
+
+      const specValues = [
+        game.specs.genre,
+        game.specs.players,
+        game.specs.duration,
+        game.specs.price,
+      ];
+
+      for (const [index, value] of specValues.entries()) {
+        const element = infoValues[index];
+
+        if (element) {
+          element.textContent = value;
+        }
+      }
+
+      if (recordsList) {
+        recordsList.innerHTML = createRecordsMarkup(game.topRecords);
+      }
+    } catch (error) {
+      if (error instanceof GameNotFoundError) {
+        renderGameDetailsEmpty();
+        return;
+      }
+
+      renderGameDetailsError();
+
+      showSnackbar({
+        message: 'Failed to load game details.',
+        variant: 'error',
+      });
+    }
+  };
+
+  const loadGameComments = async (): Promise<void> => {
+    try {
+      const response = await fetchGameComments(slug);
+
+      if (response.data.length === 0) {
+        const commentsTitle = dialog.querySelector<HTMLElement>(
+          '.game-details-dialog__comments-title',
+        );
+
+        const commentsList = dialog.querySelector<HTMLElement>(
+          '.game-details-dialog__comments-list',
+        );
+
+        if (commentsTitle) {
+          commentsTitle.textContent = `Comments (${response.meta.totalComments})`;
+        }
+
+        if (commentsList) {
+          commentsList.innerHTML = /* html */ `
+            <div class="game-details-dialog__comments-empty">
+              No comments yet.
+            </div>
+          `;
+        }
+
+        return;
+      }
+
+      const commentsTitle = dialog.querySelector<HTMLElement>(
+        '.game-details-dialog__comments-title',
+      );
+
+      const commentsList = dialog.querySelector<HTMLElement>('.game-details-dialog__comments-list');
+
+      if (commentsTitle) {
+        commentsTitle.textContent = `Comments (${response.meta.totalComments})`;
+      }
+
+      if (commentsList) {
+        commentsList.innerHTML = createCommentsMarkup(response.data);
+      }
+    } catch {
+      const commentsList = dialog.querySelector<HTMLElement>('.game-details-dialog__comments-list');
+
+      if (commentsList) {
+        commentsList.innerHTML = /* html */ `
+          <div class="game-details-dialog__comments-error">
+            Failed to load comments.
+          </div>
+        `;
+      }
+
+      showSnackbar({
+        message: 'Failed to load comments.',
+        variant: 'error',
+      });
+    }
+  };
+
   dialog.innerHTML = `
   <div class="game-details-dialog__hero">
     <img
       class="game-details-dialog__hero-image"
-      src="${tukoniHero}"
+      src=""
       alt=""
     />
 
@@ -127,45 +342,45 @@ export function createGameDetailsDialog(): HTMLElement {
   <div class="game-details-dialog__content">
     <div class="game-details-dialog__title-row">  
       <h2 class="game-details-dialog__title">
-        ${game.name}
+        Loading...
       </h2>  
 
       <div class="game-details-dialog__ratings">
         <span class="game-details-dialog__rating">
           <img src="${starIcon}" alt="" aria-hidden="true" />
-          ${formatRating(game.rating)}
+          -
         </span>
 
         <span class="game-details-dialog__likes">
           <img src="${heartIcon}" alt="" aria-hidden="true" />
-          ${formatLikesCount(game.likesCount)}
+          -
         </span>
       </div>
     </div>
 
     <p class="game-details-dialog__description">
-      ${game.fullDescription} <!-- description -->
+      Loading game details... <!-- description -->
     </p>
 
     <div class="game-details-dialog__info">
       <div class="game-details-dialog__info-item">
         <span class="game-details-dialog__info-label">Genre</span>
-        <span class="game-details-dialog__info-value">${game.specs.genre}</span>
+        <span class="game-details-dialog__info-value">-</span>
       </div>
 
       <div class="game-details-dialog__info-item">
         <span class="game-details-dialog__info-label">Players</span>
-        <span class="game-details-dialog__info-value">${game.specs.players}</span>
+        <span class="game-details-dialog__info-value">-</span>
       </div>
 
       <div class="game-details-dialog__info-item">
         <span class="game-details-dialog__info-label">Duration</span>
-        <span class="game-details-dialog__info-value">${game.specs.duration}</span>
+        <span class="game-details-dialog__info-value">-</span>
       </div>
 
       <div class="game-details-dialog__info-item">
         <span class="game-details-dialog__info-label">Price</span>
-        <span class="game-details-dialog__info-value">${game.specs.price}</span>
+        <span class="game-details-dialog__info-value">-</span>
       </div>
     </div>
 
@@ -196,14 +411,12 @@ export function createGameDetailsDialog(): HTMLElement {
         <h3>Top Records</h3>
       </div>
 
-      <div class="game-details-dialog__records-list">
-        ${recordsMarkup}
-      </div>
+      <div class="game-details-dialog__records-list"></div>
     </section>
 
     <section class="game-details-dialog__comments">
       <h3 class="game-details-dialog__comments-title">
-        Comments (${commentsData.meta.totalComments})
+        Comments (0)
       </h3>
 
     <div class="game-details-dialog__comment-form">
@@ -229,11 +442,18 @@ export function createGameDetailsDialog(): HTMLElement {
     </div>
 
       <div class="game-details-dialog__comments-list">
-        ${commentsMarkup}
+        <div class="game-details-dialog__comments-list">
+          <div class="game-details-dialog__comments-loading">
+            Loading comments...
+          </div>
+        </div>
       </div>
     </section>
   </div>
 `;
+
+  void loadGameDetails();
+  void loadGameComments();
 
   const favoriteButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__favorite');
 
@@ -272,9 +492,26 @@ export function createGameDetailsDialog(): HTMLElement {
   const closeButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__close');
 
   function closeDialog(): void {
+    if (backdrop.classList.contains('game-details-backdrop--closing')) {
+      return;
+    }
+
     document.removeEventListener('keydown', handleKeydown);
-    document.body.classList.remove('dialog-open');
-    backdrop.remove();
+
+    backdrop.classList.add('game-details-backdrop--closing');
+
+    const handleAnimationEnd = (event: AnimationEvent): void => {
+      if (event.target !== backdrop) {
+        return;
+      }
+
+      document.body.classList.remove('dialog-open');
+      backdrop.remove();
+
+      onClose?.();
+    };
+
+    backdrop.addEventListener('animationend', handleAnimationEnd);
   }
 
   function handleKeydown(event: KeyboardEvent): void {

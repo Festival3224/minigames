@@ -2,6 +2,7 @@ import starIcon from '../assets/icons/star.svg';
 import heartIcon from '../assets/icons/heart.svg';
 
 interface LibraryGameCardProperties {
+  slug: string;
   title: string;
   imageSrc: string;
   category: string;
@@ -12,6 +13,7 @@ interface LibraryGameCardProperties {
 }
 
 export function createLibraryGameCard({
+  slug,
   title,
   imageSrc,
   category,
@@ -22,6 +24,7 @@ export function createLibraryGameCard({
 }: LibraryGameCardProperties): HTMLElement {
   const card = document.createElement('article');
   card.className = 'library-game-card';
+  card.dataset.slug = slug;
 
   card.innerHTML = /* html */ `
     <img

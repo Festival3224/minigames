@@ -1,0 +1,45 @@
+@use './tokens' as *;
+@use './breakpoints' as *;
+
+.snackbar {
+  position: fixed;
+  right: $size-4;
+  bottom: $size-4;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  gap: $size-2;
+
+  padding: $size-3 $size-4;
+
+  border-radius: $corner-small;
+
+  &--success {
+    background: $price-free;
+    color: $white;
+  }
+
+  &--error {
+    background: $error;
+    color: $white;
+  }
+}
+
+.snackbar__message {
+  margin: 0;
+}
+
+.snackbar__close {
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  background: transparent;
+  color: inherit;
+
+  cursor: pointer;
+}

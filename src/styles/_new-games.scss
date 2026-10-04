@@ -84,6 +84,12 @@
 
   color: $on-primary;
   cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 
 .new-games__control--next {
@@ -173,4 +179,53 @@
   .new-games__controls {
     display: none;
   }
+}
+
+.new-games__empty {
+  width: 100%;
+  min-height: 200px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.new-games__empty-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.new-games__empty-text {
+  margin: $btn-small-y 0 0;
+}
+
+.new-games__error {
+  width: 100%;
+  min-height: $library-card-height-desktop;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $size-2;
+
+  text-align: center;
+}
+
+.new-games__error-title {
+  margin: 0;
+}
+
+.new-games__retry {
+  padding: $size-05 $size-2;
+
+  border: $size-02 solid $on-primary;
+  border-radius: $corner-full;
+
+  background: $white;
+  color: $on-primary;
+  cursor: pointer;
 }

@@ -2,6 +2,7 @@ import starIcon from '../assets/icons/star.svg';
 import heartIcon from '../assets/icons/heart.svg';
 
 interface GameCardProperties {
+  slug: string;
   title?: string;
   imageSrc: string;
   rating?: string;
@@ -10,6 +11,7 @@ interface GameCardProperties {
 }
 
 export function createGameCard({
+  slug,
   title,
   imageSrc,
   rating,
@@ -19,6 +21,7 @@ export function createGameCard({
   const card = document.createElement('article');
 
   card.className = `game-card ${className}`.trim();
+  card.dataset.slug = slug;
 
   const meta =
     rating && likes
