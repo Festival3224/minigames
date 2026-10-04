@@ -66,6 +66,7 @@ $size-12: 96px;
 $size-13: 104px;
 $size-14: 112px;
 $size-15: 120px;
+$size-16: 128px;
 
 // Corners
 $corner-extra-small: 4px;
@@ -119,10 +120,16 @@ $btn-icon: 8px;
 
 // width
 $layout-max-width: 1920px;
+$width-auth-dialog: 420px;
 
 // additional
 $library-card-height-tablet: 152px;
 $library-card-height-desktop: 200px;
+
+$height-dialog-min: 812px;
+
+$height-leaderboard-game-badge: 22px;
+$size-avatar-small: 28px;
 
 $library-card-image-height-mobile: 160px;
 $library-card-image-width-tablet: 270px;

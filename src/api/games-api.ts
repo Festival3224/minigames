@@ -75,6 +75,20 @@ export async function fetchFeaturedGames(): Promise<GameListItem[]> {
   return result.data;
 }
 
+export class GameNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'GameNotFoundError';
+  }
+}
+
+export class LibraryDataNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'LibraryDataNotFoundError';
+  }
+}
+
 export async function fetchLibraryGames(
   page = 1,
   category = 'all',
@@ -84,6 +98,10 @@ export async function fetchLibraryGames(
     `${API_BASE_URL}/games?category=${category}&sort=${sort}&page=${page}&limit=6
   `,
   );
+
+  if (response.status === 400) {
+    throw new LibraryDataNotFoundError('Library data not found');
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to load library games: ${response.status}`);
@@ -106,6 +124,10 @@ export async function fetchCategories(): Promise<GameCategory[]> {
 
 export async function fetchGameDetails(slug: string): Promise<GameDetails> {
   const response = await fetch(`${API_BASE_URL}/games/${slug}`);
+
+  if (response.status === 404) {
+    throw new GameNotFoundError(`Game not found: ${slug}`);
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to load game details: ${response.status}`);
