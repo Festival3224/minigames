@@ -71,7 +71,12 @@ export function createFooter(): HTMLElement {
       </span>
 
       <div class="footer__meta">
-        <a href="#" class="footer__meta-link footer__rsschool">
+        <a
+          href="https://rs.school/courses/short-track"
+          class="footer__meta-link footer__rsschool"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <img
             class="footer__rs-logo"
             src="${rsLogo}"
@@ -81,7 +86,12 @@ export function createFooter(): HTMLElement {
           <span>RS School</span>
         </a>
 
-        <a href="#" class="footer__meta-link footer__student">
+        <a
+          href="https://github.com/Festival3224"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="footer__meta-link footer__student"
+        >
           <img
             class="footer__github-icon"
             src="${githubIcon}"

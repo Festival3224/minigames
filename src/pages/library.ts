@@ -5,7 +5,7 @@ import { createFooter } from '../components/footer';
 
 import { createLibraryGameCard } from '../components/library-game-card';
 
-import { fetchCategories, fetchLibraryGames } from '../api/games-api';
+import { fetchCategories, fetchLibraryGames, LibraryDataNotFoundError } from '../api/games-api';
 
 import { formatLikesCount, formatRating } from '../utils/format';
 
@@ -504,7 +504,26 @@ export function createLibraryPage(): HTMLElement {
           void loadLibraryGames(currentPage);
         }),
       );
-    } catch {
+    } catch (error) {
+      if (error instanceof LibraryDataNotFoundError) {
+        gamesSection.replaceChildren();
+
+        const notFoundState = document.createElement('div');
+        notFoundState.className = 'library__not-found';
+
+        notFoundState.innerHTML = /* html */ `
+          <p class="library__not-found-title">Data Not Found</p>
+          <p class="library__not-found-text">
+            No library data matches the current URL parameters.
+          </p>
+        `;
+
+        gamesSection.append(notFoundState);
+        paginationContainer.replaceChildren();
+
+        return;
+      }
+
       renderGamesErrorState();
 
       showSnackbar({

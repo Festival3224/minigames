@@ -1,7 +1,7 @@
 import { formatLikesCount, formatRating, formatRelativeTime } from '../utils/format';
 import { showSnackbar } from './snackbar';
 
-import { fetchGameDetails } from '../api/games-api';
+import { fetchGameDetails, GameNotFoundError } from '../api/games-api';
 import type { GameRecord } from '../api/games-api';
 
 import { fetchGameComments } from '../api/games-api';
@@ -175,7 +175,7 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
     content.innerHTML = /* html */ `
       <div class="game-details-dialog__empty">
         <p class="game-details-dialog__empty-title">
-          Game details not available.
+          Game not found.
         </p>
 
         <p class="game-details-dialog__empty-text">
@@ -246,7 +246,12 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
       if (recordsList) {
         recordsList.innerHTML = createRecordsMarkup(game.topRecords);
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof GameNotFoundError) {
+        renderGameDetailsEmpty();
+        return;
+      }
+
       renderGameDetailsError();
 
       showSnackbar({
