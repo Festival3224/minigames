@@ -9,9 +9,7 @@ const validResult: ValidationResult = {
 };
 
 export const validateEmail = (email: string): ValidationResult => {
-  const value = email.trim();
-
-  if (!value) {
+  if (!email) {
     return {
       isValid: false,
       error: 'Email is required.',
@@ -20,7 +18,7 @@ export const validateEmail = (email: string): ValidationResult => {
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  return emailPattern.test(value)
+  return emailPattern.test(email)
     ? validResult
     : {
         isValid: false,
@@ -29,30 +27,30 @@ export const validateEmail = (email: string): ValidationResult => {
 };
 
 export const validateUsername = (username: string): ValidationResult => {
-  const value = username.trim();
+  //   const value = username.trim();
 
-  if (!value) {
+  if (!username) {
     return {
       isValid: false,
       error: 'Username is required.',
     };
   }
 
-  if (value.length < 2 || value.length > 30) {
+  if (username.length < 2 || username.length > 30) {
     return {
       isValid: false,
       error: 'Username must be between 2 and 30 characters.',
     };
   }
 
-  if (!/^[A-Z]/.test(value)) {
+  if (!/^[A-Z]/.test(username)) {
     return {
       isValid: false,
       error: 'Username must start with an uppercase English letter.',
     };
   }
 
-  return /^[A-Za-z0-9]+$/.test(value)
+  return /^[A-Za-z0-9]+$/.test(username)
     ? validResult
     : {
         isValid: false,
@@ -72,6 +70,13 @@ export const validateRegistrationPassword = (password: string): ValidationResult
     return {
       isValid: false,
       error: 'Password must contain at least 6 characters.',
+    };
+  }
+
+  if (!/^[\u{21}-\u{7E}]+$/u.test(password)) {
+    return {
+      isValid: false,
+      error: 'Password may contain English letters, digits, and special characters only.',
     };
   }
 

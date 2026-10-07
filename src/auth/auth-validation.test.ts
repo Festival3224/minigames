@@ -9,6 +9,11 @@ import {
 } from './auth-validation';
 
 describe('validateEmail', () => {
+  it('rejects leading or trailing whitespace', () => {
+    expect(validateEmail(' eugenia@example.com').isValid).toBe(false);
+    expect(validateEmail('eugenia@example.com ').isValid).toBe(false);
+  });
+
   it('rejects an empty email', () => {
     expect(validateEmail('')).toEqual({
       isValid: false,
@@ -29,6 +34,12 @@ describe('validateEmail', () => {
 });
 
 describe('validateUsername', () => {
+  it('rejects whitespace', () => {
+    expect(validateUsername(' Eugenia').isValid).toBe(false);
+    expect(validateUsername('Eugenia ').isValid).toBe(false);
+    expect(validateUsername('Eugenia Smith').isValid).toBe(false);
+  });
+
   it('rejects an empty username', () => {
     expect(validateUsername('').isValid).toBe(false);
   });
@@ -56,6 +67,16 @@ describe('validateUsername', () => {
 });
 
 describe('validateRegistrationPassword', () => {
+  it('rejects non-English letters', () => {
+    expect(validateRegistrationPassword('Abcd1Ж').isValid).toBe(false);
+    expect(validateRegistrationPassword('Abcd1é').isValid).toBe(false);
+  });
+
+  it('rejects whitespace characters', () => {
+    expect(validateRegistrationPassword('Abcd1 ').isValid).toBe(false);
+    expect(validateRegistrationPassword('Abcd1\t').isValid).toBe(false);
+  });
+
   it('rejects an empty password', () => {
     expect(validateRegistrationPassword('').isValid).toBe(false);
   });
