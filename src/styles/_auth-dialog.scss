@@ -376,3 +376,28 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+.auth-dialog__error {
+  min-height: $size-2;
+  font-family: $font-primary;
+  font-size: $label-small;
+  line-height: 1.2;
+  color: $error;
+}
+
+.auth-dialog__input-wrapper--error {
+  border-color: $error;
+}
+
+.auth-dialog__submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-dialog__submit:disabled:hover,
+.auth-dialog__submit:disabled:active {
+  transform: none;
+  background: $primary;
+}

@@ -1,5 +1,13 @@
 import googleIcon from '../assets/icons/google.svg';
 
+import {
+  validateEmail,
+  validateLoginPassword,
+  validatePasswordConfirmation,
+  validateRegistrationPassword,
+  validateUsername,
+} from '../auth/auth-validation';
+
 export type AuthMode = 'login' | 'register';
 
 function updateAuthModeInUrl(mode: AuthMode): void {
@@ -74,6 +82,7 @@ export function createAuthDialog(
                       autocomplete="email"
                     />
                   </div>
+                  <span class="auth-dialog__error" aria-live="polite"></span>
                 </label>
 
                 <label class="auth-dialog__field">
@@ -105,6 +114,7 @@ export function createAuthDialog(
                     </span>
                     </button>
                   </div>
+                  <span class="auth-dialog__error" aria-live="polite"></span>
                 </label>
 
                 <button class="auth-dialog__forgot" type="button">
@@ -114,7 +124,7 @@ export function createAuthDialog(
 
 
             <div class="auth-dialog__actions">
-                <button class="auth-dialog__submit" type="submit">
+                <button class="auth-dialog__submit" type="submit" disabled>
                   Login
                 </button>
 
@@ -174,10 +184,11 @@ export function createAuthDialog(
                 class="auth-dialog__input"
                 type="text"
                 name="username"
-                placeholder="e.g. CozyGamer_99"
+                placeholder="e.g. CozyGamer99"
                 autocomplete="username"
               />
             </div>
+            <span class="auth-dialog__error" aria-live="polite"></span>
           </label>
 
           <label class="auth-dialog__field">
@@ -199,6 +210,7 @@ export function createAuthDialog(
                 autocomplete="email"
               />
             </div>
+            <span class="auth-dialog__error" aria-live="polite"></span>
           </label>
 
           <label class="auth-dialog__field">
@@ -216,10 +228,11 @@ export function createAuthDialog(
                 class="auth-dialog__input"
                 type="password"
                 name="password"
-                placeholder="Min. 8 characters"
+                placeholder="Min. 6 characters"
                 autocomplete="new-password"
               />
             </div>
+            <span class="auth-dialog__error" aria-live="polite"></span>
           </label>
 
           <label class="auth-dialog__field">
@@ -241,11 +254,12 @@ export function createAuthDialog(
                 autocomplete="new-password"
               />
             </div>
+            <span class="auth-dialog__error" aria-live="polite"></span>
           </label>
         </div>
 
         <div class="auth-dialog__actions">
-          <button class="auth-dialog__submit" type="submit">
+          <button class="auth-dialog__submit" type="submit" disabled>
             Create Account
           </button>
 
@@ -296,6 +310,195 @@ export function createAuthDialog(
     ?.querySelector<HTMLInputElement>('.auth-dialog__input');
 
   const forms = overlay.querySelectorAll<HTMLFormElement>('.auth-dialog__form');
+
+  const loginForm = loginView?.querySelector<HTMLFormElement>('.auth-dialog__form');
+
+  const registerForm = registerView?.querySelector<HTMLFormElement>('.auth-dialog__form');
+
+  function setFieldValidation(input: HTMLInputElement, isValid: boolean, error: string): void {
+    const field = input.closest<HTMLElement>('.auth-dialog__field');
+
+    if (!field) {
+      return;
+    }
+
+    const wrapper = field.querySelector<HTMLElement>('.auth-dialog__input-wrapper');
+    const errorElement = field.querySelector<HTMLElement>('.auth-dialog__error');
+
+    wrapper?.classList.toggle('auth-dialog__input-wrapper--error', !isValid);
+
+    if (errorElement) {
+      errorElement.textContent = isValid ? '' : error;
+    }
+
+    input.setAttribute('aria-invalid', String(!isValid));
+  }
+
+  function clearFormValidation(form: HTMLFormElement): void {
+    form.reset();
+
+    const errorElements = form.querySelectorAll<HTMLElement>('.auth-dialog__error');
+
+    for (const errorElement of errorElements) {
+      errorElement.textContent = '';
+    }
+
+    const wrappers = form.querySelectorAll<HTMLElement>('.auth-dialog__input-wrapper');
+
+    for (const wrapper of wrappers) {
+      wrapper.classList.remove('auth-dialog__input-wrapper--error');
+    }
+
+    const inputs = form.querySelectorAll<HTMLInputElement>('.auth-dialog__input');
+
+    for (const input of inputs) {
+      input.removeAttribute('aria-invalid');
+    }
+
+    const submitButton = form.querySelector<HTMLButtonElement>('.auth-dialog__submit');
+
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+  }
+
+  function setupLoginValidation(form: HTMLFormElement): void {
+    const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]');
+    const passwordInput = form.querySelector<HTMLInputElement>('input[name="password"]');
+    const submitButton = form.querySelector<HTMLButtonElement>('.auth-dialog__submit');
+
+    if (!emailInput || !passwordInput || !submitButton) {
+      return;
+    }
+
+    const email = emailInput;
+    const password = passwordInput;
+    const submit = submitButton;
+
+    function validateForm(): void {
+      const emailResult = validateEmail(email.value);
+      const passwordResult = validateLoginPassword(password.value);
+
+      submit.disabled = !(emailResult.isValid && passwordResult.isValid);
+    }
+
+    function validateEmailField(): void {
+      const result = validateEmail(email.value);
+
+      setFieldValidation(email, result.isValid, result.error);
+
+      validateForm();
+    }
+
+    function validatePasswordField(): void {
+      const result = validateLoginPassword(password.value);
+
+      setFieldValidation(password, result.isValid, result.error);
+
+      validateForm();
+    }
+
+    email.addEventListener('input', validateEmailField);
+    email.addEventListener('blur', validateEmailField);
+
+    password.addEventListener('input', validatePasswordField);
+    password.addEventListener('blur', validatePasswordField);
+  }
+
+  function setupRegistrationValidation(form: HTMLFormElement): void {
+    const usernameInput = form.querySelector<HTMLInputElement>('input[name="username"]');
+    const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]');
+    const passwordInput = form.querySelector<HTMLInputElement>('input[name="password"]');
+    const confirmPasswordInput = form.querySelector<HTMLInputElement>(
+      'input[name="confirmPassword"]',
+    );
+    const submitButton = form.querySelector<HTMLButtonElement>('.auth-dialog__submit');
+
+    if (!usernameInput || !emailInput || !passwordInput || !confirmPasswordInput || !submitButton) {
+      return;
+    }
+
+    const username = usernameInput;
+    const email = emailInput;
+    const password = passwordInput;
+    const confirmPassword = confirmPasswordInput;
+    const submit = submitButton;
+
+    function validateForm(): void {
+      const usernameResult = validateUsername(username.value);
+      const emailResult = validateEmail(email.value);
+      const passwordResult = validateRegistrationPassword(password.value);
+      const confirmationResult = validatePasswordConfirmation(
+        password.value,
+        confirmPassword.value,
+      );
+
+      submit.disabled = !(
+        usernameResult.isValid &&
+        emailResult.isValid &&
+        passwordResult.isValid &&
+        confirmationResult.isValid
+      );
+    }
+
+    function validateUsernameField(): void {
+      const result = validateUsername(username.value);
+
+      setFieldValidation(username, result.isValid, result.error);
+
+      validateForm();
+    }
+
+    function validateEmailField(): void {
+      const result = validateEmail(email.value);
+
+      setFieldValidation(email, result.isValid, result.error);
+
+      validateForm();
+    }
+
+    function validatePasswordField(): void {
+      const result = validateRegistrationPassword(password.value);
+
+      setFieldValidation(password, result.isValid, result.error);
+
+      // Acceptance criterion:
+      // revalidate confirmation whenever password changes.
+      if (confirmPassword.value) {
+        validateConfirmPasswordField();
+      }
+
+      validateForm();
+    }
+
+    function validateConfirmPasswordField(): void {
+      const result = validatePasswordConfirmation(password.value, confirmPassword.value);
+
+      setFieldValidation(confirmPassword, result.isValid, result.error);
+
+      validateForm();
+    }
+
+    usernameInput.addEventListener('input', validateUsernameField);
+    usernameInput.addEventListener('blur', validateUsernameField);
+
+    emailInput.addEventListener('input', validateEmailField);
+    emailInput.addEventListener('blur', validateEmailField);
+
+    passwordInput.addEventListener('input', validatePasswordField);
+    passwordInput.addEventListener('blur', validatePasswordField);
+
+    confirmPasswordInput.addEventListener('input', validateConfirmPasswordField);
+    confirmPasswordInput.addEventListener('blur', validateConfirmPasswordField);
+  }
+
+  if (loginForm) {
+    setupLoginValidation(loginForm);
+  }
+
+  if (registerForm) {
+    setupRegistrationValidation(registerForm);
+  }
 
   passwordToggle?.addEventListener('click', () => {
     if (!passwordInput) {
@@ -357,6 +560,14 @@ export function createAuthDialog(
   }
 
   function showLogin(): void {
+    if (registerForm) {
+      clearFormValidation(registerForm);
+    }
+
+    if (loginForm) {
+      clearFormValidation(loginForm);
+    }
+
     animateDialogHeight(() => {
       loginView?.removeAttribute('hidden');
       registerView?.setAttribute('hidden', '');
@@ -367,6 +578,13 @@ export function createAuthDialog(
   }
 
   function showRegister(): void {
+    if (registerForm) {
+      clearFormValidation(registerForm);
+    }
+
+    if (loginForm) {
+      clearFormValidation(loginForm);
+    }
     animateDialogHeight(() => {
       registerView?.removeAttribute('hidden');
       loginView?.setAttribute('hidden', '');
