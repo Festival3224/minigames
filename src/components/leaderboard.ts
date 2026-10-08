@@ -1,4 +1,4 @@
-import { hideSnackbar, showSnackbar } from './snackbar';
+import { showSnackbar } from './snackbar';
 import { fetchLeaderboard } from '../api/games-api';
 import type { LeaderboardPlayer } from '../api/games-api';
 
@@ -91,7 +91,7 @@ export function createLeaderboard(): HTMLElement {
   }
 
   const loadLeaderboard = async (): Promise<void> => {
-    hideSnackbar();
+    // hideSnackbar();
 
     body.innerHTML = /* html */ `
       <tr>

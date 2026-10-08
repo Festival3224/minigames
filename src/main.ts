@@ -34,3 +34,26 @@ async function initializeApp(): Promise<void> {
 }
 
 void initializeApp();
+
+async function handleVisibilityChange(): Promise<void> {
+  if (document.visibilityState !== 'visible') {
+    return;
+  }
+
+  const sessionState = await resolveAppSession();
+
+  if (sessionState.status !== 'expired') {
+    return;
+  }
+
+  handleRouteChange();
+
+  showSnackbar({
+    message: 'Your session has expired. Please log in again.',
+    variant: 'error',
+  });
+}
+
+document.addEventListener('visibilitychange', () => {
+  void handleVisibilityChange();
+});

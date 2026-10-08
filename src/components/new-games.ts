@@ -6,7 +6,7 @@ import arrowForward from '../assets/icons/arrow_forward.svg';
 import { createGameCard } from './game-card';
 import { createGameDetailsDialog } from './game-details-dialog';
 
-import { hideSnackbar, showSnackbar } from './snackbar';
+import { showSnackbar } from './snackbar';
 
 function updateHomeGameInUrl(slug?: string): void {
   const parameters = new URLSearchParams(location.search);
@@ -161,7 +161,7 @@ export function createNewGames(): HTMLElement {
   };
 
   const loadFeaturedGames = async (): Promise<void> => {
-    hideSnackbar();
+    // hideSnackbar();
 
     setControlsDisabled(true);
     renderSkeleton();

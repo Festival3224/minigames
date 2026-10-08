@@ -2,6 +2,9 @@ import { createHomePage } from './pages/home';
 import { createLibraryPage } from './pages/library';
 import { createNotFoundPage } from './pages/not-found';
 
+import { resolveAppSession } from './auth/app-session-manager';
+import { showSnackbar } from './components/snackbar';
+
 export type Route = 'home' | 'library' | 'not-found';
 
 export function getRouteFromLocation(): Route {
@@ -37,7 +40,16 @@ export function renderRoute(route: Route): void {
   app.append(createNotFoundPage());
 }
 
-export function navigate(path: string): void {
+export async function navigate(path: string): Promise<void> {
+  const sessionState = await resolveAppSession();
+
+  if (sessionState.status === 'expired') {
+    showSnackbar({
+      message: 'Your session has expired. Please log in again.',
+      variant: 'error',
+    });
+  }
+
   const base = import.meta.env.BASE_URL;
   const normalizedPath = path === '/' ? base : `${base}${path.slice(1)}`;
 
