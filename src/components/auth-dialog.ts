@@ -8,6 +8,10 @@ import {
   validateUsername,
 } from '../auth/auth-validation';
 
+import type { User } from 'firebase/auth';
+
+import { APP_SESSION_CHANGED_EVENT, startAppSession } from '../auth/app-session-manager';
+
 import { loginWithEmailAndPassword, registerWithEmailAndPassword } from '../auth/auth-service';
 
 import { showSnackbar } from './snackbar';
@@ -27,6 +31,31 @@ function updateAuthModeInUrl(mode: AuthMode): void {
   const path = query ? `${location.pathname}?${query}` : location.pathname;
 
   history.replaceState({}, '', path);
+}
+
+function removeAuthModeFromUrl(): void {
+  const parameters = new URLSearchParams(location.search);
+
+  parameters.delete('auth');
+
+  const query = parameters.toString();
+  const path = query ? `${location.pathname}?${query}` : location.pathname;
+
+  history.replaceState({}, '', path);
+}
+
+function completeAuthentication(user: User): void {
+  startAppSession({
+    displayName: user.displayName ?? '',
+    email: user.email ?? '',
+    ...(user.photoURL && {
+      avatarUrl: user.photoURL,
+    }),
+  });
+
+  removeAuthModeFromUrl();
+
+  dispatchEvent(new Event(APP_SESSION_CHANGED_EVENT));
 }
 
 export function createAuthDialog(
@@ -565,14 +594,9 @@ export function createAuthDialog(
     setAuthPendingState(true);
 
     try {
-      await loginWithEmailAndPassword(emailInput.value, passwordInput.value);
+      const user = await loginWithEmailAndPassword(emailInput.value, passwordInput.value);
 
-      showSnackbar({
-        message: 'Login successful.',
-        variant: 'success',
-      });
-
-      // App session + authenticated UI will be added with RSS-QS-4-3-2.
+      completeAuthentication(user);
     } catch {
       showSnackbar({
         message: 'Unable to sign in. Check your credentials and try again.',
@@ -601,18 +625,13 @@ export function createAuthDialog(
     setAuthPendingState(true);
 
     try {
-      await registerWithEmailAndPassword(
+      const user = await registerWithEmailAndPassword(
         emailInput.value,
         passwordInput.value,
         usernameInput.value,
       );
 
-      showSnackbar({
-        message: 'Account created successfully.',
-        variant: 'success',
-      });
-
-      // App session + authenticated UI will be added with RSS-QS-4-3-2.
+      completeAuthentication(user);
     } catch {
       showSnackbar({
         message: 'Unable to create account. Please try again.',

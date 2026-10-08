@@ -2,6 +2,8 @@ import { signOut } from 'firebase/auth';
 
 import { auth } from './firebase';
 import {
+  createAppSessionData,
+  writeAppSession,
   clearAppSession,
   isAppSessionExpired,
   readStoredAppSession,
@@ -25,6 +27,23 @@ const sessionRuntime = (() => {
 export function getActiveSession(): AppSession | undefined {
   return sessionRuntime.get();
 }
+
+interface AppSessionProfile {
+  displayName: string;
+  email: string;
+  avatarUrl?: string;
+}
+
+export function startAppSession(profile: AppSessionProfile): AppSession {
+  const session = createAppSessionData(profile);
+
+  writeAppSession(session);
+  sessionRuntime.set(session);
+
+  return session;
+}
+
+export const APP_SESSION_CHANGED_EVENT = 'minigames:app-session-changed';
 
 export type AppSessionState =
   | { status: 'guest' }
