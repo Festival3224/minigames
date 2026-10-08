@@ -8,6 +8,10 @@ import {
   validateUsername,
 } from '../auth/auth-validation';
 
+import { loginWithEmailAndPassword, registerWithEmailAndPassword } from '../auth/auth-service';
+
+import { showSnackbar } from './snackbar';
+
 export type AuthMode = 'login' | 'register';
 
 function updateAuthModeInUrl(mode: AuthMode): void {
@@ -309,11 +313,56 @@ export function createAuthDialog(
     ?.closest('.auth-dialog__input-wrapper')
     ?.querySelector<HTMLInputElement>('.auth-dialog__input');
 
-  const forms = overlay.querySelectorAll<HTMLFormElement>('.auth-dialog__form');
-
   const loginForm = loginView?.querySelector<HTMLFormElement>('.auth-dialog__form');
 
   const registerForm = registerView?.querySelector<HTMLFormElement>('.auth-dialog__form');
+
+  let isPending = false;
+
+  function setSubmitLoadingText(
+    form: HTMLFormElement,
+    isLoading: boolean,
+    loadingText: string,
+  ): void {
+    const submitButton = form.querySelector<HTMLButtonElement>('.auth-dialog__submit');
+
+    if (!submitButton) {
+      return;
+    }
+
+    if (isLoading) {
+      submitButton.dataset.originalText = submitButton.textContent?.trim() ?? '';
+      submitButton.textContent = loadingText;
+      return;
+    }
+
+    const originalText = submitButton.dataset.originalText;
+
+    if (originalText) {
+      submitButton.textContent = originalText;
+    }
+
+    delete submitButton.dataset.originalText;
+  }
+
+  function setAuthPendingState(isAuthenticationPending: boolean): void {
+    isPending = isAuthenticationPending;
+
+    const controls = overlay.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+      'input, button',
+    );
+
+    for (const control of controls) {
+      control.disabled = isAuthenticationPending;
+    }
+
+    if (isAuthenticationPending) {
+      return;
+    }
+
+    updateLoginSubmitState?.();
+    updateRegistrationSubmitState?.();
+  }
 
   function setFieldValidation(input: HTMLInputElement, isValid: boolean, error: string): void {
     const field = input.closest<HTMLElement>('.auth-dialog__field');
@@ -362,7 +411,7 @@ export function createAuthDialog(
     }
   }
 
-  function setupLoginValidation(form: HTMLFormElement): void {
+  function setupLoginValidation(form: HTMLFormElement): (() => void) | undefined {
     const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]');
     const passwordInput = form.querySelector<HTMLInputElement>('input[name="password"]');
     const submitButton = form.querySelector<HTMLButtonElement>('.auth-dialog__submit');
@@ -375,7 +424,7 @@ export function createAuthDialog(
     const password = passwordInput;
     const submit = submitButton;
 
-    function validateForm(): void {
+    function updateSubmitState(): void {
       const emailResult = validateEmail(email.value);
       const passwordResult = validateLoginPassword(password.value);
 
@@ -387,7 +436,7 @@ export function createAuthDialog(
 
       setFieldValidation(email, result.isValid, result.error);
 
-      validateForm();
+      updateSubmitState();
     }
 
     function validatePasswordField(): void {
@@ -395,7 +444,7 @@ export function createAuthDialog(
 
       setFieldValidation(password, result.isValid, result.error);
 
-      validateForm();
+      updateSubmitState();
     }
 
     email.addEventListener('input', validateEmailField);
@@ -403,9 +452,11 @@ export function createAuthDialog(
 
     password.addEventListener('input', validatePasswordField);
     password.addEventListener('blur', validatePasswordField);
+
+    return updateSubmitState;
   }
 
-  function setupRegistrationValidation(form: HTMLFormElement): void {
+  function setupRegistrationValidation(form: HTMLFormElement): (() => void) | undefined {
     const usernameInput = form.querySelector<HTMLInputElement>('input[name="username"]');
     const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]');
     const passwordInput = form.querySelector<HTMLInputElement>('input[name="password"]');
@@ -424,7 +475,7 @@ export function createAuthDialog(
     const confirmPassword = confirmPasswordInput;
     const submit = submitButton;
 
-    function validateForm(): void {
+    function updateSubmitState(): void {
       const usernameResult = validateUsername(username.value);
       const emailResult = validateEmail(email.value);
       const passwordResult = validateRegistrationPassword(password.value);
@@ -445,16 +496,14 @@ export function createAuthDialog(
       const result = validateUsername(username.value);
 
       setFieldValidation(username, result.isValid, result.error);
-
-      validateForm();
+      updateSubmitState();
     }
 
     function validateEmailField(): void {
       const result = validateEmail(email.value);
 
       setFieldValidation(email, result.isValid, result.error);
-
-      validateForm();
+      updateSubmitState();
     }
 
     function validatePasswordField(): void {
@@ -468,7 +517,7 @@ export function createAuthDialog(
         validateConfirmPasswordField();
       }
 
-      validateForm();
+      updateSubmitState();
     }
 
     function validateConfirmPasswordField(): void {
@@ -476,7 +525,7 @@ export function createAuthDialog(
 
       setFieldValidation(confirmPassword, result.isValid, result.error);
 
-      validateForm();
+      updateSubmitState();
     }
 
     usernameInput.addEventListener('input', validateUsernameField);
@@ -490,15 +539,90 @@ export function createAuthDialog(
 
     confirmPasswordInput.addEventListener('input', validateConfirmPasswordField);
     confirmPasswordInput.addEventListener('blur', validateConfirmPasswordField);
+
+    return updateSubmitState;
   }
 
-  if (loginForm) {
-    setupLoginValidation(loginForm);
-  }
+  const updateLoginSubmitState = loginForm ? setupLoginValidation(loginForm) : undefined;
 
-  if (registerForm) {
-    setupRegistrationValidation(registerForm);
-  }
+  const updateRegistrationSubmitState = registerForm
+    ? setupRegistrationValidation(registerForm)
+    : undefined;
+
+  // submit handler для Login
+  loginForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const emailInput = loginForm.querySelector<HTMLInputElement>('input[name="email"]');
+
+    const passwordInput = loginForm.querySelector<HTMLInputElement>('input[name="password"]');
+
+    if (!emailInput || !passwordInput) {
+      return;
+    }
+
+    setSubmitLoadingText(loginForm, true, 'Signing in…');
+    setAuthPendingState(true);
+
+    try {
+      await loginWithEmailAndPassword(emailInput.value, passwordInput.value);
+
+      showSnackbar({
+        message: 'Login successful.',
+        variant: 'success',
+      });
+
+      // App session + authenticated UI will be added with RSS-QS-4-3-2.
+    } catch {
+      showSnackbar({
+        message: 'Unable to sign in. Check your credentials and try again.',
+        variant: 'error',
+      });
+
+      setSubmitLoadingText(loginForm, false, '');
+      setAuthPendingState(false);
+    }
+  });
+
+  registerForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const usernameInput = registerForm.querySelector<HTMLInputElement>('input[name="username"]');
+
+    const emailInput = registerForm.querySelector<HTMLInputElement>('input[name="email"]');
+
+    const passwordInput = registerForm.querySelector<HTMLInputElement>('input[name="password"]');
+
+    if (!usernameInput || !emailInput || !passwordInput) {
+      return;
+    }
+
+    setSubmitLoadingText(registerForm, true, 'Creating account…');
+    setAuthPendingState(true);
+
+    try {
+      await registerWithEmailAndPassword(
+        emailInput.value,
+        passwordInput.value,
+        usernameInput.value,
+      );
+
+      showSnackbar({
+        message: 'Account created successfully.',
+        variant: 'success',
+      });
+
+      // App session + authenticated UI will be added with RSS-QS-4-3-2.
+    } catch {
+      showSnackbar({
+        message: 'Unable to create account. Please try again.',
+        variant: 'error',
+      });
+
+      setSubmitLoadingText(registerForm, false, '');
+      setAuthPendingState(false);
+    }
+  });
 
   passwordToggle?.addEventListener('click', () => {
     if (!passwordInput) {
@@ -517,12 +641,6 @@ export function createAuthDialog(
 
     passwordToggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
   });
-
-  for (const form of forms) {
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-    });
-  }
 
   const dialog = overlay.querySelector<HTMLElement>('.auth-dialog');
 
@@ -613,6 +731,10 @@ export function createAuthDialog(
   });
 
   function closeDialog(): void {
+    if (isPending) {
+      return;
+    }
+
     onClose?.();
 
     overlay.classList.remove('auth-overlay--open');
@@ -624,13 +746,13 @@ export function createAuthDialog(
   }
 
   function handleEscape(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
+    if (!isPending && event.key === 'Escape') {
       closeDialog();
     }
   }
 
   overlay.addEventListener('click', (event) => {
-    if (event.target === overlay) {
+    if (!isPending && event.target === overlay) {
       closeDialog();
     }
   });
