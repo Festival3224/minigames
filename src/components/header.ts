@@ -3,6 +3,9 @@ import { createAuthDialog } from './auth-dialog';
 import type { AuthMode } from './auth-dialog';
 import logoIcon from '../assets/icons/logo-icon.svg';
 
+import { getActiveSession } from '../auth/app-session-manager';
+import { getProfileInitials, getProfileName } from '../auth/profile';
+
 function updateAuthInUrl(mode?: AuthMode): void {
   const parameters = new URLSearchParams(location.search);
 
@@ -22,6 +25,88 @@ export function createHeader(): HTMLElement {
   const header = document.createElement('header');
 
   header.className = 'header';
+
+  const session = getActiveSession();
+
+  const profileName = session ? getProfileName(session.displayName, session.email) : undefined;
+
+  const profileInitials = profileName ? getProfileInitials(profileName) : undefined;
+
+  const desktopUserActions = session
+    ? `
+      <div class="header__profile">
+        <div class="header__profile-main">
+          <span class="header__profile-name"></span>
+
+          <div class="header__avatar">
+            ${
+              session.avatarUrl
+                ? `
+                  <img
+                    class="header__avatar-image"
+                    src="${session.avatarUrl}"
+                    alt=""
+                  />
+                `
+                : `
+                  <span class="header__avatar-initials"></span>
+                `
+            }
+          </div>
+        </div>
+
+        <button class="header__logout" type="button">
+          Log Out
+        </button>
+      </div>
+    `
+    : `
+      <button class="header__login" type="button">
+        Log In
+      </button>
+
+      <button class="header__signup" type="button">
+        Sign Up
+      </button>
+    `;
+
+  const mobileUserActions = session
+    ? `
+      <div class="header__mobile-profile">
+        <div class="header__mobile-profile-info">
+          <div class="header__mobile-avatar">
+            ${
+              session.avatarUrl
+                ? `
+                  <img
+                    class="header__mobile-avatar-image"
+                    src="${session.avatarUrl}"
+                    alt=""
+                  />
+                `
+                : `
+                  <span class="header__mobile-avatar-initials"></span>
+                `
+            }
+          </div>
+
+          <span class="header__mobile-profile-name"></span>
+        </div>
+
+        <button class="header__mobile-logout" type="button">
+          Log Out
+        </button>
+      </div>
+    `
+    : `
+      <button class="header__mobile-login" type="button">
+        Log In
+      </button>
+
+      <button class="header__mobile-signup" type="button">
+        Sign Up
+      </button>
+    `;
 
   header.innerHTML = /* html */ `
       <div class="header__container">
@@ -44,13 +129,7 @@ export function createHeader(): HTMLElement {
           </nav>
 
           <div class="header__user-actions">
-            <button class="header__login" type="button">
-              Log In
-            </button>
-
-            <button class="header__signup" type="button">
-              Sign Up
-            </button>
+            ${desktopUserActions}
 
             <button
               class="header__menu"
@@ -96,14 +175,98 @@ export function createHeader(): HTMLElement {
       </nav>
 
       <div class="header__mobile-actions">
-        <button class="header__mobile-login" type="button">Log In</button>
-        <button class="header__mobile-signup" type="button">Sign Up</button>
+        ${mobileUserActions}
       </div>
     </div>
 
     <div class="header__backdrop"></div>
 
   `;
+
+  const mobileProfileName = header.querySelector<HTMLElement>('.header__mobile-profile-name');
+
+  if (mobileProfileName && profileName) {
+    mobileProfileName.textContent = profileName;
+  }
+
+  const mobileProfileInitials = header.querySelector<HTMLElement>(
+    '.header__mobile-avatar-initials',
+  );
+
+  if (mobileProfileInitials && profileInitials) {
+    mobileProfileInitials.textContent = profileInitials;
+  }
+
+  const profileNameElement = header.querySelector<HTMLElement>('.header__profile-name');
+
+  if (profileNameElement && profileName) {
+    profileNameElement.textContent = profileName;
+  }
+
+  const profileInitialsElement = header.querySelector<HTMLElement>('.header__avatar-initials');
+
+  if (profileInitialsElement && profileInitials) {
+    profileInitialsElement.textContent = profileInitials;
+  }
+
+  function setupAvatarFallback(
+    avatarSelector: string,
+    imageSelector: string,
+    initialsClass: string,
+    fallbackClass: string,
+  ): void {
+    const avatar = header.querySelector<HTMLElement>(avatarSelector);
+
+    const image = header.querySelector<HTMLImageElement>(imageSelector);
+
+    image?.addEventListener('error', () => {
+      image.remove();
+
+      if (profileInitials) {
+        const initials = document.createElement('span');
+        initials.className = initialsClass;
+        initials.textContent = profileInitials;
+        avatar?.append(initials);
+        return;
+      }
+
+      avatar?.classList.add(fallbackClass);
+    });
+  }
+
+  setupAvatarFallback(
+    '.header__avatar',
+    '.header__avatar-image',
+    'header__avatar-initials',
+    'header__avatar--fallback',
+  );
+
+  setupAvatarFallback(
+    '.header__mobile-avatar',
+    '.header__mobile-avatar-image',
+    'header__mobile-avatar-initials',
+    'header__mobile-avatar--fallback',
+  );
+
+  /*   const avatar = header.querySelector<HTMLElement>('.header__avatar');
+
+  const avatarImage =
+    header.querySelector<HTMLImageElement>('.header__avatar-image'); */
+
+  /*   avatarImage?.addEventListener('error', () => {
+    avatarImage.remove();
+
+    const initials = document.createElement('span');
+    initials.className = 'header__avatar-initials';
+
+    if (profileInitials) {
+      initials.textContent = profileInitials;
+      avatar?.append(initials);
+      return;
+    }
+
+    avatar?.classList.add('header__avatar--fallback');
+  }); */
 
   const menuButton = header.querySelector<HTMLButtonElement>('.header__menu');
   const closeButton = header.querySelector<HTMLButtonElement>('.header__mobile-close');
