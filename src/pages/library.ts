@@ -584,7 +584,8 @@ export function createLibraryPage(): HTMLElement {
   page.append(main);
   page.append(createFooter());
 
-  restoreAuthDialogFromUrl();
+  // restoreAuthDialogFromUrl();
+  void restoreAuthDialogFromUrl();
 
   return page;
 }

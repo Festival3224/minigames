@@ -20,7 +20,8 @@ export function createHomePage(): HTMLElement {
   main.append(createFooter());
 
   page.append(main);
-  restoreAuthDialogFromUrl();
+  // restoreAuthDialogFromUrl();
+  void restoreAuthDialogFromUrl();
 
   return page;
 }

@@ -1,26 +1,10 @@
 import { navigate } from '../router';
-import { createAuthDialog } from './auth-dialog';
-import type { AuthMode } from './auth-dialog';
+import { openAuthDialog } from './auth-dialog';
 import logoIcon from '../assets/icons/logo-icon.svg';
 
 import { getActiveSession, logoutAppSession } from '../auth/app-session-manager';
 import { getProfileInitials, getProfileName } from '../auth/profile';
 import { showSnackbar } from './snackbar';
-
-function updateAuthInUrl(mode?: AuthMode): void {
-  const parameters = new URLSearchParams(location.search);
-
-  if (mode) {
-    parameters.set('auth', mode);
-  } else {
-    parameters.delete('auth');
-  }
-
-  const query = parameters.toString();
-  const path = query ? `${location.pathname}?${query}` : location.pathname;
-
-  history.pushState({}, '', path);
-}
 
 export function createHeader(): HTMLElement {
   const header = document.createElement('header');
@@ -249,26 +233,6 @@ export function createHeader(): HTMLElement {
     'header__mobile-avatar--fallback',
   );
 
-  /*   const avatar = header.querySelector<HTMLElement>('.header__avatar');
-
-  const avatarImage =
-    header.querySelector<HTMLImageElement>('.header__avatar-image'); */
-
-  /*   avatarImage?.addEventListener('error', () => {
-    avatarImage.remove();
-
-    const initials = document.createElement('span');
-    initials.className = 'header__avatar-initials';
-
-    if (profileInitials) {
-      initials.textContent = profileInitials;
-      avatar?.append(initials);
-      return;
-    }
-
-    avatar?.classList.add('header__avatar--fallback');
-  }); */
-
   const menuButton = header.querySelector<HTMLButtonElement>('.header__menu');
   const closeButton = header.querySelector<HTMLButtonElement>('.header__mobile-close');
   const mobileMenu = header.querySelector<HTMLElement>('.header__mobile-menu');
@@ -330,35 +294,11 @@ export function createHeader(): HTMLElement {
   }
 
   loginButton?.addEventListener('click', () => {
-    const existingDialog = document.querySelector('.auth-overlay');
-
-    if (existingDialog) {
-      return;
-    }
-
-    updateAuthInUrl('login');
-
-    document.body.append(
-      createAuthDialog('login', () => {
-        history.back();
-      }),
-    );
+    void openAuthDialog('login');
   });
 
   signupButton?.addEventListener('click', () => {
-    const existingDialog = document.querySelector('.auth-overlay');
-
-    if (existingDialog) {
-      return;
-    }
-
-    updateAuthInUrl('register');
-
-    document.body.append(
-      createAuthDialog('register', () => {
-        history.back();
-      }),
-    );
+    void openAuthDialog('register');
   });
 
   function openMenu(): void {
@@ -383,38 +323,12 @@ export function createHeader(): HTMLElement {
 
   mobileLoginButton?.addEventListener('click', () => {
     closeMenu();
-
-    const existingDialog = document.querySelector('.auth-overlay');
-
-    if (existingDialog) {
-      return;
-    }
-
-    updateAuthInUrl('login');
-
-    document.body.append(
-      createAuthDialog('login', () => {
-        history.back();
-      }),
-    );
+    void openAuthDialog('login');
   });
 
   mobileSignupButton?.addEventListener('click', () => {
     closeMenu();
-
-    const existingDialog = document.querySelector('.auth-overlay');
-
-    if (existingDialog) {
-      return;
-    }
-
-    updateAuthInUrl('register');
-
-    document.body.append(
-      createAuthDialog('register', () => {
-        history.back();
-      }),
-    );
+    void openAuthDialog('register');
   });
 
   menuButton?.addEventListener('click', openMenu);
