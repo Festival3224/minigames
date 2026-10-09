@@ -10,7 +10,11 @@ import {
 
 import type { User } from 'firebase/auth';
 
-import { APP_SESSION_CHANGED_EVENT, startAppSession } from '../auth/app-session-manager';
+import {
+  APP_SESSION_CHANGED_EVENT,
+  resolveAppSession,
+  startAppSession,
+} from '../auth/app-session-manager';
 
 import { loginWithEmailAndPassword, registerWithEmailAndPassword } from '../auth/auth-service';
 
@@ -34,14 +38,11 @@ function updateAuthModeInUrl(mode: AuthMode): void {
 }
 
 function removeAuthModeFromUrl(): void {
-  const parameters = new URLSearchParams(location.search);
+  const url = new URL(location.href);
 
-  parameters.delete('auth');
+  url.searchParams.delete('auth');
 
-  const query = parameters.toString();
-  const path = query ? `${location.pathname}?${query}` : location.pathname;
-
-  history.replaceState({}, '', path);
+  history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
 }
 
 function completeAuthentication(user: User): void {
@@ -56,6 +57,50 @@ function completeAuthentication(user: User): void {
   removeAuthModeFromUrl();
 
   dispatchEvent(new Event(APP_SESSION_CHANGED_EVENT));
+}
+
+function pushAuthModeToUrl(mode: AuthMode): void {
+  const url = new URL(location.href);
+
+  url.searchParams.set('auth', mode);
+
+  history.pushState({}, '', `${url.pathname}${url.search}${url.hash}`);
+}
+
+export async function openAuthDialog(mode: AuthMode): Promise<void> {
+  const sessionState = await resolveAppSession();
+
+  if (sessionState.status === 'authenticated') {
+    removeAuthModeFromUrl();
+
+    showSnackbar({
+      message: 'You are already authenticated.',
+      variant: 'error',
+    });
+
+    return;
+  }
+
+  if (sessionState.status === 'expired') {
+    showSnackbar({
+      message: 'Your session has expired. Please log in again.',
+      variant: 'error',
+    });
+  }
+
+  const existingDialog = document.querySelector('.auth-overlay');
+
+  if (existingDialog) {
+    return;
+  }
+
+  pushAuthModeToUrl(mode);
+
+  const dialog = createAuthDialog(mode, () => {
+    history.back();
+  });
+
+  document.body.append(dialog);
 }
 
 export function createAuthDialog(
@@ -798,10 +843,23 @@ export function createAuthDialog(
   return overlay;
 }
 
-export function restoreAuthDialogFromUrl(): void {
+export async function restoreAuthDialogFromUrl(): Promise<void> {
   const authMode = new URLSearchParams(location.search).get('auth');
 
   if (authMode !== 'login' && authMode !== 'register') {
+    return;
+  }
+
+  const sessionState = await resolveAppSession();
+
+  if (sessionState.status === 'authenticated') {
+    removeAuthModeFromUrl();
+
+    showSnackbar({
+      message: 'You are already authenticated.',
+      variant: 'error',
+    });
+
     return;
   }
 
