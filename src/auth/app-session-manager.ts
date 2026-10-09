@@ -51,6 +51,31 @@ export type AppSessionState =
   | { status: 'expired' }
   | { status: 'invalid' };
 
+interface LogoutResult {
+  isFirebaseSignOutSuccessful: boolean;
+}
+
+export async function logoutAppSession(): Promise<LogoutResult> {
+  sessionRuntime.set(undefined);
+  clearAppSession();
+
+  try {
+    if (sessionStorage.getItem('test-signout-failure') === '1') {
+      throw new Error('Test sign-out failure');
+    }
+
+    await signOut(auth);
+
+    return {
+      isFirebaseSignOutSuccessful: true,
+    };
+  } catch {
+    return {
+      isFirebaseSignOutSuccessful: false,
+    };
+  }
+}
+
 async function clearSessionAndSignOut(): Promise<void> {
   clearAppSession();
 
