@@ -3,8 +3,9 @@ import { createAuthDialog } from './auth-dialog';
 import type { AuthMode } from './auth-dialog';
 import logoIcon from '../assets/icons/logo-icon.svg';
 
-import { getActiveSession } from '../auth/app-session-manager';
+import { getActiveSession, logoutAppSession } from '../auth/app-session-manager';
 import { getProfileInitials, getProfileName } from '../auth/profile';
+import { showSnackbar } from './snackbar';
 
 function updateAuthInUrl(mode?: AuthMode): void {
   const parameters = new URLSearchParams(location.search);
@@ -434,6 +435,34 @@ export function createHeader(): HTMLElement {
       navigate('/');
     });
   }
+
+  const logoutButton = header.querySelector<HTMLButtonElement>('.header__logout');
+
+  const mobileLogoutButton = header.querySelector<HTMLButtonElement>('.header__mobile-logout');
+
+  async function handleLogout(): Promise<void> {
+    const isFirebaseSignOutSuccessful = await logoutAppSession();
+
+    const replacementHeader = createHeader();
+
+    header.replaceWith(replacementHeader);
+
+    if (!isFirebaseSignOutSuccessful) {
+      showSnackbar({
+        message: 'Signed out locally, but Firebase sign-out failed.',
+        variant: 'error',
+      });
+    }
+  }
+
+  logoutButton?.addEventListener('click', () => {
+    void handleLogout();
+  });
+
+  mobileLogoutButton?.addEventListener('click', () => {
+    closeMenu();
+    void handleLogout();
+  });
 
   return header;
 }
