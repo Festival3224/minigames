@@ -186,14 +186,57 @@ export interface GameCommentsResponse {
   };
 }
 
-export async function fetchGameComments(slug: string): Promise<GameCommentsResponse> {
-  const response = await fetch(`${API_BASE_URL}/games/${slug}/comments?limit=3&sort=newest`);
+export async function fetchGameComments(
+  slug: string,
+  userEmail?: string,
+): Promise<GameCommentsResponse> {
+  const parameters = new URLSearchParams({
+    limit: '3',
+    sort: 'newest',
+  });
+
+  if (userEmail) {
+    parameters.set('userEmail', userEmail);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/games/${slug}/comments?${parameters.toString()}`);
 
   if (!response.ok) {
     throw new Error(`Failed to load game comments: ${response.status}`);
   }
 
   return (await response.json()) as GameCommentsResponse;
+}
+
+interface CreateCommentResponse {
+  data: GameComment;
+}
+
+export async function submitGameComment(
+  slug: string,
+  userEmail: string,
+  authorName: string,
+  text: string,
+): Promise<GameComment> {
+  const response = await fetch(`${API_BASE_URL}/games/${slug}/comments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userEmail,
+      authorName,
+      text,
+    }),
+  });
+
+  if (response.status !== 201) {
+    throw new Error(`Failed to submit comment: ${response.status}`);
+  }
+
+  const result = (await response.json()) as CreateCommentResponse;
+
+  return result.data;
 }
 
 export interface LeaderboardPlayer {
