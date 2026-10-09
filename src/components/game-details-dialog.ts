@@ -1,7 +1,12 @@
 import { formatLikesCount, formatRating, formatRelativeTime } from '../utils/format';
 import { showSnackbar } from './snackbar';
 
-import { fetchGameDetails, GameNotFoundError } from '../api/games-api';
+import { fetchGameDetails, GameNotFoundError, toggleGameFavorite } from '../api/games-api';
+
+import { getActiveSession, resolveAppSession } from '../auth/app-session-manager';
+
+import { openAuthDialog } from './auth-dialog';
+
 import type { GameRecord } from '../api/games-api';
 
 import { fetchGameComments } from '../api/games-api';
@@ -187,7 +192,9 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
 
   const loadGameDetails = async (): Promise<void> => {
     try {
-      const game = await fetchGameDetails(slug);
+      const session = getActiveSession();
+
+      const game = await fetchGameDetails(slug, session?.email);
 
       if (!game) {
         renderGameDetailsEmpty();
@@ -222,6 +229,29 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
         <img src="${heartIcon}" alt="" aria-hidden="true" />
         ${formatLikesCount(game.likesCount)}
       `;
+      }
+
+      const favoriteButton = dialog.querySelector<HTMLButtonElement>(
+        '.game-details-dialog__favorite',
+      );
+
+      const favoriteText = favoriteButton?.querySelector<HTMLElement>(
+        '.game-details-dialog__favorite-text',
+      );
+
+      if (favoriteButton) {
+        favoriteButton.classList.toggle(
+          'game-details-dialog__favorite--active',
+          game.isLikedByCurrentUser,
+        );
+
+        favoriteButton.setAttribute('aria-pressed', String(game.isLikedByCurrentUser));
+      }
+
+      if (favoriteText) {
+        favoriteText.textContent = game.isLikedByCurrentUser
+          ? 'Remove from Favorites'
+          : 'Add to Favorites';
       }
 
       if (description) {
@@ -457,16 +487,86 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
 
   const favoriteButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__favorite');
 
-  favoriteButton?.addEventListener('click', () => {
-    const isFavorited = favoriteButton.classList.toggle('game-details-dialog__favorite--active');
+  function openAuthForProtectedAction(message: string): void {
+    showSnackbar({
+      message,
+      variant: 'error',
+    });
 
-    const text = favoriteButton.querySelector<HTMLElement>('.game-details-dialog__favorite-text');
+    document.removeEventListener('keydown', handleKeydown);
 
-    if (text) {
-      text.textContent = isFavorited ? 'Remove from Favorites' : 'Add to Favorites';
+    backdrop.remove();
+    document.body.classList.remove('dialog-open');
+
+    void openAuthDialog('login');
+  }
+
+  let isFavoriteRequestPending = false;
+
+  favoriteButton?.addEventListener('click', async () => {
+    if (isFavoriteRequestPending) {
+      return;
     }
 
-    favoriteButton.setAttribute('aria-pressed', String(isFavorited));
+    const sessionState = await resolveAppSession();
+
+    if (sessionState.status !== 'authenticated') {
+      const message =
+        sessionState.status === 'expired'
+          ? 'Your session has expired. Please log in again.'
+          : 'Log in to add games to your favorites.';
+
+      openAuthForProtectedAction(message);
+      return;
+    }
+
+    isFavoriteRequestPending = true;
+    favoriteButton.disabled = true;
+
+    const favoriteText = favoriteButton.querySelector<HTMLElement>(
+      '.game-details-dialog__favorite-text',
+    );
+
+    const previousText = favoriteText?.textContent ?? '';
+
+    if (favoriteText) {
+      favoriteText.textContent = 'Updating…';
+    }
+
+    try {
+      const result = await toggleGameFavorite(slug, sessionState.session.email);
+
+      favoriteButton.classList.toggle('game-details-dialog__favorite--active', result.isFavorited);
+
+      favoriteButton.setAttribute('aria-pressed', String(result.isFavorited));
+
+      if (favoriteText) {
+        favoriteText.textContent = result.isFavorited
+          ? 'Remove from Favorites'
+          : 'Add to Favorites';
+      }
+
+      const likes = dialog.querySelector<HTMLElement>('.game-details-dialog__likes');
+
+      if (likes) {
+        likes.innerHTML = `
+        <img src="${heartIcon}" alt="" aria-hidden="true" />
+        ${formatLikesCount(result.likesCount)}
+      `;
+      }
+    } catch {
+      if (favoriteText) {
+        favoriteText.textContent = previousText;
+      }
+
+      showSnackbar({
+        message: 'Unable to update favorites. The result is unknown. Please try again.',
+        variant: 'error',
+      });
+    } finally {
+      isFavoriteRequestPending = false;
+      favoriteButton.disabled = false;
+    }
   });
 
   backdrop.append(dialog);

@@ -122,8 +122,10 @@ export async function fetchCategories(): Promise<GameCategory[]> {
   return result.data;
 }
 
-export async function fetchGameDetails(slug: string): Promise<GameDetails> {
-  const response = await fetch(`${API_BASE_URL}/games/${slug}`);
+export async function fetchGameDetails(slug: string, userEmail?: string): Promise<GameDetails> {
+  const userQuery = userEmail ? `?userEmail=${encodeURIComponent(userEmail)}` : '';
+
+  const response = await fetch(`${API_BASE_URL}/games/${slug}${userQuery}`);
 
   if (response.status === 404) {
     throw new GameNotFoundError(`Game not found: ${slug}`);
@@ -134,6 +136,35 @@ export async function fetchGameDetails(slug: string): Promise<GameDetails> {
   }
 
   const result = (await response.json()) as GameDetailsResponse;
+
+  return result.data;
+}
+
+export interface FavoriteResult {
+  isFavorited: boolean;
+  likesCount: number;
+}
+
+interface FavoriteResponse {
+  data: FavoriteResult;
+}
+
+export async function toggleGameFavorite(slug: string, userEmail: string): Promise<FavoriteResult> {
+  const response = await fetch(`${API_BASE_URL}/games/${slug}/favorite`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userEmail,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to toggle favorite: ${response.status}`);
+  }
+
+  const result = (await response.json()) as FavoriteResponse;
 
   return result.data;
 }
