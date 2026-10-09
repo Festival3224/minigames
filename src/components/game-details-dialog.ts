@@ -1,18 +1,21 @@
 import { formatLikesCount, formatRating, formatRelativeTime } from '../utils/format';
 import { showSnackbar } from './snackbar';
 
-import { fetchGameDetails, GameNotFoundError, toggleGameFavorite } from '../api/games-api';
+import {
+  fetchGameDetails,
+  GameNotFoundError,
+  toggleGameFavorite,
+  submitGameComment,
+} from '../api/games-api';
 
 import { getActiveSession, resolveAppSession } from '../auth/app-session-manager';
-
+import { getProfileName } from '../auth/profile';
 import { openAuthDialog } from './auth-dialog';
 
 import type { GameRecord } from '../api/games-api';
 
 import { fetchGameComments } from '../api/games-api';
 import type { GameComment } from '../api/games-api';
-
-// import commentsData from '../data/comments-tukoni-forest-keepers.json';
 
 import starIcon from '../assets/icons/star.svg';
 import heartIcon from '../assets/icons/heart.svg';
@@ -21,6 +24,8 @@ const heroImages = import.meta.glob('../assets/**/*-hero.jpg', {
   eager: true,
   import: 'default',
 }) as Record<string, string>;
+
+const commentDrafts = new Map<string, string>();
 
 function getGameHeroImage(heroImage: string): string {
   const fileName = heroImage.split('/').pop();
@@ -32,6 +37,16 @@ function getGameHeroImage(heroImage: string): string {
   const imagePath = Object.keys(heroImages).find((path) => path.endsWith(`/${fileName}`));
 
   return imagePath ? heroImages[imagePath] : '';
+}
+
+function getCommentAuthorName(displayName: string, email: string): string {
+  const emailLocalPart = email.split('@', 1)[0]?.trim() ?? '';
+
+  const candidates = [displayName.trim(), emailLocalPart, 'Player'];
+
+  return (
+    candidates.find((candidate) => candidate.length >= 2 && candidate.length <= 30) ?? 'Player'
+  );
 }
 
 const medalByPosition: Record<number, string> = {
@@ -70,50 +85,80 @@ function createRecordsMarkup(records: GameRecord[]): string {
     .join('');
 }
 
-function createCommentsMarkup(comments: GameComment[]): string {
-  return comments
-    .map((comment, index) => {
-      const likeClass = comment.isLikedByCurrentUser
-        ? ' game-details-dialog__comment-likes-group--active'
-        : '';
+function createCommentElement(comment: GameComment, index: number): HTMLElement {
+  const article = document.createElement('article');
 
-      return `
-        <article class="game-details-dialog__comment">
-          <div class="game-details-dialog__comment-header">
-            <div class="game-details-dialog__comment-author-group">
-              <span
-                class="game-details-dialog__comment-avatar game-details-dialog__comment-avatar--${index + 1}"
-              >
-                ${comment.authorName.charAt(0)}
-              </span>
+  article.className = 'game-details-dialog__comment';
+  article.dataset.commentId = comment.commentId;
 
-              <span class="game-details-dialog__comment-author">
-                ${comment.authorName}
-              </span>
-            </div>
+  article.innerHTML = /* html */ `
+    <div class="game-details-dialog__comment-header">
+      <div class="game-details-dialog__comment-author-group">
+        <span
+          class="game-details-dialog__comment-avatar game-details-dialog__comment-avatar--${index + 1}"
+        ></span>
 
-            <span class="game-details-dialog__comment-time">
-              ${formatRelativeTime(comment.createdAt)}
-            </span>
-          </div>
+        <span class="game-details-dialog__comment-author"></span>
+      </div>
 
-          <p class="game-details-dialog__comment-text">
-            ${comment.text}
-          </p>
+      <span class="game-details-dialog__comment-time"></span>
+    </div>
 
-          <div class="game-details-dialog__comment-likes">
-            <div class="game-details-dialog__comment-likes-group${likeClass}">
-              <span class="material-symbols-outlined" aria-hidden="true">
-                favorite
-              </span>
+    <p class="game-details-dialog__comment-text"></p>
 
-              <span>${comment.likesCount}</span>
-            </div>
-          </div>
-        </article>
-      `;
-    })
-    .join('');
+    <div class="game-details-dialog__comment-likes">
+      <div class="game-details-dialog__comment-likes-group">
+        <span class="material-symbols-outlined" aria-hidden="true">
+          favorite
+        </span>
+
+        <span class="game-details-dialog__comment-likes-count"></span>
+      </div>
+    </div>
+  `;
+
+  const avatar = article.querySelector<HTMLElement>('.game-details-dialog__comment-avatar');
+
+  const author = article.querySelector<HTMLElement>('.game-details-dialog__comment-author');
+
+  const time = article.querySelector<HTMLElement>('.game-details-dialog__comment-time');
+
+  const text = article.querySelector<HTMLElement>('.game-details-dialog__comment-text');
+
+  const likesGroup = article.querySelector<HTMLElement>(
+    '.game-details-dialog__comment-likes-group',
+  );
+
+  const likesCount = article.querySelector<HTMLElement>(
+    '.game-details-dialog__comment-likes-count',
+  );
+
+  if (avatar) {
+    avatar.textContent = comment.authorName.charAt(0).toLocaleUpperCase();
+  }
+
+  if (author) {
+    author.textContent = comment.authorName;
+  }
+
+  if (time) {
+    time.textContent = formatRelativeTime(comment.createdAt);
+  }
+
+  if (text) {
+    text.textContent = comment.text;
+  }
+
+  if (likesCount) {
+    likesCount.textContent = String(comment.likesCount);
+  }
+
+  likesGroup?.classList.toggle(
+    'game-details-dialog__comment-likes-group--active',
+    comment.isLikedByCurrentUser,
+  );
+
+  return article;
 }
 
 export function createGameDetailsDialog(slug: string, onClose?: () => void): HTMLElement {
@@ -293,7 +338,7 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
 
   const loadGameComments = async (): Promise<void> => {
     try {
-      const response = await fetchGameComments(slug);
+      const response = await fetchGameComments(slug, getActiveSession()?.email);
 
       if (response.data.length === 0) {
         const commentsTitle = dialog.querySelector<HTMLElement>(
@@ -330,7 +375,9 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
       }
 
       if (commentsList) {
-        commentsList.innerHTML = createCommentsMarkup(response.data);
+        commentsList.replaceChildren(
+          ...response.data.map((comment, index) => createCommentElement(comment, index)),
+        );
       }
     } catch {
       const commentsList = dialog.querySelector<HTMLElement>('.game-details-dialog__comments-list');
@@ -493,6 +540,14 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
       variant: 'error',
     });
 
+    const commentInput = dialog.querySelector<HTMLTextAreaElement>(
+      '.game-details-dialog__comment-input',
+    );
+
+    if (commentInput?.value) {
+      commentDrafts.set(slug, commentInput.value);
+    }
+
     document.removeEventListener('keydown', handleKeydown);
 
     backdrop.remove();
@@ -577,17 +632,136 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
 
   const sendButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__send');
 
+  const userAvatar = dialog.querySelector<HTMLElement>('.game-details-dialog__user-avatar');
+
+  const activeSession = getActiveSession();
+
+  if (commentInput) {
+    // commentInput.value = '';
+    commentInput.disabled = !activeSession;
+
+    if (!activeSession) {
+      commentInput.placeholder = 'Log in to write a comment';
+    }
+  }
+
+  if (userAvatar && activeSession) {
+    const profileName = getProfileName(activeSession.displayName, activeSession.email);
+
+    userAvatar.textContent = [...profileName.trim()][0]?.toLocaleUpperCase() ?? 'U';
+  }
+
+  let isCommentRequestPending = false;
+
   const updateSendButtonState = (): void => {
     if (!commentInput || !sendButton) {
       return;
     }
 
-    sendButton.disabled = commentInput.value.trim().length === 0;
+    const textLength = commentInput.value.trim().length;
+
+    sendButton.disabled =
+      isCommentRequestPending || !getActiveSession() || textLength === 0 || textLength > 500;
   };
 
-  commentInput?.addEventListener('input', updateSendButtonState);
+  const resizeCommentInput = (): void => {
+    if (!commentInput) {
+      return;
+    }
+
+    commentInput.style.height = 'auto';
+    commentInput.style.height = `${commentInput.scrollHeight}px`;
+  };
+
+  const savedCommentDraft = commentDrafts.get(slug);
+
+  if (commentInput && savedCommentDraft) {
+    commentInput.value = savedCommentDraft;
+    resizeCommentInput();
+  }
+
+  commentInput?.addEventListener('input', () => {
+    resizeCommentInput();
+    updateSendButtonState();
+  });
 
   updateSendButtonState();
+
+  async function submitComment(): Promise<void> {
+    if (!commentInput || !sendButton || isCommentRequestPending) {
+      return;
+    }
+
+    const text = commentInput.value.trim();
+
+    if (text.length === 0 || text.length > 500) {
+      showSnackbar({
+        message: 'Comment must contain between 1 and 500 characters.',
+        variant: 'error',
+      });
+
+      return;
+    }
+
+    const sessionState = await resolveAppSession();
+
+    if (sessionState.status !== 'authenticated') {
+      const message =
+        sessionState.status === 'expired'
+          ? 'Your session has expired. Please log in again.'
+          : 'Log in to post a comment.';
+
+      openAuthForProtectedAction(message);
+      return;
+    }
+
+    isCommentRequestPending = true;
+    commentInput.disabled = true;
+    sendButton.disabled = true;
+
+    const authorName = getCommentAuthorName(
+      sessionState.session.displayName,
+      sessionState.session.email,
+    );
+
+    try {
+      await submitGameComment(slug, sessionState.session.email, authorName, text);
+
+      commentDrafts.delete(slug);
+      commentInput.value = '';
+      commentInput.style.height = '';
+
+      await loadGameComments();
+    } catch (error) {
+      showSnackbar({
+        message:
+          error instanceof TypeError
+            ? 'Comment submission result is unknown. Please check before retrying.'
+            : 'Unable to post comment. Please try again.',
+        variant: 'error',
+      });
+    } finally {
+      isCommentRequestPending = false;
+
+      if (document.body.contains(commentInput)) {
+        commentInput.disabled = false;
+        updateSendButtonState();
+      }
+    }
+  }
+
+  sendButton?.addEventListener('click', () => {
+    void submitComment();
+  });
+
+  commentInput?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.shiftKey || sendButton?.disabled) {
+      return;
+    }
+
+    event.preventDefault();
+    void submitComment();
+  });
 
   const closeButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__close');
 
