@@ -239,6 +239,38 @@ export async function submitGameComment(
   return result.data;
 }
 
+export interface CommentLikeResult {
+  isLikedByCurrentUser: boolean;
+  likesCount: number;
+}
+
+interface CommentLikeResponse {
+  data: CommentLikeResult;
+}
+
+export async function toggleCommentLike(
+  commentId: string,
+  userEmail: string,
+): Promise<CommentLikeResult> {
+  const response = await fetch(`${API_BASE_URL}/comments/${commentId}/like`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userEmail,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to toggle comment like: ${response.status}`);
+  }
+
+  const result = (await response.json()) as CommentLikeResponse;
+
+  return result.data;
+}
+
 export interface LeaderboardPlayer {
   rank: number;
   playerName: string;

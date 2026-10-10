@@ -641,8 +641,20 @@
 .game-details-dialog__comment-likes-group {
   display: inline-flex;
   align-items: center;
-  gap: $size-05; // 4px
+  gap: $size-05;
   height: $size-2;
+
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.game-details-dialog__comment-likes-group:disabled {
+  cursor: default;
+  opacity: 0.65;
 }
 
 .game-details-dialog__comment-likes > span:first-child {
@@ -666,7 +678,7 @@
 }
 
 .game-details-dialog__comment-likes-group--active .material-symbols-outlined {
-  color: $primary;
+  color: $like;
 }
 
 .game-details-dialog__comment-likes-group > span:last-child {
