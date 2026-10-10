@@ -43,6 +43,20 @@ const cardClasses = [
   'game-card--edge',
 ];
 
+const carouselRuntime = (() => {
+  let index = 0;
+
+  return {
+    getIndex(): number {
+      return index;
+    },
+
+    setIndex(nextIndex: number): void {
+      index = nextIndex;
+    },
+  };
+})();
+
 export function createNewGames(): HTMLElement {
   const section = document.createElement('section');
 
@@ -108,7 +122,7 @@ export function createNewGames(): HTMLElement {
     }
   };
 
-  let currentIndex = 0;
+  let currentIndex = carouselRuntime.getIndex();
 
   function getVisibleGames() {
     return Array.from({ length: 5 }, (_, offset) => {
@@ -184,7 +198,12 @@ export function createNewGames(): HTMLElement {
 
       setControlsDisabled(false);
       renderSlider();
-      startAutoplay();
+
+      const isGameDetailsOpen = new URLSearchParams(location.search).has('game');
+
+      if (!isGameDetailsOpen) {
+        startAutoplay();
+      }
     } catch {
       renderErrorState();
 
@@ -246,7 +265,7 @@ export function createNewGames(): HTMLElement {
     }
 
     currentIndex = (currentIndex + 1) % featuredGames.length;
-
+    carouselRuntime.setIndex(currentIndex);
     const nextGameIndex = (currentIndex + 4) % featuredGames.length;
 
     const nextGame = featuredGames[nextGameIndex];
@@ -278,6 +297,7 @@ export function createNewGames(): HTMLElement {
     }
 
     currentIndex = (currentIndex - 1 + featuredGames.length) % featuredGames.length;
+    carouselRuntime.setIndex(currentIndex);
 
     const previousGame = featuredGames[currentIndex];
 
@@ -415,7 +435,7 @@ export function createNewGames(): HTMLElement {
 
     const dialog = createGameDetailsDialog(slug, () => {
       history.back();
-      resetAutoplay();
+      // resetAutoplay();
     });
 
     document.body.append(dialog);
@@ -453,7 +473,7 @@ export function createNewGames(): HTMLElement {
     if (!existingDialog) {
       const dialog = createGameDetailsDialog(gameSlug, () => {
         history.back();
-        resetAutoplay();
+        // resetAutoplay();
       });
 
       document.body.append(dialog);

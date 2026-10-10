@@ -20,11 +20,14 @@ import {
   loginWithEmailAndPassword,
   registerWithEmailAndPassword,
   sendPasswordReset,
+  loginWithGoogle,
 } from '../auth/auth-service';
 
 import { showSnackbar } from './snackbar';
 
 export type AuthMode = 'login' | 'register';
+
+const AUTH_HISTORY_STATE_KEY = 'minigamesAuthEntry';
 
 function updateAuthModeInUrl(mode: AuthMode): void {
   const parameters = new URLSearchParams(location.search);
@@ -38,7 +41,7 @@ function updateAuthModeInUrl(mode: AuthMode): void {
   const query = parameters.toString();
   const path = query ? `${location.pathname}?${query}` : location.pathname;
 
-  history.replaceState({}, '', path);
+  history.replaceState(history.state, '', path);
 }
 
 function removeAuthModeFromUrl(): void {
@@ -46,10 +49,10 @@ function removeAuthModeFromUrl(): void {
 
   url.searchParams.delete('auth');
 
-  history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  history.replaceState(history.state, '', `${url.pathname}${url.search}${url.hash}`);
 }
 
-function completeAuthentication(user: User): void {
+async function completeAuthentication(user: User): Promise<void> {
   startAppSession({
     displayName: user.displayName ?? '',
     email: user.email ?? '',
@@ -57,6 +60,19 @@ function completeAuthentication(user: User): void {
       avatarUrl: user.photoURL,
     }),
   });
+
+  const overlay = document.querySelector<HTMLElement>('.auth-overlay');
+
+  overlay?.classList.remove('auth-overlay--open');
+
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 360);
+  });
+
+  if (history.state?.[AUTH_HISTORY_STATE_KEY] === true) {
+    history.back();
+    return;
+  }
 
   removeAuthModeFromUrl();
 
@@ -68,7 +84,14 @@ function pushAuthModeToUrl(mode: AuthMode): void {
 
   url.searchParams.set('auth', mode);
 
-  history.pushState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  history.pushState(
+    {
+      ...history.state,
+      [AUTH_HISTORY_STATE_KEY]: true,
+    },
+    '',
+    `${url.pathname}${url.search}${url.hash}`,
+  );
 }
 
 export async function openAuthDialog(mode: AuthMode): Promise<void> {
@@ -223,7 +246,9 @@ export function createAuthDialog(
                         alt=""
                         aria-hidden="true"
                     />
-                    Continue with Google
+                    <span class="auth-dialog__google-text">
+                      Continue with Google
+                    </span>
                 </button>
             </div>
           </form>
@@ -358,7 +383,9 @@ export function createAuthDialog(
               alt=""
               aria-hidden="true"
             />
-            Sign up with Google
+              <span class="auth-dialog__google-text">
+                Sign up with Google
+              </span>
           </button>
         </div>
       </form>
@@ -384,6 +411,27 @@ export function createAuthDialog(
   const registerTab = overlay.querySelector<HTMLButtonElement>('[data-auth-tab="register"]');
 
   const switchButtons = overlay.querySelectorAll<HTMLButtonElement>('.auth-dialog__switch-button');
+
+  const googleButtons = overlay.querySelectorAll<HTMLButtonElement>('.auth-dialog__google');
+
+  function setGoogleLoadingState(isLoading: boolean): void {
+    for (const button of googleButtons) {
+      const text = button.querySelector<HTMLElement>('.auth-dialog__google-text');
+
+      if (!text) {
+        continue;
+      }
+
+      if (isLoading) {
+        text.dataset.originalText = text.textContent?.trim() ?? '';
+        text.textContent = 'Connecting…';
+        continue;
+      }
+
+      text.textContent = text.dataset.originalText ?? text.textContent;
+      delete text.dataset.originalText;
+    }
+  }
 
   const passwordToggle = overlay.querySelector<HTMLButtonElement>('.auth-dialog__password-toggle');
 
@@ -475,6 +523,31 @@ export function createAuthDialog(
 
     updateLoginSubmitState?.();
     updateRegistrationSubmitState?.();
+  }
+
+  async function handleGoogleAuthentication(): Promise<void> {
+    setGoogleLoadingState(true);
+    setAuthPendingState(true);
+
+    try {
+      const user = await loginWithGoogle();
+
+      await completeAuthentication(user);
+    } catch {
+      setGoogleLoadingState(false);
+      setAuthPendingState(false);
+
+      showSnackbar({
+        message: 'Google sign-in was canceled or failed. Please try again.',
+        variant: 'error',
+      });
+    }
+  }
+
+  for (const googleButton of googleButtons) {
+    googleButton.addEventListener('click', () => {
+      void handleGoogleAuthentication();
+    });
   }
 
   function setFieldValidation(input: HTMLInputElement, isValid: boolean, error: string): void {
@@ -680,7 +753,7 @@ export function createAuthDialog(
     try {
       const user = await loginWithEmailAndPassword(emailInput.value, passwordInput.value);
 
-      completeAuthentication(user);
+      await completeAuthentication(user);
     } catch {
       showSnackbar({
         message: 'Unable to sign in. Check your credentials and try again.',
