@@ -2,16 +2,13 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
   type User,
 } from 'firebase/auth';
 
 import { auth } from './firebase';
 
 export async function loginWithEmailAndPassword(email: string, password: string): Promise<User> {
-  /*   await new Promise((resolve) => {
-    setTimeout(resolve, 3000);
-  }); */
-
   const credential = await signInWithEmailAndPassword(auth, email, password);
 
   return credential.user;
@@ -29,4 +26,8 @@ export async function registerWithEmailAndPassword(
   });
 
   return credential.user;
+}
+
+export async function sendPasswordReset(email: string): Promise<void> {
+  await sendPasswordResetEmail(auth, email);
 }
