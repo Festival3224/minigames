@@ -6,6 +6,7 @@ import {
   GameNotFoundError,
   toggleGameFavorite,
   submitGameComment,
+  toggleCommentLike,
 } from '../api/games-api';
 
 import { getActiveSession, resolveAppSession } from '../auth/app-session-manager';
@@ -115,13 +116,18 @@ function createCommentElement(comment: GameComment, avatarClass: string): HTMLEl
     <p class="game-details-dialog__comment-text"></p>
 
     <div class="game-details-dialog__comment-likes">
-      <div class="game-details-dialog__comment-likes-group">
+      <button
+        class="game-details-dialog__comment-likes-group"
+        type="button"
+        aria-label="Like comment"
+        aria-pressed="false"
+      >
         <span class="material-symbols-outlined" aria-hidden="true">
           favorite
         </span>
 
         <span class="game-details-dialog__comment-likes-count"></span>
-      </div>
+      </button>
     </div>
   `;
 
@@ -165,6 +171,8 @@ function createCommentElement(comment: GameComment, avatarClass: string): HTMLEl
     'game-details-dialog__comment-likes-group--active',
     comment.isLikedByCurrentUser,
   );
+
+  likesGroup?.setAttribute('aria-pressed', String(comment.isLikedByCurrentUser));
 
   return article;
 }
@@ -660,6 +668,8 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
 
   const sendButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__send');
 
+  const commentsList = dialog.querySelector<HTMLElement>('.game-details-dialog__comments-list');
+
   const userAvatar = dialog.querySelector<HTMLElement>('.game-details-dialog__user-avatar');
 
   const activeSession = getActiveSession();
@@ -691,6 +701,8 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
     sendButton.disabled =
       isCommentRequestPending || !getActiveSession() || textLength === 0 || textLength > 500;
   };
+
+  const pendingCommentLikes = new Set<string>();
 
   const resizeCommentInput = (): void => {
     if (!commentInput) {
@@ -789,6 +801,87 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
 
     event.preventDefault();
     void submitComment();
+  });
+
+  commentsList?.addEventListener('click', async (event) => {
+    const target = event.target;
+
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const likeButton = target.closest<HTMLButtonElement>(
+      '.game-details-dialog__comment-likes-group',
+    );
+
+    if (!likeButton) {
+      return;
+    }
+
+    const comment = likeButton.closest<HTMLElement>('.game-details-dialog__comment');
+
+    const commentId = comment?.dataset.commentId;
+
+    if (!commentId || pendingCommentLikes.has(commentId)) {
+      return;
+    }
+
+    const sessionState = await resolveAppSession();
+
+    if (sessionState.status !== 'authenticated') {
+      const message =
+        sessionState.status === 'expired'
+          ? 'Your session has expired. Please log in again.'
+          : 'Log in to like comments.';
+
+      openAuthForProtectedAction(message);
+      return;
+    }
+
+    pendingCommentLikes.add(commentId);
+    likeButton.disabled = true;
+    likeButton.setAttribute('aria-busy', 'true');
+
+    const likesCount = likeButton.querySelector<HTMLElement>(
+      '.game-details-dialog__comment-likes-count',
+    );
+
+    const previousCount = likesCount?.textContent ?? '';
+
+    if (likesCount) {
+      likesCount.textContent = '…';
+    }
+
+    try {
+      const result = await toggleCommentLike(commentId, sessionState.session.email);
+
+      likeButton.classList.toggle(
+        'game-details-dialog__comment-likes-group--active',
+        result.isLikedByCurrentUser,
+      );
+
+      likeButton.setAttribute('aria-pressed', String(result.isLikedByCurrentUser));
+
+      if (likesCount) {
+        likesCount.textContent = String(result.likesCount);
+      }
+    } catch {
+      if (likesCount) {
+        likesCount.textContent = previousCount;
+      }
+
+      showSnackbar({
+        message: 'Unable to update the comment like. The result is unknown. Please try again.',
+        variant: 'error',
+      });
+    } finally {
+      pendingCommentLikes.delete(commentId);
+
+      if (document.body.contains(likeButton)) {
+        likeButton.disabled = false;
+        likeButton.removeAttribute('aria-busy');
+      }
+    }
   });
 
   const closeButton = dialog.querySelector<HTMLButtonElement>('.game-details-dialog__close');
