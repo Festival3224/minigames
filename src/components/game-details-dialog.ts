@@ -27,6 +27,14 @@ const heroImages = import.meta.glob('../assets/**/*-hero.jpg', {
 
 const commentDrafts = new Map<string, string>();
 
+const COMMENT_AVATAR_CLASSES = [
+  'game-details-dialog__comment-avatar--random-1',
+  'game-details-dialog__comment-avatar--random-2',
+  'game-details-dialog__comment-avatar--random-3',
+  'game-details-dialog__comment-avatar--random-4',
+  'game-details-dialog__comment-avatar--random-5',
+] as const;
+
 function getGameHeroImage(heroImage: string): string {
   const fileName = heroImage.split('/').pop();
 
@@ -85,7 +93,7 @@ function createRecordsMarkup(records: GameRecord[]): string {
     .join('');
 }
 
-function createCommentElement(comment: GameComment, index: number): HTMLElement {
+function createCommentElement(comment: GameComment, avatarClass: string): HTMLElement {
   const article = document.createElement('article');
 
   article.className = 'game-details-dialog__comment';
@@ -95,7 +103,7 @@ function createCommentElement(comment: GameComment, index: number): HTMLElement 
     <div class="game-details-dialog__comment-header">
       <div class="game-details-dialog__comment-author-group">
         <span
-          class="game-details-dialog__comment-avatar game-details-dialog__comment-avatar--${index + 1}"
+          class="game-details-dialog__comment-avatar ${avatarClass}"
         ></span>
 
         <span class="game-details-dialog__comment-author"></span>
@@ -134,7 +142,7 @@ function createCommentElement(comment: GameComment, index: number): HTMLElement 
   );
 
   if (avatar) {
-    avatar.textContent = comment.authorName.charAt(0).toLocaleUpperCase();
+    avatar.textContent = comment.authorName.trim().charAt(0).toLocaleUpperCase();
   }
 
   if (author) {
@@ -172,6 +180,24 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
   dialog.setAttribute('role', 'dialog');
   dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-label', 'Game details');
+
+  const commenterAvatarClasses = new Map<string, string>();
+
+  function getCommentAvatarClass(authorName: string): string {
+    const existingClass = commenterAvatarClasses.get(authorName);
+
+    if (existingClass) {
+      return existingClass;
+    }
+
+    const randomIndex = Math.floor(Math.random() * COMMENT_AVATAR_CLASSES.length);
+
+    const avatarClass = COMMENT_AVATAR_CLASSES[randomIndex];
+
+    commenterAvatarClasses.set(authorName, avatarClass);
+
+    return avatarClass;
+  }
 
   const renderGameDetailsError = (): void => {
     const oldError = dialog.querySelector('.game-details-dialog__error');
@@ -376,7 +402,9 @@ export function createGameDetailsDialog(slug: string, onClose?: () => void): HTM
 
       if (commentsList) {
         commentsList.replaceChildren(
-          ...response.data.map((comment, index) => createCommentElement(comment, index)),
+          ...response.data.map((comment) =>
+            createCommentElement(comment, getCommentAvatarClass(comment.authorName)),
+          ),
         );
       }
     } catch {

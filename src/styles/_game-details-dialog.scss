@@ -585,16 +585,24 @@
   line-height: 1;
 }
 
-.game-details-dialog__comment-avatar--1 {
+.game-details-dialog__comment-avatar--random-1 {
+  background-color: $avatar-random-1;
+}
+
+.game-details-dialog__comment-avatar--random-2 {
+  background-color: $avatar-random-2;
+}
+
+.game-details-dialog__comment-avatar--random-3 {
   background-color: $avatar-random-3;
 }
 
-.game-details-dialog__comment-avatar--2 {
-  background-color: $primary;
+.game-details-dialog__comment-avatar--random-4 {
+  background-color: $avatar-random-4;
 }
 
-.game-details-dialog__comment-avatar--3 {
-  background-color: $avatar-random-1;
+.game-details-dialog__comment-avatar--random-5 {
+  background-color: $avatar-random-5;
 }
 
 .game-details-dialog__comment-author {

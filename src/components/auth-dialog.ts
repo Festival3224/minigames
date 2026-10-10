@@ -16,7 +16,11 @@ import {
   startAppSession,
 } from '../auth/app-session-manager';
 
-import { loginWithEmailAndPassword, registerWithEmailAndPassword } from '../auth/auth-service';
+import {
+  loginWithEmailAndPassword,
+  registerWithEmailAndPassword,
+  sendPasswordReset,
+} from '../auth/auth-service';
 
 import { showSnackbar } from './snackbar';
 
@@ -383,6 +387,8 @@ export function createAuthDialog(
 
   const passwordToggle = overlay.querySelector<HTMLButtonElement>('.auth-dialog__password-toggle');
 
+  const forgotPasswordButton = overlay.querySelector<HTMLButtonElement>('.auth-dialog__forgot');
+
   const passwordInput = passwordToggle
     ?.closest('.auth-dialog__input-wrapper')
     ?.querySelector<HTMLInputElement>('.auth-dialog__input');
@@ -390,6 +396,39 @@ export function createAuthDialog(
   const loginForm = loginView?.querySelector<HTMLFormElement>('.auth-dialog__form');
 
   const registerForm = registerView?.querySelector<HTMLFormElement>('.auth-dialog__form');
+
+  forgotPasswordButton?.addEventListener('click', async () => {
+    const emailInput = loginForm?.querySelector<HTMLInputElement>('input[name="email"]');
+
+    if (!emailInput) {
+      return;
+    }
+
+    const email = emailInput.value.trim();
+
+    if (!email) {
+      showSnackbar({
+        message: 'Enter your email address first.',
+        variant: 'error',
+      });
+
+      return;
+    }
+
+    try {
+      await sendPasswordReset(email);
+
+      showSnackbar({
+        message: 'Password reset email sent.',
+        variant: 'success',
+      });
+    } catch {
+      showSnackbar({
+        message: 'Unable to send password reset email.',
+        variant: 'error',
+      });
+    }
+  });
 
   let isPending = false;
 
