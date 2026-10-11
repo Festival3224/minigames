@@ -697,13 +697,7 @@ export function createAuthDialog(
 
       setFieldValidation(password, result.isValid, result.error);
 
-      // Acceptance criterion:
-      // revalidate confirmation whenever password changes.
-      if (confirmPassword.value) {
-        validateConfirmPasswordField();
-      }
-
-      updateSubmitState();
+      validateConfirmPasswordField();
     }
 
     function validateConfirmPasswordField(): void {
