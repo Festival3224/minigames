@@ -60,10 +60,6 @@ export async function logoutAppSession(): Promise<LogoutResult> {
   clearAppSession();
 
   try {
-    if (sessionStorage.getItem('test-signout-failure') === '1') {
-      throw new Error('Test sign-out failure');
-    }
-
     await signOut(auth);
 
     return {

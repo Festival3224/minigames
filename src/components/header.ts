@@ -355,7 +355,7 @@ export function createHeader(): HTMLElement {
   const mobileLogoutButton = header.querySelector<HTMLButtonElement>('.header__mobile-logout');
 
   async function handleLogout(): Promise<void> {
-    const isFirebaseSignOutSuccessful = await logoutAppSession();
+    const { isFirebaseSignOutSuccessful } = await logoutAppSession();
 
     const replacementHeader = createHeader();
 

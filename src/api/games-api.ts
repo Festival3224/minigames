@@ -95,8 +95,7 @@ export async function fetchLibraryGames(
   sort = 'rating-desc',
 ): Promise<GamesResponse> {
   const response = await fetch(
-    `${API_BASE_URL}/games?category=${category}&sort=${sort}&page=${page}&limit=6
-  `,
+    `${API_BASE_URL}/games?category=${category}&sort=${sort}&page=${page}&limit=6`,
   );
 
   if (response.status === 400) {
