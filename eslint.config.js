@@ -5,7 +5,7 @@ import unicorn from 'eslint-plugin-unicorn';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**'],
+    ignores: ['dist/**', 'coverage/**'],
   },
   {
     linterOptions: {

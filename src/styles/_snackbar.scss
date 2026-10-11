@@ -5,7 +5,7 @@
   position: fixed;
   right: $size-4;
   bottom: $size-4;
-  z-index: 1000;
+  z-index: $z-snackbar;
 
   display: flex;
   align-items: center;

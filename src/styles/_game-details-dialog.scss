@@ -484,7 +484,11 @@
 .game-details-dialog__comment-input {
   flex: 1;
   min-width: 0;
-  height: $size-6;
+
+  min-height: $size-6;
+  max-height: $size-15;
+  overflow-y: auto;
+
   padding: $size-1 $size-2;
   resize: none;
   background-color: $white;
@@ -581,16 +585,24 @@
   line-height: 1;
 }
 
-.game-details-dialog__comment-avatar--1 {
+.game-details-dialog__comment-avatar--random-1 {
+  background-color: $avatar-random-1;
+}
+
+.game-details-dialog__comment-avatar--random-2 {
+  background-color: $avatar-random-2;
+}
+
+.game-details-dialog__comment-avatar--random-3 {
   background-color: $avatar-random-3;
 }
 
-.game-details-dialog__comment-avatar--2 {
-  background-color: $primary;
+.game-details-dialog__comment-avatar--random-4 {
+  background-color: $avatar-random-4;
 }
 
-.game-details-dialog__comment-avatar--3 {
-  background-color: $avatar-random-1;
+.game-details-dialog__comment-avatar--random-5 {
+  background-color: $avatar-random-5;
 }
 
 .game-details-dialog__comment-author {
@@ -629,8 +641,20 @@
 .game-details-dialog__comment-likes-group {
   display: inline-flex;
   align-items: center;
-  gap: $size-05; // 4px
+  gap: $size-05;
   height: $size-2;
+
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.game-details-dialog__comment-likes-group:disabled {
+  cursor: default;
+  opacity: 0.65;
 }
 
 .game-details-dialog__comment-likes > span:first-child {
@@ -654,7 +678,7 @@
 }
 
 .game-details-dialog__comment-likes-group--active .material-symbols-outlined {
-  color: $primary;
+  color: $like;
 }
 
 .game-details-dialog__comment-likes-group > span:last-child {

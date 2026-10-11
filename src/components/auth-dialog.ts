@@ -1,6 +1,33 @@
 import googleIcon from '../assets/icons/google.svg';
 
+import {
+  validateEmail,
+  validateLoginPassword,
+  validatePasswordConfirmation,
+  validateRegistrationPassword,
+  validateUsername,
+} from '../auth/auth-validation';
+
+import type { User } from 'firebase/auth';
+
+import {
+  APP_SESSION_CHANGED_EVENT,
+  resolveAppSession,
+  startAppSession,
+} from '../auth/app-session-manager';
+
+import {
+  loginWithEmailAndPassword,
+  registerWithEmailAndPassword,
+  sendPasswordReset,
+  loginWithGoogle,
+} from '../auth/auth-service';
+
+import { showSnackbar } from './snackbar';
+
 export type AuthMode = 'login' | 'register';
+
+const AUTH_HISTORY_STATE_KEY = 'minigamesAuthEntry';
 
 function updateAuthModeInUrl(mode: AuthMode): void {
   const parameters = new URLSearchParams(location.search);
@@ -14,7 +41,93 @@ function updateAuthModeInUrl(mode: AuthMode): void {
   const query = parameters.toString();
   const path = query ? `${location.pathname}?${query}` : location.pathname;
 
-  history.replaceState({}, '', path);
+  history.replaceState(history.state, '', path);
+}
+
+function removeAuthModeFromUrl(): void {
+  const url = new URL(location.href);
+
+  url.searchParams.delete('auth');
+
+  history.replaceState(history.state, '', `${url.pathname}${url.search}${url.hash}`);
+}
+
+async function completeAuthentication(user: User): Promise<void> {
+  startAppSession({
+    displayName: user.displayName ?? '',
+    email: user.email ?? '',
+    ...(user.photoURL && {
+      avatarUrl: user.photoURL,
+    }),
+  });
+
+  const overlay = document.querySelector<HTMLElement>('.auth-overlay');
+
+  overlay?.classList.remove('auth-overlay--open');
+
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 360);
+  });
+
+  if (history.state?.[AUTH_HISTORY_STATE_KEY] === true) {
+    history.back();
+    return;
+  }
+
+  removeAuthModeFromUrl();
+
+  dispatchEvent(new Event(APP_SESSION_CHANGED_EVENT));
+}
+
+function pushAuthModeToUrl(mode: AuthMode): void {
+  const url = new URL(location.href);
+
+  url.searchParams.set('auth', mode);
+
+  history.pushState(
+    {
+      ...history.state,
+      [AUTH_HISTORY_STATE_KEY]: true,
+    },
+    '',
+    `${url.pathname}${url.search}${url.hash}`,
+  );
+}
+
+export async function openAuthDialog(mode: AuthMode): Promise<void> {
+  const sessionState = await resolveAppSession();
+
+  if (sessionState.status === 'authenticated') {
+    removeAuthModeFromUrl();
+
+    showSnackbar({
+      message: 'You are already authenticated.',
+      variant: 'error',
+    });
+
+    return;
+  }
+
+  if (sessionState.status === 'expired') {
+    showSnackbar({
+      message: 'Your session has expired. Please log in again.',
+      variant: 'error',
+    });
+  }
+
+  const existingDialog = document.querySelector('.auth-overlay');
+
+  if (existingDialog) {
+    return;
+  }
+
+  pushAuthModeToUrl(mode);
+
+  const dialog = createAuthDialog(mode, () => {
+    history.back();
+  });
+
+  document.body.append(dialog);
 }
 
 export function createAuthDialog(
@@ -74,6 +187,7 @@ export function createAuthDialog(
                       autocomplete="email"
                     />
                   </div>
+                  <span class="auth-dialog__error" aria-live="polite"></span>
                 </label>
 
                 <label class="auth-dialog__field">
@@ -105,6 +219,7 @@ export function createAuthDialog(
                     </span>
                     </button>
                   </div>
+                  <span class="auth-dialog__error" aria-live="polite"></span>
                 </label>
 
                 <button class="auth-dialog__forgot" type="button">
@@ -114,7 +229,7 @@ export function createAuthDialog(
 
 
             <div class="auth-dialog__actions">
-                <button class="auth-dialog__submit" type="submit">
+                <button class="auth-dialog__submit" type="submit" disabled>
                   Login
                 </button>
 
@@ -131,7 +246,9 @@ export function createAuthDialog(
                         alt=""
                         aria-hidden="true"
                     />
-                    Continue with Google
+                    <span class="auth-dialog__google-text">
+                      Continue with Google
+                    </span>
                 </button>
             </div>
           </form>
@@ -174,10 +291,11 @@ export function createAuthDialog(
                 class="auth-dialog__input"
                 type="text"
                 name="username"
-                placeholder="e.g. CozyGamer_99"
+                placeholder="e.g. CozyGamer99"
                 autocomplete="username"
               />
             </div>
+            <span class="auth-dialog__error" aria-live="polite"></span>
           </label>
 
           <label class="auth-dialog__field">
@@ -199,6 +317,7 @@ export function createAuthDialog(
                 autocomplete="email"
               />
             </div>
+            <span class="auth-dialog__error" aria-live="polite"></span>
           </label>
 
           <label class="auth-dialog__field">
@@ -216,10 +335,11 @@ export function createAuthDialog(
                 class="auth-dialog__input"
                 type="password"
                 name="password"
-                placeholder="Min. 8 characters"
+                placeholder="Min. 6 characters"
                 autocomplete="new-password"
               />
             </div>
+            <span class="auth-dialog__error" aria-live="polite"></span>
           </label>
 
           <label class="auth-dialog__field">
@@ -241,11 +361,12 @@ export function createAuthDialog(
                 autocomplete="new-password"
               />
             </div>
+            <span class="auth-dialog__error" aria-live="polite"></span>
           </label>
         </div>
 
         <div class="auth-dialog__actions">
-          <button class="auth-dialog__submit" type="submit">
+          <button class="auth-dialog__submit" type="submit" disabled>
             Create Account
           </button>
 
@@ -262,7 +383,9 @@ export function createAuthDialog(
               alt=""
               aria-hidden="true"
             />
-            Sign up with Google
+              <span class="auth-dialog__google-text">
+                Sign up with Google
+              </span>
           </button>
         </div>
       </form>
@@ -289,13 +412,387 @@ export function createAuthDialog(
 
   const switchButtons = overlay.querySelectorAll<HTMLButtonElement>('.auth-dialog__switch-button');
 
+  const googleButtons = overlay.querySelectorAll<HTMLButtonElement>('.auth-dialog__google');
+
+  function setGoogleLoadingState(isLoading: boolean): void {
+    for (const button of googleButtons) {
+      const text = button.querySelector<HTMLElement>('.auth-dialog__google-text');
+
+      if (!text) {
+        continue;
+      }
+
+      if (isLoading) {
+        text.dataset.originalText = text.textContent?.trim() ?? '';
+        text.textContent = 'Connecting…';
+        continue;
+      }
+
+      text.textContent = text.dataset.originalText ?? text.textContent;
+      delete text.dataset.originalText;
+    }
+  }
+
   const passwordToggle = overlay.querySelector<HTMLButtonElement>('.auth-dialog__password-toggle');
+
+  const forgotPasswordButton = overlay.querySelector<HTMLButtonElement>('.auth-dialog__forgot');
 
   const passwordInput = passwordToggle
     ?.closest('.auth-dialog__input-wrapper')
     ?.querySelector<HTMLInputElement>('.auth-dialog__input');
 
-  const forms = overlay.querySelectorAll<HTMLFormElement>('.auth-dialog__form');
+  const loginForm = loginView?.querySelector<HTMLFormElement>('.auth-dialog__form');
+
+  const registerForm = registerView?.querySelector<HTMLFormElement>('.auth-dialog__form');
+
+  forgotPasswordButton?.addEventListener('click', async () => {
+    const emailInput = loginForm?.querySelector<HTMLInputElement>('input[name="email"]');
+
+    if (!emailInput) {
+      return;
+    }
+
+    const email = emailInput.value.trim();
+
+    if (!email) {
+      showSnackbar({
+        message: 'Enter your email address first.',
+        variant: 'error',
+      });
+
+      return;
+    }
+
+    try {
+      await sendPasswordReset(email);
+
+      showSnackbar({
+        message: 'Password reset email sent.',
+        variant: 'success',
+      });
+    } catch {
+      showSnackbar({
+        message: 'Unable to send password reset email.',
+        variant: 'error',
+      });
+    }
+  });
+
+  let isPending = false;
+
+  function setSubmitLoadingText(
+    form: HTMLFormElement,
+    isLoading: boolean,
+    loadingText: string,
+  ): void {
+    const submitButton = form.querySelector<HTMLButtonElement>('.auth-dialog__submit');
+
+    if (!submitButton) {
+      return;
+    }
+
+    if (isLoading) {
+      submitButton.dataset.originalText = submitButton.textContent?.trim() ?? '';
+      submitButton.textContent = loadingText;
+      return;
+    }
+
+    const originalText = submitButton.dataset.originalText;
+
+    if (originalText) {
+      submitButton.textContent = originalText;
+    }
+
+    delete submitButton.dataset.originalText;
+  }
+
+  function setAuthPendingState(isAuthenticationPending: boolean): void {
+    isPending = isAuthenticationPending;
+
+    const controls = overlay.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+      'input, button',
+    );
+
+    for (const control of controls) {
+      control.disabled = isAuthenticationPending;
+    }
+
+    if (isAuthenticationPending) {
+      return;
+    }
+
+    updateLoginSubmitState?.();
+    updateRegistrationSubmitState?.();
+  }
+
+  async function handleGoogleAuthentication(): Promise<void> {
+    setGoogleLoadingState(true);
+    setAuthPendingState(true);
+
+    try {
+      const user = await loginWithGoogle();
+
+      await completeAuthentication(user);
+    } catch {
+      setGoogleLoadingState(false);
+      setAuthPendingState(false);
+
+      showSnackbar({
+        message: 'Google sign-in was canceled or failed. Please try again.',
+        variant: 'error',
+      });
+    }
+  }
+
+  for (const googleButton of googleButtons) {
+    googleButton.addEventListener('click', () => {
+      void handleGoogleAuthentication();
+    });
+  }
+
+  function setFieldValidation(input: HTMLInputElement, isValid: boolean, error: string): void {
+    const field = input.closest<HTMLElement>('.auth-dialog__field');
+
+    if (!field) {
+      return;
+    }
+
+    const wrapper = field.querySelector<HTMLElement>('.auth-dialog__input-wrapper');
+    const errorElement = field.querySelector<HTMLElement>('.auth-dialog__error');
+
+    wrapper?.classList.toggle('auth-dialog__input-wrapper--error', !isValid);
+
+    if (errorElement) {
+      errorElement.textContent = isValid ? '' : error;
+    }
+
+    input.setAttribute('aria-invalid', String(!isValid));
+  }
+
+  function clearFormValidation(form: HTMLFormElement): void {
+    form.reset();
+
+    const errorElements = form.querySelectorAll<HTMLElement>('.auth-dialog__error');
+
+    for (const errorElement of errorElements) {
+      errorElement.textContent = '';
+    }
+
+    const wrappers = form.querySelectorAll<HTMLElement>('.auth-dialog__input-wrapper');
+
+    for (const wrapper of wrappers) {
+      wrapper.classList.remove('auth-dialog__input-wrapper--error');
+    }
+
+    const inputs = form.querySelectorAll<HTMLInputElement>('.auth-dialog__input');
+
+    for (const input of inputs) {
+      input.removeAttribute('aria-invalid');
+    }
+
+    const submitButton = form.querySelector<HTMLButtonElement>('.auth-dialog__submit');
+
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+  }
+
+  function setupLoginValidation(form: HTMLFormElement): (() => void) | undefined {
+    const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]');
+    const passwordInput = form.querySelector<HTMLInputElement>('input[name="password"]');
+    const submitButton = form.querySelector<HTMLButtonElement>('.auth-dialog__submit');
+
+    if (!emailInput || !passwordInput || !submitButton) {
+      return;
+    }
+
+    const email = emailInput;
+    const password = passwordInput;
+    const submit = submitButton;
+
+    function updateSubmitState(): void {
+      const emailResult = validateEmail(email.value);
+      const passwordResult = validateLoginPassword(password.value);
+
+      submit.disabled = !(emailResult.isValid && passwordResult.isValid);
+    }
+
+    function validateEmailField(): void {
+      const result = validateEmail(email.value);
+
+      setFieldValidation(email, result.isValid, result.error);
+
+      updateSubmitState();
+    }
+
+    function validatePasswordField(): void {
+      const result = validateLoginPassword(password.value);
+
+      setFieldValidation(password, result.isValid, result.error);
+
+      updateSubmitState();
+    }
+
+    email.addEventListener('input', validateEmailField);
+    email.addEventListener('blur', validateEmailField);
+
+    password.addEventListener('input', validatePasswordField);
+    password.addEventListener('blur', validatePasswordField);
+
+    return updateSubmitState;
+  }
+
+  function setupRegistrationValidation(form: HTMLFormElement): (() => void) | undefined {
+    const usernameInput = form.querySelector<HTMLInputElement>('input[name="username"]');
+    const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]');
+    const passwordInput = form.querySelector<HTMLInputElement>('input[name="password"]');
+    const confirmPasswordInput = form.querySelector<HTMLInputElement>(
+      'input[name="confirmPassword"]',
+    );
+    const submitButton = form.querySelector<HTMLButtonElement>('.auth-dialog__submit');
+
+    if (!usernameInput || !emailInput || !passwordInput || !confirmPasswordInput || !submitButton) {
+      return;
+    }
+
+    const username = usernameInput;
+    const email = emailInput;
+    const password = passwordInput;
+    const confirmPassword = confirmPasswordInput;
+    const submit = submitButton;
+
+    function updateSubmitState(): void {
+      const usernameResult = validateUsername(username.value);
+      const emailResult = validateEmail(email.value);
+      const passwordResult = validateRegistrationPassword(password.value);
+      const confirmationResult = validatePasswordConfirmation(
+        password.value,
+        confirmPassword.value,
+      );
+
+      submit.disabled = !(
+        usernameResult.isValid &&
+        emailResult.isValid &&
+        passwordResult.isValid &&
+        confirmationResult.isValid
+      );
+    }
+
+    function validateUsernameField(): void {
+      const result = validateUsername(username.value);
+
+      setFieldValidation(username, result.isValid, result.error);
+      updateSubmitState();
+    }
+
+    function validateEmailField(): void {
+      const result = validateEmail(email.value);
+
+      setFieldValidation(email, result.isValid, result.error);
+      updateSubmitState();
+    }
+
+    function validatePasswordField(): void {
+      const result = validateRegistrationPassword(password.value);
+
+      setFieldValidation(password, result.isValid, result.error);
+
+      validateConfirmPasswordField();
+    }
+
+    function validateConfirmPasswordField(): void {
+      const result = validatePasswordConfirmation(password.value, confirmPassword.value);
+
+      setFieldValidation(confirmPassword, result.isValid, result.error);
+
+      updateSubmitState();
+    }
+
+    usernameInput.addEventListener('input', validateUsernameField);
+    usernameInput.addEventListener('blur', validateUsernameField);
+
+    emailInput.addEventListener('input', validateEmailField);
+    emailInput.addEventListener('blur', validateEmailField);
+
+    passwordInput.addEventListener('input', validatePasswordField);
+    passwordInput.addEventListener('blur', validatePasswordField);
+
+    confirmPasswordInput.addEventListener('input', validateConfirmPasswordField);
+    confirmPasswordInput.addEventListener('blur', validateConfirmPasswordField);
+
+    return updateSubmitState;
+  }
+
+  const updateLoginSubmitState = loginForm ? setupLoginValidation(loginForm) : undefined;
+
+  const updateRegistrationSubmitState = registerForm
+    ? setupRegistrationValidation(registerForm)
+    : undefined;
+
+  // submit handler для Login
+  loginForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const emailInput = loginForm.querySelector<HTMLInputElement>('input[name="email"]');
+
+    const passwordInput = loginForm.querySelector<HTMLInputElement>('input[name="password"]');
+
+    if (!emailInput || !passwordInput) {
+      return;
+    }
+
+    setSubmitLoadingText(loginForm, true, 'Signing in…');
+    setAuthPendingState(true);
+
+    try {
+      const user = await loginWithEmailAndPassword(emailInput.value, passwordInput.value);
+
+      await completeAuthentication(user);
+    } catch {
+      showSnackbar({
+        message: 'Unable to sign in. Check your credentials and try again.',
+        variant: 'error',
+      });
+
+      setSubmitLoadingText(loginForm, false, '');
+      setAuthPendingState(false);
+    }
+  });
+
+  registerForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const usernameInput = registerForm.querySelector<HTMLInputElement>('input[name="username"]');
+
+    const emailInput = registerForm.querySelector<HTMLInputElement>('input[name="email"]');
+
+    const passwordInput = registerForm.querySelector<HTMLInputElement>('input[name="password"]');
+
+    if (!usernameInput || !emailInput || !passwordInput) {
+      return;
+    }
+
+    setSubmitLoadingText(registerForm, true, 'Creating account…');
+    setAuthPendingState(true);
+
+    try {
+      const user = await registerWithEmailAndPassword(
+        emailInput.value,
+        passwordInput.value,
+        usernameInput.value,
+      );
+
+      completeAuthentication(user);
+    } catch {
+      showSnackbar({
+        message: 'Unable to create account. Please try again.',
+        variant: 'error',
+      });
+
+      setSubmitLoadingText(registerForm, false, '');
+      setAuthPendingState(false);
+    }
+  });
 
   passwordToggle?.addEventListener('click', () => {
     if (!passwordInput) {
@@ -314,12 +811,6 @@ export function createAuthDialog(
 
     passwordToggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
   });
-
-  for (const form of forms) {
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-    });
-  }
 
   const dialog = overlay.querySelector<HTMLElement>('.auth-dialog');
 
@@ -357,6 +848,14 @@ export function createAuthDialog(
   }
 
   function showLogin(): void {
+    if (registerForm) {
+      clearFormValidation(registerForm);
+    }
+
+    if (loginForm) {
+      clearFormValidation(loginForm);
+    }
+
     animateDialogHeight(() => {
       loginView?.removeAttribute('hidden');
       registerView?.setAttribute('hidden', '');
@@ -367,6 +866,13 @@ export function createAuthDialog(
   }
 
   function showRegister(): void {
+    if (registerForm) {
+      clearFormValidation(registerForm);
+    }
+
+    if (loginForm) {
+      clearFormValidation(loginForm);
+    }
     animateDialogHeight(() => {
       registerView?.removeAttribute('hidden');
       loginView?.setAttribute('hidden', '');
@@ -395,6 +901,10 @@ export function createAuthDialog(
   });
 
   function closeDialog(): void {
+    if (isPending) {
+      return;
+    }
+
     onClose?.();
 
     overlay.classList.remove('auth-overlay--open');
@@ -406,13 +916,13 @@ export function createAuthDialog(
   }
 
   function handleEscape(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
+    if (!isPending && event.key === 'Escape') {
       closeDialog();
     }
   }
 
   overlay.addEventListener('click', (event) => {
-    if (event.target === overlay) {
+    if (!isPending && event.target === overlay) {
       closeDialog();
     }
   });
@@ -439,10 +949,23 @@ export function createAuthDialog(
   return overlay;
 }
 
-export function restoreAuthDialogFromUrl(): void {
+export async function restoreAuthDialogFromUrl(): Promise<void> {
   const authMode = new URLSearchParams(location.search).get('auth');
 
   if (authMode !== 'login' && authMode !== 'register') {
+    return;
+  }
+
+  const sessionState = await resolveAppSession();
+
+  if (sessionState.status === 'authenticated') {
+    removeAuthModeFromUrl();
+
+    showSnackbar({
+      message: 'You are already authenticated.',
+      variant: 'error',
+    });
+
     return;
   }
 

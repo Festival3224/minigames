@@ -9,7 +9,7 @@ import { fetchCategories, fetchLibraryGames, LibraryDataNotFoundError } from '..
 
 import { formatLikesCount, formatRating } from '../utils/format';
 
-import { hideSnackbar, showSnackbar } from '../components/snackbar';
+import { showSnackbar } from '../components/snackbar';
 import { restoreAuthDialogFromUrl } from '../components/auth-dialog';
 
 type LibrarySort = 'rating-desc' | 'rating-asc' | 'name-asc' | 'name-desc';
@@ -458,7 +458,7 @@ export function createLibraryPage(): HTMLElement {
   };
 
   const loadLibraryGames = async (page = 1): Promise<void> => {
-    hideSnackbar();
+    // hideSnackbar();
     renderGamesSkeleton();
 
     try {
@@ -584,7 +584,8 @@ export function createLibraryPage(): HTMLElement {
   page.append(main);
   page.append(createFooter());
 
-  restoreAuthDialogFromUrl();
+  // restoreAuthDialogFromUrl();
+  void restoreAuthDialogFromUrl();
 
   return page;
 }

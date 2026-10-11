@@ -95,8 +95,7 @@ export async function fetchLibraryGames(
   sort = 'rating-desc',
 ): Promise<GamesResponse> {
   const response = await fetch(
-    `${API_BASE_URL}/games?category=${category}&sort=${sort}&page=${page}&limit=6
-  `,
+    `${API_BASE_URL}/games?category=${category}&sort=${sort}&page=${page}&limit=6`,
   );
 
   if (response.status === 400) {
@@ -122,8 +121,10 @@ export async function fetchCategories(): Promise<GameCategory[]> {
   return result.data;
 }
 
-export async function fetchGameDetails(slug: string): Promise<GameDetails> {
-  const response = await fetch(`${API_BASE_URL}/games/${slug}`);
+export async function fetchGameDetails(slug: string, userEmail?: string): Promise<GameDetails> {
+  const userQuery = userEmail ? `?userEmail=${encodeURIComponent(userEmail)}` : '';
+
+  const response = await fetch(`${API_BASE_URL}/games/${slug}${userQuery}`);
 
   if (response.status === 404) {
     throw new GameNotFoundError(`Game not found: ${slug}`);
@@ -134,6 +135,35 @@ export async function fetchGameDetails(slug: string): Promise<GameDetails> {
   }
 
   const result = (await response.json()) as GameDetailsResponse;
+
+  return result.data;
+}
+
+export interface FavoriteResult {
+  isFavorited: boolean;
+  likesCount: number;
+}
+
+interface FavoriteResponse {
+  data: FavoriteResult;
+}
+
+export async function toggleGameFavorite(slug: string, userEmail: string): Promise<FavoriteResult> {
+  const response = await fetch(`${API_BASE_URL}/games/${slug}/favorite`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userEmail,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to toggle favorite: ${response.status}`);
+  }
+
+  const result = (await response.json()) as FavoriteResponse;
 
   return result.data;
 }
@@ -155,14 +185,89 @@ export interface GameCommentsResponse {
   };
 }
 
-export async function fetchGameComments(slug: string): Promise<GameCommentsResponse> {
-  const response = await fetch(`${API_BASE_URL}/games/${slug}/comments?limit=3&sort=newest`);
+export async function fetchGameComments(
+  slug: string,
+  userEmail?: string,
+): Promise<GameCommentsResponse> {
+  const parameters = new URLSearchParams({
+    limit: '3',
+    sort: 'newest',
+  });
+
+  if (userEmail) {
+    parameters.set('userEmail', userEmail);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/games/${slug}/comments?${parameters.toString()}`);
 
   if (!response.ok) {
     throw new Error(`Failed to load game comments: ${response.status}`);
   }
 
   return (await response.json()) as GameCommentsResponse;
+}
+
+interface CreateCommentResponse {
+  data: GameComment;
+}
+
+export async function submitGameComment(
+  slug: string,
+  userEmail: string,
+  authorName: string,
+  text: string,
+): Promise<GameComment> {
+  const response = await fetch(`${API_BASE_URL}/games/${slug}/comments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userEmail,
+      authorName,
+      text,
+    }),
+  });
+
+  if (response.status !== 201) {
+    throw new Error(`Failed to submit comment: ${response.status}`);
+  }
+
+  const result = (await response.json()) as CreateCommentResponse;
+
+  return result.data;
+}
+
+export interface CommentLikeResult {
+  isLikedByCurrentUser: boolean;
+  likesCount: number;
+}
+
+interface CommentLikeResponse {
+  data: CommentLikeResult;
+}
+
+export async function toggleCommentLike(
+  commentId: string,
+  userEmail: string,
+): Promise<CommentLikeResult> {
+  const response = await fetch(`${API_BASE_URL}/comments/${commentId}/like`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userEmail,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to toggle comment like: ${response.status}`);
+  }
+
+  const result = (await response.json()) as CommentLikeResponse;
+
+  return result.data;
 }
 
 export interface LeaderboardPlayer {

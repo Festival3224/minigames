@@ -4,7 +4,7 @@
 .auth-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: $z-auth-overlay;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -375,4 +375,38 @@
   color: $on-primary;
   text-decoration: underline;
   cursor: pointer;
+}
+
+.auth-dialog__error {
+  min-height: $size-2;
+  font-family: $font-primary;
+  font-size: $label-small;
+  line-height: 1.2;
+  color: $error;
+}
+
+.auth-dialog__input-wrapper--error {
+  border-color: $error;
+}
+
+.auth-dialog__submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-dialog__submit:disabled:hover,
+.auth-dialog__submit:disabled:active {
+  transform: none;
+  background: $primary;
+}
+
+.auth-dialog__tab:disabled,
+.auth-dialog__password-toggle:disabled,
+.auth-dialog__forgot:disabled,
+.auth-dialog__google:disabled,
+.auth-dialog__switch-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
